@@ -1,0 +1,6 @@
+version=1
+id=3439305933
+title=[B42] Functional Gutters
+description=Rain barrels placed on squares with gutter pipes will collect rain water at an increased rate.
+tags=Build 42;Balance;Realistic
+visibility=private
