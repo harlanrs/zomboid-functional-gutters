@@ -1,0 +1,5 @@
+name = "Gutter Water Collection"
+id = "GutterWaterCollection"
+description = "Rain barrels placed under drain pipes collect more water during rain."
+author = "Mancer"
+version = "1.0"
