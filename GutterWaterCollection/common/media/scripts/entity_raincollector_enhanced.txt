@@ -1,0 +1,201 @@
+module GutterWaterCollection
+{
+    imports {
+        Base
+    }
+
+    /*
+    xuiSkin default
+    {
+        entity ES_RainCollectorCrate_Enhanced
+        {
+            LuaWindowClass      = ISEntityTabWindow,
+            DisplayName         = Rain Collector Crate,
+            Icon                = Build_RainCollectorCrate2,
+        }
+
+        entity ES_RainCollectorBarrel_Enhanced
+        {
+            LuaWindowClass      = ISEntityTabWindow,
+            DisplayName         = Rain Collector Barrel,
+            Icon                = Build_RainCollectorBarrel2,
+        }
+    }
+    */
+
+    /* TODO remove */
+    entity RainCollector_Buffer
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.75,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollector_Reset
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.4,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollectorRound_Reset
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.25,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+
+    entity RainCollector_Enhanced
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate,
+            uiEnabled       = false,
+        }
+        
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.75,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }       
+    }
+
+    entity RainCollectorRound_Enhanced
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorBarrel,
+            uiEnabled       = false,
+        }
+
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 600,
+	        RainFactor	    = 0.75,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollector_Tarp_Reset
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate_Tarp,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.4,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollectorRound_Tarp_Reset
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorBarrel_Tarp,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+            RainFactor	    = 0.25,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollector_Tarp_Enhanced
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorCrate_Tarp,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 400,
+	        RainFactor	    = 0.75,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+    entity RainCollectorRound_Tarp_Enhanced
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_RainCollectorBarrel_Tarp,
+            uiEnabled       = false,
+        }
+
+        component FluidContainer
+        {
+            ContainerName   = Collector,
+            capacity        = 600,
+            RainFactor	    = 0.75,
+            InitialPercentMin      = 0.0,
+            InitialPercentMax      = 0.0,
+        }
+    }
+
+}
