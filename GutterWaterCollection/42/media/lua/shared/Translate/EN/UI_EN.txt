@@ -1,0 +1,7 @@
+UI_EN = {
+    UI_options_GutterWaterCollection_Debug = "Debug Mode",
+    UI_options_GutterWaterCollection_Debug_tooltip = "If true, prints debug messages to the console. (Restart Required)",
+
+    UI_options_GutterWaterCollection_GutterMultiplier = "Gutter Multiplier",
+    UI_options_GutterWaterCollection_GutterMultiplier_tooltip = "The amount used to multiply the collector's rain factor by when connected to a gutter.",
+}

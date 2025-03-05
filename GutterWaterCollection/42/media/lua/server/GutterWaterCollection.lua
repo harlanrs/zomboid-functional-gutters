@@ -1,45 +1,36 @@
--- TODO pull config params from a mod settings file
+local config = require("Gutter_ModOptions")
+require "config"
 
--- NEW UPDATE METHODS
--- IsoFeedingTrough:createFluidContainer
--- TODO support for feeding troughs?
--- TODO support for placed objects?
--- TODO stacked/multi tier rain collectors with connected pipe?
 
--- TODO settings
-local modDebug = true
-local gutterRainFactorMultiplier = 3
+------- Settings -------
+local options = PZAPI.ModOptions:getOptions(config.modName)
+local debugModeOption = options:getOption("Debug")
+local debugMode = debugModeOption:getValue()
+local gutterMultiplierOption = options:getOption("GutterMultiplier")
 
-local drainPipeSprites = {
-    "industry_02_260",
-    "industry_02_261",
-    "industry_02_263",
-    -- TODO Add other drain pipe sprite identifiers
-}
 
-local rainCollectorSprites = {
-    "carpentry_02_54",
-    "carpentry_02_120",
-    "carpentry_02_122",
-    "carpentry_02_124",
-}
+local function getGutterMultiplier()
+    return gutterMultiplierOption:getValue()
+end
 
------ HELPERS ------
+
+------- Utils -------
 local function modPrint(message)
-    if modDebug then
-        print("[gutterWaterCollection] --------------------------------> "..message)
+    if debugMode then
+        print("["..config.modName.."] --------------------------------> "..message)
     end
 end
 
 
 local function roundDownDecimal(num)
-    local scale = 100 -- Scale to shift decimal 2 places
+    -- TODO - surely there is an internal function for this?
+    local scale = 100
     return math.floor(num * scale) / scale
 end
 
 
 local function isRainCollectorSprite(spriteName)
-    for _, collectorSprite in ipairs(rainCollectorSprites) do
+    for _, collectorSprite in ipairs(config.enums.collectorSprites) do
         if spriteName == collectorSprite then
             return true
         end
@@ -49,7 +40,7 @@ end
 
 
 local function isDrainPipeSprite(spriteName)
-    for _, drainPipeSprite in ipairs(drainPipeSprites) do
+    for _, drainPipeSprite in ipairs(config.enums.drainPipeSprites) do
         if spriteName == drainPipeSprite then
             return true
         end
@@ -63,7 +54,7 @@ local function isDrainPipe(object)
 
     local sprite = object:getSprite()
     if not sprite then return false end
-    
+
     return isDrainPipeSprite(sprite:getName())
 end
 
@@ -82,11 +73,12 @@ end
 
 local function isRainCollector(object)
     if not object then return false end
-	local fluidContainer = object:getFluidContainer()
-	return fluidContainer and fluidContainer:getRainCatcher() > 0.0F and fluidContainer:canPlayerEmpty()
+    local fluidContainer = object:getFluidContainer()
+    return fluidContainer and fluidContainer:getRainCatcher() > 0.0F and fluidContainer:canPlayerEmpty()
 end
 
 
+------- Getter & Setters ------
 local function getRainCollectorOnTile(square)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -96,11 +88,6 @@ local function getRainCollectorOnTile(square)
         end
     end
     return nil
-end
-
-
-local function setObjectModData(object, hasGutter)
-    object:getModData()["hasGutter"] = hasGutter
 end
 
 
@@ -120,7 +107,7 @@ end
 
 
 local function getObjectBaseRainFactor(object)
-    -- Get the base rain factor from the object's entity script
+    -- Get the base rain factor from the object's GameEntityScript
     local entityScript = getObjectEntityScript(object)
     if not entityScript then
         modPrint("Entity script not found: "..tostring(object))
@@ -137,9 +124,15 @@ local function getObjectBaseRainFactor(object)
 end
 
 
+local function setObjectModData(object, hasGutter)
+    object:getModData()["hasGutter"] = hasGutter
+end
+
+
+------- Service -------
 local function isBaseCollectorRainFactor(collectorObject)
-    -- Compare the object's current rain factor against the base rain factor from the object's entity script
-    -- NOTE: rounding since live value of crate object has extra decimal places
+    -- Compare the object's current rain factor against the base rain factor from the object's GameEntityScript
+    -- NOTE: rounding down since live value of float can have extra junk decimal places
     local baseRainFactor = roundDownDecimal(getObjectBaseRainFactor(collectorObject))
     local rainFactor = roundDownDecimal(getObjectRainFactor(collectorObject))
     modPrint("Rain factor: "..tostring(rainFactor))
@@ -149,7 +142,7 @@ end
 
 
 local function resetCollectorObject(collectorObject)
-    -- Reset to base rain factor from the object's entity script
+    -- Reset to base rain factor from the object's GameEntityScript
     local fluidContainer = collectorObject:getFluidContainer()
     local baseRainFactor = getObjectBaseRainFactor(collectorObject)
     modPrint("Resetting rain factor from "..tostring(getObjectRainFactor(collectorObject)).." to "..tostring(baseRainFactor))
@@ -162,18 +155,18 @@ local function upgradeCollectorObject(collectorObject)
     -- Increase rain factor of the object's FluidContainer
     local fluidContainer = collectorObject:getFluidContainer()
     local baseRainFactor = getObjectBaseRainFactor(collectorObject)
-    local upgradedRainFactor = roundDownDecimal(baseRainFactor * gutterRainFactorMultiplier)
+    local upgradedRainFactor = roundDownDecimal(baseRainFactor * getGutterMultiplier())
     modPrint("Upgrading rain factor from "..tostring(baseRainFactor).." to "..tostring(upgradedRainFactor))
     fluidContainer:setRainCatcher(upgradedRainFactor)
     setObjectModData(collectorObject, true)
 end
 
 
+------- Interface -------
 local ISBuildIsoEntity_setInfo = ISBuildIsoEntity.setInfo
 function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
-    -- Intercept method used in the creation of a new iso entity object from the build menu
-    -- and handle mod-specific overrides for rain collector objects
-	ISBuildIsoEntity_setInfo(self, square, north, sprite, openSprite)
+    -- React to the creation of a new iso entity object from the build menu
+    ISBuildIsoEntity_setInfo(self, square, north, sprite, openSprite)
 
     if isRainCollectorSprite(sprite) and hasDrainPipeOnTile(square) then
         local builtCollector = getRainCollectorOnTile(square)
