@@ -1,4 +1,3 @@
-
 -- TODO define & grab from global mod object for gutterWaterCollection
 local function hasGutterModData(object)
     if not object:hasModData() then return false end
@@ -14,7 +13,7 @@ local function AddWaterContainerContext(player, context, worldobjects, test)
 			context:addSubMenu(subMenuOption, subMenu)
 
             local rainFactor = fluidContainer:getRainCatcher()
-            subMenu:addDebugOption("Rain factor: " .. tostring(rainFactor))
+            subMenu:addDebugOption("Rain Factor: " .. tostring(rainFactor))
 
             local hasGutter = hasGutterModData(v)
             subMenu:addDebugOption("Has Gutter: " .. tostring(hasGutter))

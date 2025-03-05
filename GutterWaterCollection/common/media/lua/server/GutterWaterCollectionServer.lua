@@ -1,5 +1,11 @@
 -- TODO pull config params from a mod settings file
 
+-- NEW UPDATE METHODS
+-- IsoFeedingTrough:createFluidContainer
+-- TODO support for feeding troughs?
+-- TODO support for placed objects?
+-- TODO stacked/multi tier rain collectors with connected pipe?
+
 -- TODO settings
 local modDebug = true
 local gutterRainFactorMultiplier = 3
@@ -18,10 +24,17 @@ local rainCollectorSprites = {
     "carpentry_02_124",
 }
 
+----- HELPERS ------
 local function modPrint(message)
     if modDebug then
         print("[gutterWaterCollection] --------------------------------> "..message)
     end
+end
+
+
+local function roundDownDecimal(num)
+    local scale = 100 -- Scale to shift decimal 2 places
+    return math.floor(num * scale) / scale
 end
 
 
@@ -33,6 +46,7 @@ local function isRainCollectorSprite(spriteName)
     end
     return false
 end
+
 
 local function isDrainPipeSprite(spriteName)
     for _, drainPipeSprite in ipairs(drainPipeSprites) do
@@ -67,7 +81,6 @@ end
 
 
 local function isRainCollector(object)
-    -- TODO check against specific sprite names
     if not object then return false end
 	local fluidContainer = object:getFluidContainer()
 	return fluidContainer and fluidContainer:getRainCatcher() > 0.0F and fluidContainer:canPlayerEmpty()
@@ -75,7 +88,6 @@ end
 
 
 local function getRainCollectorOnTile(square)
-    -- NOTE: only first found collector is returned
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
@@ -92,189 +104,103 @@ local function setObjectModData(object, hasGutter)
 end
 
 
-local function hasGutterModData(object)
-    if not object:hasModData() then return false end
-    return object:getModData()["hasGutter"]
+local function getObjectEntityScript(object)
+    local entityScriptName = object:getName()
+    return ScriptManager.instance:getGameEntityScript(entityScriptName)
 end
 
 
-local function syncObjectGutterData(object)
-    if not isRainCollector(object) then return end
+local function getObjectRainFactor(object)
+    -- Get the current rain factor from the object's FluidContainer
+    local fluidContainer = object:getFluidContainer()
+    if not fluidContainer then return nil end
 
-    local hasGutter = hasDrainPipeOnTile(object:getSquare())
-    setObjectModData(object, hasGutter)
-
-    modPrint("Rain collector on tile has gutter: "..tostring(hasGutter))
+    return fluidContainer:getRainCatcher()
 end
 
 
-local function syncTileGutterData(square)
-    local collectorObjects = {}
-    local hasGutter = false
-    local objects = square:getObjects()
-    for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if isRainCollector(object) then
-            table.insert(collectorObjects, object)
-        end
-
-        if isDrainPipe(object) then
-            hasGutter = true
-        end
+local function getObjectBaseRainFactor(object)
+    -- Get the base rain factor from the object's entity script
+    local entityScript = getObjectEntityScript(object)
+    if not entityScript then
+        modPrint("Entity script not found: "..tostring(object))
+        return nil
     end
 
-    for _, collectorObject in ipairs(collectorObjects) do
-        modPrint('Rain collector on tile has gutter: '..tostring(hasGutter))
-        setObjectModData(collectorObject, hasGutter)
+    local fluidContainerScript = entityScript:getComponentScriptFor(ComponentType.FluidContainer)
+    if not fluidContainerScript then
+        modPrint("Fluid container script not found: "..tostring(entityScript))
+        return nil
     end
+
+    return fluidContainerScript:getRainCatcher()
 end
 
 
-local function handleObjectPlacedOnTile(object)
-    modPrint("Rain collector placed on tile")
-    syncObjectGutterData(object)
+local function isBaseCollectorRainFactor(collectorObject)
+    -- Compare the object's current rain factor against the base rain factor from the object's entity script
+    -- NOTE: rounding since live value of crate object has extra decimal places
+    local baseRainFactor = roundDownDecimal(getObjectBaseRainFactor(collectorObject))
+    local rainFactor = roundDownDecimal(getObjectRainFactor(collectorObject))
+    modPrint("Rain factor: "..tostring(rainFactor))
+    modPrint("Base rain factor: "..tostring(baseRainFactor))
+    return rainFactor == baseRainFactor
 end
 
 
-local function handleObjectBuiltOnTile(square)
-    modPrint("Rain collector built on tile")
-    syncTileGutterData(square)
+local function resetCollectorObject(collectorObject)
+    -- Reset to base rain factor from the object's entity script
+    local fluidContainer = collectorObject:getFluidContainer()
+    local baseRainFactor = getObjectBaseRainFactor(collectorObject)
+    modPrint("Resetting rain factor from "..tostring(getObjectRainFactor(collectorObject)).." to "..tostring(baseRainFactor))
+    fluidContainer:setRainCatcher(baseRainFactor)
+    setObjectModData(collectorObject, false)
 end
 
 
-local function handleObjectRemovedFromTile(object)
-    -- Reset the flag when container is removed
-    if isRainCollector(object) then
-        modPrint("Rain collector removed from tile")
-        setObjectModData(object, nil)
-    end
+local function upgradeCollectorObject(collectorObject)
+    -- Increase rain factor of the object's FluidContainer
+    local fluidContainer = collectorObject:getFluidContainer()
+    local baseRainFactor = getObjectBaseRainFactor(collectorObject)
+    local upgradedRainFactor = roundDownDecimal(baseRainFactor * gutterRainFactorMultiplier)
+    modPrint("Upgrading rain factor from "..tostring(baseRainFactor).." to "..tostring(upgradedRainFactor))
+    fluidContainer:setRainCatcher(upgradedRainFactor)
+    setObjectModData(collectorObject, true)
 end
 
 
-local function handleObjectLoaded(object)
-    modPrint("Rain collector loaded")
-    syncObjectGutterData(object)
-end
-
-
-local function stampRainCollectorJavaObject(rainCollectorObject, square, north, sprite)
-    -- Create new rain collector javaObject based on the existing rain collector
-    local cell = square:getCell()
-    local baseModData = {}
-    local javaObject = IsoThumpable.new(cell, square, sprite, north, baseModData)
-    javaObject:setBlockAllTheSquare(rainCollectorObject:isBlockAllTheSquare())
-    javaObject:setName(rainCollectorObject:getName())
-    javaObject:setIsDismantable(rainCollectorObject:isDismantable())
-    javaObject:setModData(copyTable(rainCollectorObject:getModData()))
-    javaObject:setMaxHealth(rainCollectorObject:getMaxHealth())
-    javaObject:setHealth(rainCollectorObject:getHealth())
-    javaObject:setSpecialTooltip(true)
-
-    return javaObject
-end
-
-
-local function replaceCollectorEntityScript(originalEntityScript)
-    modPrint("Original entity script: "..originalEntityScript:getName())
-
-    local replacementScriptName = "GutterWaterCollection."..originalEntityScript:getName().."_Enhanced"
-    local replacementEntityScript = ScriptManager.instance:getSpecificEntity(replacementScriptName)
-    modPrint("Replacement entity script: "..replacementEntityScript:getName())
-
-    -- Copy replacement script over the original script
-    originalEntityScript:copyFrom(replacementEntityScript)
-end
-
-
-local function createFromCollectorEntityScript(javaObject, originalEntityScript, square, index)
-    replaceCollectorEntityScript(originalEntityScript)
-
-    -- Connect java object with the buffer entity script
-    local isFirstTimeCreated = true;
-    GameEntityFactory.CreateIsoObjectEntity(javaObject, originalEntityScript, isFirstTimeCreated);
-
-    -- Add java object to the square and transmit to clients
-    square:AddSpecialObject(javaObject, index)
-    javaObject:transmitCompleteItemToClients()
-end
-
-
-local function resetCollectorEntityScript(originalEntityScript)
-    local resetScriptName = "GutterWaterCollection."..originalEntityScript:getName().."_Reset"
-    local resetEntityScript = ScriptManager.instance:getSpecificEntity(resetScriptName)
-    modPrint("Reset entity script: "..resetEntityScript:getName())
-
-    originalEntityScript:copyFrom(resetEntityScript)
-end
-
-
--- Intercept creation of a new iso entity object from the build menu
--- and handle mod-specific overrides for rain collector objects
 local ISBuildIsoEntity_setInfo = ISBuildIsoEntity.setInfo
 function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
-    local needsReset = false
-    if isRainCollectorSprite(sprite) and hasDrainPipeOnTile(square) then
-        local originalEntityScript = self.objectInfo:getScript():getParent()
-        replaceCollectorEntityScript(originalEntityScript)
-
-        needsReset = true
-    end
-
+    -- Intercept method used in the creation of a new iso entity object from the build menu
+    -- and handle mod-specific overrides for rain collector objects
 	ISBuildIsoEntity_setInfo(self, square, north, sprite, openSprite)
 
-    if needsReset then
-        local originalEntityScript = self.objectInfo:getScript():getParent()
-        resetCollectorEntityScript(originalEntityScript)
-
-        local rainCollectorObject = getRainCollectorOnTile(square)
-        if not rainCollectorObject then
-            modPrint("Rain collector not found on tile")
+    if isRainCollectorSprite(sprite) and hasDrainPipeOnTile(square) then
+        local builtCollector = getRainCollectorOnTile(square)
+        if not builtCollector then
+            modPrint("Rain collector not found on tile after build")
             return
         end
 
-        setObjectModData(rainCollectorObject, true)
+        upgradeCollectorObject(builtCollector)
     end
 
 end
 
 
--- React to the the placement of a new object on a tile
-local function handleObjectPlacedOnTile2(placedObject)
-    -- Verify that the placed object is a rain collector on a tile with a drain pipe
+local function handleObjectPlacedOnTile(placedObject)
+    -- React to the the placement of an object on a tile
     if not isRainCollector(placedObject) then return end
     local square = placedObject:getSquare()
     if not hasDrainPipeOnTile(square) then
-        setObjectModData(placedObject, false)
+        if not isBaseCollectorRainFactor(placedObject) then
+            resetCollectorObject(placedObject)
+        end
         return
     end
 
-    -- Create new IsoThumpable javaObject copy of the rain collector
-    local north = false
-    local entityIsoSprite = placedObject:getSprite()
-    local entityScriptName = placedObject:getName()
-    local index = placedObject:getObjectIndex()
-    local javaObject = stampRainCollectorJavaObject(placedObject, square, north, entityIsoSprite:getName())
-
-    setObjectModData(javaObject, true)
-
-    -- Remove the original object from the square
-    square:transmitRemoveItemFromSquare(placedObject)
-
-    -- Place the new object on the square
-    local entityScript = ScriptManager.instance:getGameEntityScript(entityScriptName)
-    createFromCollectorEntityScript(javaObject, entityScript, square, index)
-
-    -- Reset the original entity script
-    resetCollectorEntityScript(entityScript)
+    upgradeCollectorObject(placedObject)
 end
 
 
--- Listen for on load events for all rain collector sprites
--- for _, collectorSprite in ipairs(rainCollectorSprites) do
---     MapObjects.OnLoadWithSprite(collectorSprite, handleObjectLoaded, 6)
--- end
-
-
--- Hooks
-Events.OnObjectAdded.Add(handleObjectPlacedOnTile2)
--- Events.OnTileRemoved.Add(handleObjectRemovedFromTile)
+Events.OnObjectAdded.Add(handleObjectPlacedOnTile)
