@@ -4,7 +4,7 @@ Functional Gutters is a mod for the video game `Project Zomboid [B42]` that incr
 This is a simple representation of rain flowing from a building's roof through its gutters and drain pipes into a collector below. Unlike real life, you won't ever need to clean them!
 
 
-![Functional Gutters Poster Image](poster.png)
+![Functional Gutters Poster Image](preview.png)
 
 
 ## Context
@@ -40,7 +40,7 @@ Even though crates and barrels have a different base rain factor, this mod sets 
 * [ ] Generic movable entities with FluidContainers (tanker trailer)
 
 
-### Drainage Sprites
+### Accepted Drainage Sprites
 ```
 {
     "industry_02_260",
@@ -57,7 +57,7 @@ Even though crates and barrels have a different base rain factor, this mod sets 
 * Support manually adding custom sprites to the core gutter list?
 
 
-### Local Dev Notes
+## Local Dev Notes
 
 #### Windows SymLink
 To avoid developing directly in the PZ mods directory, it is helpful to create a symlink in the PZ mods folder (path) pointing to the external path of the mod managed elsewhere on your system.
@@ -65,10 +65,10 @@ To avoid developing directly in the PZ mods directory, it is helpful to create a
 NOTE: you will want to point to the interior mod folder not the root.
 
 ##### Path (PZ Mods Directory)
-`C:\\<zomboid_mod_directory_path>\FunctionalGutters`
+`<zomboid_workshop_mod_directory_path>\FunctionalGutters`
 
 ##### Target (Mod Source Directory)
-`<local_development_mod_path>\Contents\mods\FunctionalGutters`
+`<local_development_mod_path>\FunctionalGutters`
 
 ##### Cmd (Windows)
 ```

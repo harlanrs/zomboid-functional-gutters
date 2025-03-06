@@ -15,5 +15,11 @@
         "io": "disable",
         "package": "disable"
     },
-    "Lua.workspace.checkThirdParty": false
+    "Lua.workspace.checkThirdParty": false,
+    "cSpell.ignoreWords": [
+        "PZAPI",
+        "Zomboid",
+        "mklink",
+        "worldobjects"
+    ]
 }

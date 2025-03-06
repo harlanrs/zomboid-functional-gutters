@@ -25,7 +25,7 @@ gutterConfig.options = {
 local options = PZAPI.ModOptions:create(gutterConfig.modName, "Functional Gutters")
 
 gutterConfig.options.Debug = options:addTickBox("Debug", getText("UI_options_FunctionalGutters_Debug"), false, getText("UI_options_FunctionalGutters_Debug_tooltip"))
-gutterConfig.options.ShowContextUI = options:addTickBox("ShowContextUI", getText("UI_options_FunctionalGutters_ShowContextUI"), true, getText("UI_options_FunctionalGutters_ShowContextUI_tooltip"))
+gutterConfig.options.ShowContextUI = options:addTickBox("ShowContextUI", getText("UI_options_FunctionalGutters_ShowContextUI"), false, getText("UI_options_FunctionalGutters_ShowContextUI_tooltip"))
 gutterConfig.options.GutterRainFactor = options:addSlider("GutterRainFactor", getText("UI_options_FunctionalGutters_GutterRainFactor"), 0.5, 3.0, 0.1, 0.8, getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
 
 -- NOTE: slider option doesn't appear to display the tooltip so we are including it as a description
