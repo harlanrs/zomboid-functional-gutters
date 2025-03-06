@@ -1,0 +1,10 @@
+UI_EN = {
+    UI_options_FunctionalGutters_Debug = "Debug Mode",
+    UI_options_FunctionalGutters_Debug_tooltip = "If true, prints debug messages to the console. *Requires Restart",
+
+    UI_options_FunctionalGutters_ShowContextUI = "Show Context UI",
+    UI_options_FunctionalGutters_ShowContextUI_tooltip = "If true, displays a mod-specific menu on the right-click context menu. *Requires Restart",
+
+    UI_options_FunctionalGutters_GutterRainFactor = "Gutter Rain Factor",
+    UI_options_FunctionalGutters_GutterRainFactor_tooltip = "Rain factor value used by all collectors when connected to a gutter. Defaults to 0.8 compared to the crate's base of 0.4 and the barrel's base of 0.25.",
+}

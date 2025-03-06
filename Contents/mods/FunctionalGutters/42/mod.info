@@ -1,0 +1,12 @@
+id=FunctionalGutters
+name=[B42] Functional Gutters
+description=Rain barrels placed on squares with gutter drainage pipes collect rain water at an increased rate.
+author=Mancer
+poster=poster.png
+poster=hey.png
+poster=yes.png
+poster=no.png
+icon=icon.png
+tags=Build 42,FunctionalGutters,Rain,Gutter,Barrel,Crate,Collector,Water
+modversion=1.0
+versionMin=42.0.0
