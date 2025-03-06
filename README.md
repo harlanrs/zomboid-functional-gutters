@@ -3,6 +3,10 @@ Functional Gutters is a mod for the video game `Project Zomboid [B42]` that incr
 
 This is a simple representation of rain flowing from a building's roof through its gutters and drain pipes into a collector below. Unlike real life, you won't ever need to clean them!
 
+
+![Functional Gutters Poster Image](poster.png)
+
+
 ## Context
 Build 42 introduced a great variety of of new sprites that decorate buildings, however most are purely aesthetic and don't impact any systems in the game. Gutter pipes are an example of the newly added flavor sprites and they inspired the creation of this mod.
 
@@ -14,6 +18,7 @@ The increased rain factor is controlled by the mod option `GutterRainFactor` and
 When a supported collector entity is built or placed on a square, the mod compares all object sprites in the square against a mod-managed list of gutter sprites. 
 - If the newly-placed collector shares a square with one of the "approved" sprites, its rain factor is set the to `GutterRainFactor`. 
 - If it doesn't share a square, a quick equality check is made against the entity's base rain factor and a reset occurs if there is any difference between these values.
+
 
 #### Fun Fact
 > In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player.
@@ -69,3 +74,11 @@ NOTE: you will want to point to the interior mod folder not the root.
 ```
 mklink /d <path> <target>
 ```
+<br/>
+
+#
+<br/>
+
+![Functional Gutters Poster Image](Contents/mods/FunctionalGutters/42/hey.png)
+![Functional Gutters Poster Image](Contents/mods/FunctionalGutters/42/yes.png)
+![Functional Gutters Poster Image](Contents/mods/FunctionalGutters/42/no.png)
