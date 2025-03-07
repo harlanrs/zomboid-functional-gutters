@@ -17,13 +17,11 @@ function gutterUtils:modPrint(message)
 end
 
 function gutterUtils:roundDecimal(num)
-    -- TODO - surely there is an internal function for this?
-    local scale = 100
-    return math.floor(num * scale) / scale
+    return tonumber(string.format("%.2f", num))
 end
 
 function gutterUtils:getGutterRainFactor()
-    -- NOTE: we are dynamically fetching the value so it is possible to change midgame
+    -- NOTE: we are dynamically fetching the value so it is possible to change mid-game
     return gutterRainFactorOption:getValue()
 end
 
@@ -76,8 +74,12 @@ end
 
 function gutterUtils:isRainCollector(object)
     if not object then return false end
+
     local fluidContainer = object:getFluidContainer()
-    return fluidContainer and fluidContainer:getRainCatcher() > 0.0 and fluidContainer:canPlayerEmpty()
+    if not fluidContainer then return false end
+
+    local objectSprite = object:getSprite()
+    return self:isRainCollectorSprite(objectSprite:getName())
 end
 
 function gutterUtils:getRainCollectorOnTile(square)
