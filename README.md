@@ -127,7 +127,8 @@ Even though crates and barrels have a different base rain factor, this mod sets 
 * Support for variable gutter rain factor that scales with roof size?
 * Support stacked/multi tier rain collectors with connected pipe?
 * Support manually adding custom sprites to the core gutter list?
-
+* Buildable gutters?
+* Connectable containers?
 
 
 
@@ -138,3 +139,16 @@ Even though crates and barrels have a different base rain factor, this mod sets 
 <br/>
 
 Please feel free to suggest ideas or provide missing sprite references that would fit the theme of this mod!
+
+
+
+1.1 TODO
+- figure out why placing a trough triggers the OnTileRemoved event. Maybe something to do with the internals of the dynamic fluid system in troughs.
+- figure out why trough doesn't have a base entity script
+- figure out how to determine the 'base' rain factor of troughs. Appears to be around 0.55 according to context menu
+- double-tile troughs
+    - trigger the same OnTileRemoved event
+    - are not recognized as valid to connect with yet
+- Use better display name for container object in context ui
+    - fallback to using the fluid container name
+- Add translation for context ui text

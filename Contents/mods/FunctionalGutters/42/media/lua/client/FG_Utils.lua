@@ -1,10 +1,6 @@
-local gutterConfig = require("FunctionalGutters_Config")
-require "gutterConfig"
+local gutterEnums = require("FG_Enums")
 
-local options = PZAPI.ModOptions:getOptions(gutterConfig.modName)
-local debugModeOption = options:getOption("Debug")
-local debugMode = debugModeOption:getValue()
-local gutterRainFactorOption = options:getOption("GutterRainFactor")
+local debugMode = false
 
 local gutterUtils = {}
 
@@ -12,7 +8,7 @@ function gutterUtils:modPrint(message)
     -- NOTE: since debugMode is set on initialization, a restart will be required if this value is changed in the options menu
     -- We don't want to dynamically check the value as that would add unnecessary overhead
     if debugMode then
-        print("["..gutterConfig.modName.."] --------------------------------> "..message)
+        print("["..gutterEnums.modName.."] --------------------------------> "..message)
     end
 end
 
@@ -22,29 +18,23 @@ end
 
 function gutterUtils:getGutterRainFactor()
     -- NOTE: we are dynamically fetching the value so it is possible to change mid-game
+    local options = PZAPI.ModOptions:getOptions(gutterEnums.modName)
+    local gutterRainFactorOption = options:getOption("GutterRainFactor")
     return gutterRainFactorOption:getValue()
 end
 
 function gutterUtils:hasGutterModData(object)
-    if not object:hasModData() then return false end
+    if not object:hasModData() then return nil end
     return object:getModData()["hasGutter"]
 end
 
-function gutterUtils:setGutterModData(object, hasGutter)
-    object:getModData()["hasGutter"] = hasGutter
-end
-
-function gutterUtils:isRainCollectorSprite(spriteName)
-    for _, collectorSprite in ipairs(gutterConfig.enums.collectorSprites) do
-        if spriteName == collectorSprite then
-            return true
-        end
-    end
-    return false
+function gutterUtils:isGutterConnectedModData(object)
+    if not object:hasModData() then return nil end
+    return object:getModData()["isGutterConnected"]
 end
 
 function gutterUtils:isDrainPipeSprite(spriteName)
-    for _, drainPipeSprite in ipairs(gutterConfig.enums.drainPipeSprites) do
+    for _, drainPipeSprite in ipairs(gutterEnums.drainPipeSprites) do
         if spriteName == drainPipeSprite then
             return true
         end
@@ -72,29 +62,13 @@ function gutterUtils:hasDrainPipeOnTile(square)
     return false
 end
 
-function gutterUtils:isRainCollector(object)
-    if not object then return false end
-
-    local fluidContainer = object:getFluidContainer()
-    if not fluidContainer then return false end
-
-    local objectSprite = object:getSprite()
-    return self:isRainCollectorSprite(objectSprite:getName())
-end
-
-function gutterUtils:getRainCollectorOnTile(square)
-    local objects = square:getObjects()
-    for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if self:isRainCollector(object) then
-            return object
-        end
-    end
-    return nil
-end
-
 function gutterUtils:getObjectEntityScript(object)
+    -- TODO verify why "Usable Barrel" objects don't have a getName method
     local entityScriptName = object:getName()
+    if not entityScriptName then
+        return nil
+    end
+
     return ScriptManager.instance:getGameEntityScript(entityScriptName)
 end
 
@@ -131,16 +105,31 @@ function gutterUtils:isBaseCollectorRainFactor(collectorObject)
     local rainFactor = self:getObjectRainFactor(collectorObject)
     if not rainFactor then return nil end
 
-    self:modPrint("Rain factor: "..tostring(rainFactor))
     self:modPrint("Base rain factor: "..tostring(baseRainFactor))
+    self:modPrint("Current rain factor: "..tostring(rainFactor))
 
     -- NOTE: normalizing since live value of a float can have extra junk decimal places which might cause false negatives
     return self:roundDecimal(rainFactor) == self:roundDecimal(baseRainFactor)
 end
 
-Events.OnLoad.Add(function()
-    -- Reload the debug option
+local function predicateNotBroken(item)
+	return not item:isBroken()
+end
+
+function gutterUtils:playerHasItem(playerInv, itemName)
+    return playerInv:containsTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:containsTagEvalRecurse(itemName, predicateNotBroken)
+end
+
+function gutterUtils:playerGetItem(playerInv, itemName)
+    return playerInv:getFirstTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:getFirstTagEvalRecurse(itemName, predicateNotBroken)
+end
+
+local function checkDebugMode()
+    local options = PZAPI.ModOptions:getOptions(gutterEnums.modName)
+    local debugModeOption = options:getOption("Debug")
     debugMode = debugModeOption:getValue()
-end)
+end
+
+Events.OnLoad.Add(checkDebugMode)
 
 return gutterUtils
