@@ -1,117 +1,163 @@
-local gutterEnums = require("FG_Enums")
-local gutterUtils = require("FG_Utils")
-local gutterOptions = require("FG_Options")
+local enums = require("FG_Enums")
+local utils = require("FG_Utils")
+local options = require("FG_Options")
+local troughUtils = require("FG_Utils_Trough")
+local serviceUtils = require("FG_Utils_Service")
+local gutterService = require("FG_Service")
 
-require "FG_TA_ConnectContainer"
-require "FG_TA_DisconnectContainer"
+require "FG_TAConnectContainer"
+require "FG_TADisconnectContainer"
 
-local showContextUI = false
+local debugMode = false
 
 local function DoConnectContainer(playerObject, collectorObject)
-    local wrench = gutterUtils:playerGetItem(playerObject:getInventory(), "PipeWrench")
+    local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
 
     if luautils.walkAdj(playerObject, collectorObject:getSquare(), true) then
-        if gutterOptions:getRequireWrench() then
+        if options:getRequireWrench() then
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
-                ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
-            else
-                -- pipe wrench is missing
+                ISTimedActionQueue.add(FG_TAConnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TAConnectContainer:new(playerObject, collectorObject, wrench))
         end
     end
 end
 
 local function DoDisconnectContainer(playerObject, collectorObject)
-    local wrench = gutterUtils:playerGetItem(playerObject:getInventory(), "PipeWrench")
+    local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
 
     if luautils.walkAdj(playerObject, collectorObject:getSquare(), true) then
-        if gutterOptions:getRequireWrench() then
+        if options:getRequireWrench() then
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
-                ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
-            else
-                -- pipe wrench is missing
+                ISTimedActionQueue.add(FG_TADisconnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TADisconnectContainer:new(playerObject, collectorObject, wrench))
         end
+    end
+end
+
+local function AddGutterContainerContext(player, context, square, containerObject, fluidContainer)
+    -- Conditionally build primary gutter context menu
+    local primaryContainer = containerObject
+
+    -- Temp patch
+    utils:patchModData(square, true)
+    utils:patchModData(containerObject, false)
+
+    local squareHasGutter = utils:getModDataHasGutter(square)
+    local linkedSquareHasGutter
+    local isTrough = troughUtils:isTrough(containerObject)
+    if isTrough then
+        -- Check the 2nd tile if multi-tile trough
+        local primaryTrough = troughUtils:getPrimaryTroughObject(containerObject)
+        utils:modPrint("Primary trough object: "..tostring(primaryTrough))
+        if not primaryTrough then
+            return
+        end
+
+        local primaryTroughSprite = primaryTrough:getSprite()
+        local troughSpriteGrid = primaryTroughSprite:getSpriteGrid()
+        if troughSpriteGrid and (troughSpriteGrid:getWidth() > 0 or troughSpriteGrid:getHeight() > 0) then
+            local secondaryTrough = troughUtils:getSecondaryTroughObject(primaryTrough)
+            utils:modPrint("Secondary trough object: "..tostring(secondaryTrough))
+            if secondaryTrough then
+                local secondarySquare = secondaryTrough:getSquare()
+                linkedSquareHasGutter = utils:getModDataHasGutter(secondarySquare)
+                if linkedSquareHasGutter then
+                    squareHasGutter = true
+                end
+            end
+
+            utils:modPrint("Secondary trough tile on gutter tile: "..tostring(linkedSquareHasGutter))
+        end
+
+        -- Ensure the primary trough object is used for context menu interacts
+        primaryContainer = primaryTrough
+    end
+
+    -- Build context menu
+    if squareHasGutter or linkedSquareHasGutter then
+        local playerObject = getSpecificPlayer(player)
+        local gutterSubMenu = context:getNew(context)
+        local gutterSubMenuOption = context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, nil);
+        context:addSubMenu(gutterSubMenuOption, gutterSubMenu)
+
+        local notAvailable = false
+        local requireWrench = options:getRequireWrench()
+        if requireWrench then
+            local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
+            if not wrench then
+                notAvailable = true
+            end
+        end
+
+        local containerName = utils:getObjectDisplayName(primaryContainer)
+        local isGutterConnected = utils:getModDataIsGutterConnected(primaryContainer)
+        if isGutterConnected then
+            local disconnectGutterOption = gutterSubMenu:addOption(getText("UI_context_menu_FunctionalGutters_DisconnectContainer").." "..containerName, playerObject, DoDisconnectContainer, primaryContainer);
+            disconnectGutterOption.notAvailable = notAvailable
+            if notAvailable then
+                disconnectGutterOption.toolTip = ISWorldObjectContextMenu.addToolTip()
+                disconnectGutterOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
+            end
+        else
+            local connectGutterOption = gutterSubMenu:addOption(getText("UI_context_menu_FunctionalGutters_ConnectContainer").." "..containerName, playerObject, DoConnectContainer, primaryContainer);
+            connectGutterOption.notAvailable = notAvailable
+            if notAvailable then
+                connectGutterOption.toolTip = ISWorldObjectContextMenu.addToolTip()
+                connectGutterOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
+            end
+        end
+    end
+end
+
+local function AddDebugContainerContext(player, context, square, containerObject, fluidContainer)
+    -- Conditionally build debug container context menu
+    if debugMode then
+        local playerObject = getSpecificPlayer(player)
+        local containerName = utils:getObjectDisplayName(containerObject)
+        local containerSubMenuOption = context:addOption("["..enums.modName.."] "..containerName, playerObject, nil);
+        local containerSubMenu = context:getNew(context)
+        context:addSubMenu(containerSubMenuOption, containerSubMenu)
+
+        local rainFactor = fluidContainer:getRainCatcher()
+        containerSubMenu:addOption("Current Rain Factor: " .. tostring(rainFactor), playerObject, nil)
+
+        local baseRainFactor = serviceUtils:getObjectBaseRainFactor(containerObject)
+        containerSubMenu:addOption("Base Rain Factor: " .. tostring(baseRainFactor), playerObject, nil)
+
+        containerSubMenu:addOption("Tile Gutter: " .. tostring(utils:getModDataHasGutter(square)), playerObject, nil)
+
+        local isGutterConnected = utils:getModDataIsGutterConnected(containerObject)
+        containerSubMenu:addOption("Gutter Connected: " .. tostring(isGutterConnected), playerObject, nil)
     end
 end
 
 local function AddWaterContainerContext(player, context, worldobjects, test)
-    for i,v in ipairs(worldobjects) do
+    for _,v in ipairs(worldobjects) do
         local worldObject = v
-        local square = worldObject:getSquare()
-        local fluidContainer = worldObject:getFluidContainer()
-        if fluidContainer and square then
-            -- Build general gutter context menu
-            local squareModData = square:getModData()
-            local containerName = fluidContainer:getContainerName()
-            local playerObject = getSpecificPlayer(player)
-            if squareModData["hasGutter"] then
-                -- Include the plumbing context menu options
-                local gutterSubMenu = context:getNew(context)
-                local gutterSubMenuOption = context:addOption("Gutter Drain", playerObject, nil);
-                context:addSubMenu(gutterSubMenuOption, gutterSubMenu)
-
-                local requireWrench = gutterOptions:getRequireWrench()
-                local notAvailable = false
-                if requireWrench then
-                    local wrench = gutterUtils:playerGetItem(playerObject:getInventory(), "PipeWrench")
-                    if not wrench then
-                        notAvailable = true
-                    end
-                end
-
-                local isGutterConnected = gutterUtils:isGutterConnectedModData(worldObject)
-                if isGutterConnected then
-                    local disconnectGutterOption = gutterSubMenu:addOption("Disconnect "..tostring(containerName), playerObject, DoDisconnectContainer, worldObject);
-                    disconnectGutterOption.notAvailable = notAvailable
-                    if notAvailable then
-                        disconnectGutterOption.toolTip = ISWorldObjectContextMenu.addToolTip()
-                        disconnectGutterOption.toolTip.description = getText("Requires Pipe Wrench") -- TODO translate
-                    end
-                else
-                    local connectGutterOption = gutterSubMenu:addOption("Connect "..tostring(containerName), playerObject, DoConnectContainer, worldObject);
-                    connectGutterOption.notAvailable = notAvailable
-                    if notAvailable then
-                        connectGutterOption.toolTip = ISWorldObjectContextMenu.addToolTip()
-                        connectGutterOption.toolTip.description = getText("Requires Pipe Wrench")
-                    end
+        if worldObject then
+            local fluidContainer = worldObject:getFluidContainer()
+            if fluidContainer then
+                local square = worldObject:getSquare()
+                if fluidContainer and square and gutterService:isValidContainerObject(worldObject) then
+                    AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
+                    AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
+                    break
                 end
             end
-
-            -- Build additional context menu for displaying container data
-            if showContextUI then
-                -- Include the container context menu options
-                local containerSubMenuOption = context:addOption("["..gutterEnums.modName.."] "..containerName, playerObject, nil);
-                local containerSubMenu = context:getNew(context)
-                context:addSubMenu(containerSubMenuOption, containerSubMenu)
-
-                local rainFactor = fluidContainer:getRainCatcher()
-                containerSubMenu:addOption("Rain Factor: " .. tostring(rainFactor), playerObject, nil)
-
-                containerSubMenu:addOption("Has Gutter: " .. tostring(squareModData["hasGutter"]), playerObject, nil)
-
-                local isGutterConnected = gutterUtils:isGutterConnectedModData(worldObject)
-                containerSubMenu:addOption("Is Connected: " .. tostring(isGutterConnected), playerObject, nil)
-            end
-            
-            break
         end
     end
 end
 
-
-local function checkShowContextUI()
-    local options = PZAPI.ModOptions:getOptions(gutterEnums.modName)
-    local showContextUIOption = options:getOption("ShowContextUI")
-    showContextUI = showContextUIOption:getValue()
+local function checkDebugMode()
+    debugMode = options:getDebug()
 end
 
-Events.OnLoad.Add(checkShowContextUI)
+Events.OnLoad.Add(checkDebugMode)
 
 Events.OnFillWorldObjectContextMenu.Add(AddWaterContainerContext)

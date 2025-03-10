@@ -142,13 +142,17 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 
 
-1.1 TODO
-- figure out why placing a trough triggers the OnTileRemoved event. Maybe something to do with the internals of the dynamic fluid system in troughs.
-- figure out why trough doesn't have a base entity script
-- figure out how to determine the 'base' rain factor of troughs. Appears to be around 0.55 according to context menu
-- double-tile troughs
-    - trigger the same OnTileRemoved event
-    - are not recognized as valid to connect with yet
+## 1.1
+TODO
 - Use better display name for container object in context ui
     - fallback to using the fluid container name
 - Add translation for context ui text
+
+Changelog
+- Added connect & disconnect plumbing actions 
+    - Includes "Requires Pipe Wrench" mod option which defaults to True
+    - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
+- Support for animal troughs
+    - NOTE: depending on placement, 2-tile troughs may require the game to be reloaded before they can be connected to the gutter. This is due to how the game treats multi-tile objects 
+- Support for generic fluid container iso objects
+    - Works with the Useful Barrels mod

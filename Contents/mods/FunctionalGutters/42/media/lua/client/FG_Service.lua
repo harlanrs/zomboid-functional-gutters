@@ -1,96 +1,130 @@
-local gutterUtils = require("FG_Utils")
+local enums = require("FG_Enums")
+local utils = require("FG_Utils")
+local troughUtils = require("FG_Utils_Trough")
+local FluidContainerService = require("FG_Service_FluidContainer")
+local TroughService = require("FG_Service_Trough")
 
 local gutterService = {}
 
+gutterService.containerServiceMap = {
+    [enums.containerType.fluidContainer] = FluidContainerService,
+    [enums.containerType.trough] = TroughService,
+}
+
+function gutterService:getContainerService(containerObject)
+    -- Filter out IsoWorldInventoryObjects for now
+    if instanceof(containerObject, "IsoWorldInventoryObject") then
+        utils:modPrint("IsoWorldInventoryObjects not supported yet")
+        return nil
+    end
+
+    if TroughService:isObjectType(containerObject) then
+        return TroughService
+    elseif FluidContainerService:isObjectType(containerObject) then
+        return FluidContainerService
+    end
+
+    utils:modPrint("No service interface found for container object: "..tostring(containerObject))
+    return nil
+end
+
+function gutterService:isValidContainerObject(containerObject)
+    return self:getContainerService(containerObject) ~= nil
+end
+
 function gutterService:syncSquareModData(square)
+    -- Avoid initializing mod data if we don't need to
+    local squareHasModData = square:hasModData()
+    local hasDrainPipe = utils:hasDrainPipeOnTile(square)
+
+    if not squareHasModData and not hasDrainPipe then
+        -- No mod data, no drain pipe, no worries
+        return nil
+    end
+
+    -- Temp patch
+    utils:patchModData(square, true)
+
     local squareModData = square:getModData()
-    local hasDrainPipe = gutterUtils:hasDrainPipeOnTile(square)
-    squareModData["hasGutter"] = hasDrainPipe
+    if hasDrainPipe then
+        -- The square has a drain pipe - ensure the square's mod data reflects this
+        utils:setModDataHasGutter(square, true)
+    else
+        if utils:getModDataHasGutter(square) then
+            -- The square no longer has a drain pipe - ensure the square's mod data reflects this
+            utils:setModDataHasGutter(square, nil)
+        end
+    end
+
     return squareModData
 end
 
-function gutterService:resetCollectorObject(collectorObject)
-    -- Reset to base rain factor from the object's GameEntityScript
-    local fluidContainer = collectorObject:getFluidContainer()
-    if not fluidContainer then
-        gutterUtils:modPrint("Fluid container not found for collector: "..tostring(collectorObject))
+function gutterService:connectContainer(containerObject)
+    local containerService = self:getContainerService(containerObject)
+    if not containerService then
         return
     end
 
-    -- Attempt to get the base rain factor from the object's GameEntityScript
-    local baseRainFactor = gutterUtils:getObjectBaseRainFactor(collectorObject)
-    if not baseRainFactor then
-        -- If no fluid container component exists on the object's GameEntityScript, reset the current rain factor to 0
-        -- This should only be hit for modded objects that don't have an initial FluidContainer such as "Upgraded Barrels"
-        gutterUtils:modPrint("Base rain factor not found for collector: "..tostring(collectorObject))
-
-        -- Reset to 0 as fallback catchall
-        baseRainFactor = 0.0
-    end
-
-    gutterUtils:modPrint("Resetting rain factor from "..tostring(fluidContainer:getRainCatcher()).." to "..tostring(baseRainFactor))
-    fluidContainer:setRainCatcher(baseRainFactor)
-    
-    local collectorObjectModData = collectorObject:getModData()
-    collectorObjectModData["isGutterConnected"] = false
+    containerService:connectContainer(containerObject)
+ 
+    -- Temp patch
+    utils:patchModData(containerObject, false)
 end
 
-function gutterService:upgradeCollectorObject(collectorObject)
-    -- Increase rain factor of the object's FluidContainer
-    local fluidContainer = collectorObject:getFluidContainer()
-    if not fluidContainer then
-        gutterUtils:modPrint("Fluid container not found for collector: "..tostring(collectorObject))
+function gutterService:disconnectContainer(containerObject)
+    local containerService = self:getContainerService(containerObject)
+    if not containerService then
         return
     end
 
-    local baseRainFactor = gutterUtils:getObjectBaseRainFactor(collectorObject)
-    if not baseRainFactor then
-        -- If no fluid container component exists on the object's GameEntityScript, reset the current rain factor to 0
-        -- This should only be relevant for modded objects that don't have an initial FluidContainer such as "Upgraded Barrels"
-        gutterUtils:modPrint("Base rain factor not found for collector: "..tostring(collectorObject))
-
-        -- Set local baseRainFactor to 0
-        baseRainFactor = 0.0
-    end
-
-    local upgradedRainFactor = gutterUtils:getGutterRainFactor()
-    gutterUtils:modPrint("Upgrading rain factor from "..tostring(baseRainFactor).." to "..tostring(upgradedRainFactor))
-    fluidContainer:setRainCatcher(upgradedRainFactor)
-
-    local collectorObjectModData = collectorObject:getModData()
-    collectorObjectModData["isGutterConnected"] = true
+    containerService:disconnectContainer(containerObject)
+    
+    -- Temp patch
+    utils:patchModData(containerObject, false)
 end
 
 function gutterService:handleObjectPlacedOnTile(placedObject)
     -- React to the placement of an existing iso object on a tile
     local square = placedObject:getSquare()
-    local squareModData = self:syncSquareModData(square)
-    if squareModData["hasGutter"] then
-        gutterUtils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square)..", "..tostring(placedObject))
+    self:syncSquareModData(square)
+    if utils:getModDataHasGutter(square) then
+        utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
+    end
+    -- Can't properly clean up all object types on initial pickup so have to check here
+    if utils:getModDataIsGutterConnected(placedObject) then
+        utils:modPrint("Object marked as having a gutter after placing: "..tostring(placedObject))
+        self:disconnectContainer(placedObject)
     end
 end
 
-
 function gutterService:handleObjectBuiltOnTile(square)
     -- React to the creation of a new iso object on a tile
-    local squareModData = self:syncSquareModData(square)
-    if squareModData["hasGutter"] then
-        gutterUtils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
+    self:syncSquareModData(square)
+    if utils:getModDataHasGutter(square) then
+        utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
     end
 end
 
 function gutterService:handleObjectRemovedFromTile(removedObject)
-    -- TODO WTF why is this called when a feeding trough is placed?
-
     -- React to the the removal of an object from a tile
-    -- TODO require disconnecting from gutter before object can be picked up
-    -- That way the only time a connected object should make it to this function would be for destruction-/deletion-type events
-    -- In which case, we only need to care about state on the square and can ignore the object itself
+    -- TODO look into how to require disconnecting from gutter before object can be picked up?
     local square = removedObject:getSquare()
-    if square and self:syncSquareModData(square)["hasGutter"] then
-        -- Reset the removed object's rain factor if it was connected to a gutter
-        gutterUtils:modPrint("Object removed from tile with gutter: "..tostring(removedObject)..", "..tostring(square))
-        self:resetCollectorObject(removedObject)
+    if square then
+        self:syncSquareModData(square)
+        if utils:getModDataHasGutter(square) then
+            if troughUtils:isTrough(removedObject) then
+                -- Troughs are a bit of a special case for the OnTileRemoved event:
+                -- They currently have a method "ReplaceExistingObject" invoked immediately on placement/build
+                -- which removes & replaces the existing object causing the OnTileRemoved event to be triggered (potentially multiple times for multi-tile troughs)
+                utils:modPrint("Animal trough removed from tile: "..tostring(removedObject))
+                return
+            end
+
+            -- Reset the removed object's rain factor if it was connected to a gutter
+            -- NOTE: doesn't work if the object's FluidContainer is removed before the event is triggered
+            utils:modPrint("Object removed from tile with gutter: "..tostring(removedObject))
+            self:disconnectContainer(removedObject)
+        end
     end
 end
 

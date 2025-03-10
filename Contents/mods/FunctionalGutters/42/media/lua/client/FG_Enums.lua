@@ -1,8 +1,8 @@
-local gutterEnums = {}
+local enums = {}
 
-gutterEnums.modName = "FunctionalGutters"
-gutterEnums.modDisplayName = "Functional Gutters"
-gutterEnums.drainPipeSprites = {
+enums.modName = "FunctionalGutters"
+enums.modDisplayName = "Functional Gutters"
+enums.drainPipeSprites = {
     -- Mostly used in water towers
     "industry_02_76",
     "industry_02_77",
@@ -24,4 +24,33 @@ gutterEnums.drainPipeSprites = {
     "industry_02_263",
 }
 
-return gutterEnums
+enums.options = {
+    debug = "Debug",
+    showContextUI = "ShowContextUI", -- Deprecated: rolled into debug
+    gutterRainFactor = "GutterRainFactor",
+    requireWrench = "RequireWrench",
+}
+
+-- Adding prefix to avoid potential namespace conflicts
+-- and make it easier to find in generic search
+enums.modDataKey = {
+    hasGutter = "FG_hasGutter",
+    baseRainFactor = "FG_baseRainFactor",
+    isGutterConnected = "FG_isGutterConnected",
+}
+
+-- Keep for a bit to phase out
+enums.oldModDataKey = {
+    hasGutter = "hasGutter",
+    baseRainFactor = "baseRainFactor",
+    isGutterConnected = "isGutterConnected",
+}
+
+enums.containerType = {
+    fluidContainer = "fluidContainer",
+    trough = "trough",
+}
+
+enums.troughBaseRainFactor = 0.55
+
+return enums
