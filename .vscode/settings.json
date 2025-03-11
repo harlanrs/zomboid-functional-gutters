@@ -25,6 +25,7 @@
         "Zomboid",
         "luautils",
         "mklink",
+        "newarray",
         "worldobjects"
     ]
 }

@@ -3,10 +3,9 @@ local utils = require("FG_Utils")
 local options = require("FG_Options")
 local troughUtils = require("FG_Utils_Trough")
 local serviceUtils = require("FG_Utils_Service")
-local gutterService = require("FG_Service")
 
-require "FG_TAConnectContainer"
-require "FG_TADisconnectContainer"
+require "FG_TA_ConnectContainer"
+require "FG_TA_DisconnectContainer"
 
 local debugMode = false
 
@@ -17,10 +16,10 @@ local function DoConnectContainer(playerObject, collectorObject)
         if options:getRequireWrench() then
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
-                ISTimedActionQueue.add(FG_TAConnectContainer:new(playerObject, collectorObject, wrench))
+                ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TAConnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
         end
     end
 end
@@ -32,10 +31,10 @@ local function DoDisconnectContainer(playerObject, collectorObject)
         if options:getRequireWrench() then
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
-                ISTimedActionQueue.add(FG_TADisconnectContainer:new(playerObject, collectorObject, wrench))
+                ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TADisconnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
         end
     end
 end
@@ -45,15 +44,15 @@ local function AddGutterContainerContext(player, context, square, containerObjec
     local primaryContainer = containerObject
 
     -- Temp patch
-    utils:patchModData(square, true)
+    utils:patchModData(square, true) -- TODO needed?
     utils:patchModData(containerObject, false)
 
-    local squareHasGutter = utils:getModDataHasGutter(square)
+    local squareHasGutter = utils:getModDataHasGutter(square, nil)
     local linkedSquareHasGutter
     local isTrough = troughUtils:isTrough(containerObject)
     if isTrough then
         -- Check the 2nd tile if multi-tile trough
-        local primaryTrough = troughUtils:getPrimaryTroughObject(containerObject)
+        local primaryTrough = troughUtils:getPrimaryTrough(containerObject)
         utils:modPrint("Primary trough object: "..tostring(primaryTrough))
         if not primaryTrough then
             return
@@ -62,11 +61,11 @@ local function AddGutterContainerContext(player, context, square, containerObjec
         local primaryTroughSprite = primaryTrough:getSprite()
         local troughSpriteGrid = primaryTroughSprite:getSpriteGrid()
         if troughSpriteGrid and (troughSpriteGrid:getWidth() > 0 or troughSpriteGrid:getHeight() > 0) then
-            local secondaryTrough = troughUtils:getSecondaryTroughObject(primaryTrough)
+            local secondaryTrough = troughUtils:getSecondaryTrough(primaryTrough)
             utils:modPrint("Secondary trough object: "..tostring(secondaryTrough))
             if secondaryTrough then
                 local secondarySquare = secondaryTrough:getSquare()
-                linkedSquareHasGutter = utils:getModDataHasGutter(secondarySquare)
+                linkedSquareHasGutter = utils:getModDataHasGutter(secondarySquare, nil)
                 if linkedSquareHasGutter then
                     squareHasGutter = true
                 end
@@ -96,7 +95,7 @@ local function AddGutterContainerContext(player, context, square, containerObjec
         end
 
         local containerName = utils:getObjectDisplayName(primaryContainer)
-        local isGutterConnected = utils:getModDataIsGutterConnected(primaryContainer)
+        local isGutterConnected = utils:getModDataIsGutterConnected(primaryContainer, nil)
         if isGutterConnected then
             local disconnectGutterOption = gutterSubMenu:addOption(getText("UI_context_menu_FunctionalGutters_DisconnectContainer").." "..containerName, playerObject, DoDisconnectContainer, primaryContainer);
             disconnectGutterOption.notAvailable = notAvailable
@@ -130,21 +129,20 @@ local function AddDebugContainerContext(player, context, square, containerObject
         local baseRainFactor = serviceUtils:getObjectBaseRainFactor(containerObject)
         containerSubMenu:addOption("Base Rain Factor: " .. tostring(baseRainFactor), playerObject, nil)
 
-        containerSubMenu:addOption("Tile Gutter: " .. tostring(utils:getModDataHasGutter(square)), playerObject, nil)
+        containerSubMenu:addOption("Tile Gutter: " .. tostring(utils:getModDataHasGutter(square, nil)), playerObject, nil)
 
-        local isGutterConnected = utils:getModDataIsGutterConnected(containerObject)
+        local isGutterConnected = utils:getModDataIsGutterConnected(containerObject, nil)
         containerSubMenu:addOption("Gutter Connected: " .. tostring(isGutterConnected), playerObject, nil)
     end
 end
 
 local function AddWaterContainerContext(player, context, worldobjects, test)
-    for _,v in ipairs(worldobjects) do
-        local worldObject = v
+    for _,worldObject in ipairs(worldobjects) do
         if worldObject then
             local fluidContainer = worldObject:getFluidContainer()
             if fluidContainer then
                 local square = worldObject:getSquare()
-                if fluidContainer and square and gutterService:isValidContainerObject(worldObject) then
+                if fluidContainer and square and serviceUtils:isValidContainerObject(worldObject) then
                     AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
                     AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
                     break

@@ -1,19 +1,19 @@
 require "TimedActions/ISBaseTimedAction"
 
+local enums = require("FG_Enums")
 local options = require("FG_Options")
 local utils = require("FG_Utils")
-local gutterService = require("FG_Service")
 
-FG_TADisconnectContainer = ISBaseTimedAction:derive("FG_TADisconnectContainer");
+FG_TA_DisconnectContainer = ISBaseTimedAction:derive("FG_TA_DisconnectContainer");
 
-function FG_TADisconnectContainer:getDuration()
+function FG_TA_DisconnectContainer:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
 	return 40
 end
 
-function FG_TADisconnectContainer:new(character, containerObject, wrench)
+function FG_TA_DisconnectContainer:new(character, containerObject, wrench)
 	local o = ISBaseTimedAction.new(self, character)
 	o.character = character
     o.containerObject = containerObject
@@ -22,7 +22,7 @@ function FG_TADisconnectContainer:new(character, containerObject, wrench)
 	return o
 end
 
-function FG_TADisconnectContainer:isValid()
+function FG_TA_DisconnectContainer:isValid()
 	local requireWrench = options:getRequireWrench()
 	if requireWrench then
 		return self.character:isEquipped(self.wrench)
@@ -31,36 +31,31 @@ function FG_TADisconnectContainer:isValid()
 	end
 end
 
-function FG_TADisconnectContainer:update()
+function FG_TA_DisconnectContainer:update()
 	self.character:faceThisObject(self.containerObject)
     self.character:setMetabolicTarget(Metabolics.MediumWork)
 end
 
-function FG_TADisconnectContainer:start()
+function FG_TA_DisconnectContainer:start()
 	self.sound = self.character:playSound("RepairWithWrench")
 end
 
-function FG_TADisconnectContainer:stop()
+function FG_TA_DisconnectContainer:stop()
 	self.character:stopOrTriggerSound(self.sound)
     ISBaseTimedAction.stop(self);
 end
 
-function FG_TADisconnectContainer:perform()
+function FG_TA_DisconnectContainer:perform()
 	self.character:stopOrTriggerSound(self.sound)
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
 
-function FG_TADisconnectContainer:complete()
+function FG_TA_DisconnectContainer:complete()
 	if self.containerObject then
-		-- TODO client -> server communication for eventual multiplayer support
-		gutterService:disconnectContainer(self.containerObject)
-        
-        -- Re-evaluate if the container's square has a gutter pipe
-        local square = self.containerObject:getSquare()
-        if square then
-			gutterService:syncSquareModData(square)
-        end
+		local args = utils:buildObjectCommandArgs(self.containerObject)
+		utils:modPrint("Sending client command disconnectContainer: " .. tostring(args))
+		sendClientCommand(self.character, enums.modName, enums.modCommands.disconnectContainer, args)
 	else
 		utils:modPrint("Failed to disconnect container: " .. tostring(self.containerObject))
 	end

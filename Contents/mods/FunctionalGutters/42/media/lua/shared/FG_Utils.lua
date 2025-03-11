@@ -23,10 +23,10 @@ end
 function utils:isDrainPipe(object)
     if not object then return false end
 
-    local sprite = object:getSprite()
-    if not sprite then return false end
+    local spriteName = object:getSpriteName()
+    if not spriteName then return false end
 
-    return self:isDrainPipeSprite(sprite:getName())
+    return self:isDrainPipeSprite(spriteName)
 end
 
 function utils:hasDrainPipeOnTile(square)
@@ -40,31 +40,28 @@ function utils:hasDrainPipeOnTile(square)
     return false
 end
 
-function utils:getModDataIsGutterConnected(object)
-    if not object:hasModData() then return nil end
-    return object:getModData()[enums.modDataKey.isGutterConnected]
+function utils:getModDataKeyValue(object, loadedModData, key)
+    local modData = loadedModData
+    if not modData and not object:hasModData() then
+        -- Ignore if object has no existing mod data to avoid unwanted initialization
+        return nil
+    elseif not modData then
+        -- Load mod data if not provided
+        modData = object:getModData()
+    end
+    return modData[key]
 end
 
-function utils:getModDataHasGutter(object)
-    if not object:hasModData() then return nil end
-    return object:getModData()[enums.modDataKey.hasGutter]
+function utils:getModDataIsGutterConnected(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.isGutterConnected)
 end
 
-function utils:getModDataBaseRainFactor(object)
-    if not object:hasModData() then return nil end
-    return object:getModData()[enums.modDataKey.baseRainFactor]
+function utils:getModDataHasGutter(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasGutter)
 end
 
-function utils:setModDataIsGutterConnected(object, value)
-    object:getModData()[enums.modDataKey.isGutterConnected] = value
-end
-
-function utils:setModDataHasGutter(object, value)
-    object:getModData()[enums.modDataKey.hasGutter] = value
-end
-
-function utils:setModDataBaseRainFactor(object, value)
-    object:getModData()[enums.modDataKey.baseRainFactor] = value
+function utils:getModDataBaseRainFactor(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
 end
 
 function utils:getObjectEntityScript(object)
@@ -128,6 +125,8 @@ function utils:patchModData(object, replace)
             objectModData[oldKey] = nil
         end
     end
+
+    return objectModData
 end
 
 function utils:getSquare2Pos(square, north)
@@ -165,7 +164,6 @@ function utils:getClassFieldIndex(classObject, fieldName)
         local field = getClassField(classObject, i)
         if field:getName() == fieldName then
             return i
-            -- return getClassFieldVal(classObject, field)
         end
         i = i + 1
     end
@@ -193,6 +191,29 @@ function utils:getObjectDisplayName(object)
     end
 
     return "Unknown"
+end
+
+function utils:buildObjectCommandArgs(object)
+    return {
+        x = object:getX(),
+        y = object:getY(),
+        z = object:getZ(),
+        index = object:getObjectIndex()
+    }
+end
+
+function utils:parseObjectCommandArgs(args)
+    local square = getCell():getGridSquare(args.x, args.y, args.z)
+    if not square then
+        return nil
+    end
+
+    local squareObjects = square:getObjects()
+    if squareObjects and squareObjects:size() > args.index then
+        return squareObjects:get(args.index)
+    end
+
+    return nil
 end
 
 local function checkDebugMode()

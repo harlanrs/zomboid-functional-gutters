@@ -1,4 +1,6 @@
-local BaseContainerServiceInterface = {};
+require "ISBaseObject"
+
+local BaseContainerServiceInterface = ISBaseObject:derive("BaseContainerServiceInterface");
 
 BaseContainerServiceInterface.Type = "BaseContainerServiceInterface";
 

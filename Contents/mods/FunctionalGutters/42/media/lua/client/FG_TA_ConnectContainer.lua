@@ -1,22 +1,22 @@
--- Action blueprint borrowed from a version of the mod Useful Barrels (https://steamcommunity.com/sharedfiles/filedetails/?id=3436537035)
+-- Action blueprint borrowed from a version of the Useful Barrels mod (https://steamcommunity.com/sharedfiles/filedetails/?id=3436537035)
 
 require "TimedActions/ISBaseTimedAction"
 
 local enums = require("FG_Enums")
 local options = require("FG_Options")
 local utils = require("FG_Utils")
-local gutterService = require("FG_Service")
+-- local gutterService = require("FG_Service")
 
-FG_TAConnectContainer = ISBaseTimedAction:derive("FG_TAConnectContainer");
+FG_TA_ConnectContainer = ISBaseTimedAction:derive("FG_TA_ConnectContainer");
 
-function FG_TAConnectContainer:getDuration()
+function FG_TA_ConnectContainer:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
 	return 40
 end
 
-function FG_TAConnectContainer:new(character, containerObject, wrench)
+function FG_TA_ConnectContainer:new(character, containerObject, wrench)
 	local o = ISBaseTimedAction.new(self, character)
 	o.character = character
     o.containerObject = containerObject
@@ -25,7 +25,7 @@ function FG_TAConnectContainer:new(character, containerObject, wrench)
 	return o
 end
 
-function FG_TAConnectContainer:isValid()
+function FG_TA_ConnectContainer:isValid()
 	local requireWrench = options:getRequireWrench()
 	if requireWrench then
 		return self.character:isEquipped(self.wrench)
@@ -34,29 +34,30 @@ function FG_TAConnectContainer:isValid()
 	end
 end
 
-function FG_TAConnectContainer:update()
+function FG_TA_ConnectContainer:update()
 	self.character:faceThisObject(self.containerObject)
     self.character:setMetabolicTarget(Metabolics.MediumWork)
 end
 
-function FG_TAConnectContainer:start()
+function FG_TA_ConnectContainer:start()
 	self.sound = self.character:playSound("RepairWithWrench")
 end
 
-function FG_TAConnectContainer:stop()
+function FG_TA_ConnectContainer:stop()
 	self.character:stopOrTriggerSound(self.sound)
     ISBaseTimedAction.stop(self)
 end
 
-function FG_TAConnectContainer:perform()
+function FG_TA_ConnectContainer:perform()
 	self.character:stopOrTriggerSound(self.sound)
 	ISBaseTimedAction.perform(self)
 end
 
-function FG_TAConnectContainer:complete()
+function FG_TA_ConnectContainer:complete()
 	if self.containerObject then
-		-- TODO client -> server communication for eventual multiplayer support
-		gutterService:connectContainer(self.containerObject)
+		local args = utils:buildObjectCommandArgs(self.containerObject)
+		utils:modPrint("Sending client command connectContainer: " .. tostring(args))
+		sendClientCommand(self.character, enums.modName, enums.modCommands.connectContainer, args)
 	else
 		utils:modPrint("Failed to connect container: " .. tostring(self.containerObject))
 	end

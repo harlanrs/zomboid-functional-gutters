@@ -7,8 +7,8 @@ This behavior is meant to represent the rain water being funneled from the build
 
 <p align="left">
 <img src="preview.png" alt="Functional Gutters - Poster" width="256"/>
-<img src="Contents/mods/FunctionalGutters/42/no.png" alt="Functional Gutters - No" width="256" />
-<img src="Contents/mods/FunctionalGutters/42/yes.png" alt="Functional Gutters - Yes" width="256" />
+<img src="no.png" alt="Functional Gutters - No" width="256" />
+<img src="yes.png" alt="Functional Gutters - Yes" width="256" />
 </p>
 
 ## FAQ
@@ -69,7 +69,7 @@ Adds a section for mod-specific data in the right-click context menu.
 <br/>
 
 <p align="left">
-<img src="Contents/mods/FunctionalGutters/42/containers.png" alt="Functional Gutters - Supported Containers" height="256" />
+<img src="containers.png" alt="Functional Gutters - Supported Containers" height="256" />
 </p>
 
 ### Accepted Drainage Sprites

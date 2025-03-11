@@ -2,7 +2,7 @@ local enums = {}
 
 enums.modName = "FunctionalGutters"
 enums.modDisplayName = "Functional Gutters"
-enums.drainPipeSprites = {
+enums.drainPipeSprites = table.newarray(
     -- Mostly used in water towers
     "industry_02_76",
     "industry_02_77",
@@ -21,8 +21,28 @@ enums.drainPipeSprites = {
     "industry_02_260",
     "industry_02_261",
     "industry_02_262",
-    "industry_02_263",
-}
+    "industry_02_263"
+)
+
+-- TODO auto source from FeedingTroughDef?
+-- ugh 'accessories' is misspelled in sprite names
+enums.troughSprites = table.newarray(
+    "location_farm_accesories_01_4", -- Wood Double West
+    "location_farm_accesories_01_5", -- Wood Double West
+    "location_farm_accesories_01_6", -- Wood Double North
+    "location_farm_accesories_01_7", -- Wood Double North
+    "location_farm_accesories_01_14", -- Wood Single West
+    "location_farm_accesories_01_15", -- Wood Single North
+    "location_farm_accesories_01_34", -- Metal Double West
+    "location_farm_accesories_01_35", -- Metal Double West
+    "location_farm_accesories_01_32", -- Metal Double North
+    "location_farm_accesories_01_33" -- Metal Double North
+)
+
+enums.smallTroughSprites = table.newarray(
+    "location_farm_accesories_01_14", -- Wood Single West
+    "location_farm_accesories_01_15" -- Wood Single North
+)
 
 enums.options = {
     debug = "Debug",
@@ -32,7 +52,7 @@ enums.options = {
 }
 
 -- Adding prefix to avoid potential namespace conflicts
--- and make it easier to find in generic search
+-- and make it easier to find in blanket search
 enums.modDataKey = {
     hasGutter = "FG_hasGutter",
     baseRainFactor = "FG_baseRainFactor",
@@ -52,5 +72,10 @@ enums.containerType = {
 }
 
 enums.troughBaseRainFactor = 0.55
+
+enums.modCommands = {
+    connectContainer = "connectContainer",
+    disconnectContainer = "disconnectContainer",
+}
 
 return enums
