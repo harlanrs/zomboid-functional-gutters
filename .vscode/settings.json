@@ -17,9 +17,16 @@
     },
     "Lua.workspace.checkThirdParty": false,
     "cSpell.ignoreWords": [
+        "Gigawatte",
+        "ISFG",
+        "Mancer",
+        "Metabolics",
         "PZAPI",
         "Zomboid",
+        "luautils",
         "mklink",
+        "newarray",
+        "olist",
         "worldobjects"
     ]
 }
