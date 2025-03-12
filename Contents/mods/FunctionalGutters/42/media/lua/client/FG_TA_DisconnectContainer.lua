@@ -16,24 +16,23 @@ end
 function FG_TA_DisconnectContainer:new(character, containerObject, wrench)
 	local o = ISBaseTimedAction.new(self, character)
 	o.character = character
-    o.containerObject = containerObject
+	o.containerObject = containerObject
 	o.wrench = wrench
 	o.maxTime = o:getDuration()
 	return o
 end
 
 function FG_TA_DisconnectContainer:isValid()
-	local requireWrench = options:getRequireWrench()
-	if requireWrench then
-		return self.character:isEquipped(self.wrench)
-	else
+	if not options:getRequireWrench() then
 		return true
 	end
+
+	return self.wrench and self.character:isEquipped(self.wrench)
 end
 
 function FG_TA_DisconnectContainer:update()
 	self.character:faceThisObject(self.containerObject)
-    self.character:setMetabolicTarget(Metabolics.MediumWork)
+	self.character:setMetabolicTarget(Metabolics.MediumWork)
 end
 
 function FG_TA_DisconnectContainer:start()
@@ -42,12 +41,11 @@ end
 
 function FG_TA_DisconnectContainer:stop()
 	self.character:stopOrTriggerSound(self.sound)
-    ISBaseTimedAction.stop(self);
+	ISBaseTimedAction.stop(self);
 end
 
 function FG_TA_DisconnectContainer:perform()
 	self.character:stopOrTriggerSound(self.sound)
-	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
 

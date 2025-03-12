@@ -34,7 +34,7 @@ function gutterService:connectContainer(containerObject)
     end
 
     containerService:connectContainer(containerObject)
- 
+
     -- Temp patch
     utils:patchModData(containerObject, false)
 end
@@ -46,7 +46,7 @@ function gutterService:disconnectContainer(containerObject)
     end
 
     containerService:disconnectContainer(containerObject)
-    
+
     -- Temp patch
     utils:patchModData(containerObject, false)
 end

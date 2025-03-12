@@ -4,20 +4,10 @@ local utils = require("FG_Utils")
 local troughUtils = {}
 
 local troughNorthFieldIndex = nil
-local localCFeedingTroughSystem = CFeedingTroughSystem
-local localSFeedingTroughSystem = SFeedingTroughSystem
+local localFeedingTroughDef = FeedingTroughDef
 
 function troughUtils:isTroughSprite(spriteName)
     for _, troughSprite in ipairs(enums.troughSprites) do
-        if spriteName == troughSprite then
-            return true
-        end
-    end
-    return false
-end
-
-function troughUtils:isSingleTileTroughFromSprite(spriteName)
-    for _, troughSprite in ipairs(enums.smallTroughSprites) do
         if spriteName == troughSprite then
             return true
         end
@@ -54,140 +44,112 @@ function troughUtils:isPrimaryTrough(isoObject)
     return not self:isSecondaryTrough(isoObject)
 end
 
-function troughUtils:getIsoObjectFromSquare(square)
-    local objects = square:getObjects()
-    for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if self:isTroughSprite(object:getSpriteName()) then
-            return object
-        end
-    end
-    return nil
-end
-
-function troughUtils:getTroughFromSquare(square)
-    local luaTroughObject = nil
-    if isServer() then
-        luaTroughObject = localSFeedingTroughSystem.instance:getLuaObjectOnSquare(square)
-    else
-        luaTroughObject = localCFeedingTroughSystem.instance:getLuaObjectOnSquare(square)
-    end
-
-    if not luaTroughObject then
-        return nil
-    end
-
-    return luaTroughObject:getIsoObject()
-end
-
-function troughUtils:getTroughObjectFromPos(x, y, z)
-    local square = getCell():getGridSquare(x, y, z);
-    return self:getTroughFromSquare(square)
-end
-
-function troughUtils:verifyLinkedTroughs(primaryTroughObject, secondaryTroughObject)
-    local primarySquare = primaryTroughObject:getSquare()
-    local linkedX = secondaryTroughObject:getLinkedX()
-    local linkedY = secondaryTroughObject:getLinkedY()
-    if linkedX and linkedY and linkedX == primarySquare:getX() and linkedY == primarySquare:getY() then
-        return true
+function troughUtils:isPrimaryTroughSprite(troughSpriteName)
+    for i,def in pairs(localFeedingTroughDef) do
+		if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
+			return true
+		end
     end
 
     return false
 end
 
-function troughUtils:getPrimaryTrough(troughObject)
-    -- Multi-tile troughs have:
-    -- * a single functional fluid container associated with the 'primary' object/tile
-    -- * a single 'shadow' fluid container on the 'secondary' object/tile used to direct context over to the primary object (even referenced as the 'slave' object in the PZ code)
-    --
-    -- Together these allow interactions with the entire iso object as a single unit.
-    -- We want to make sure to always interact with the primary object's fluid container
-    -- and the 'primary' object is the one the doesn't have linkedX or linkedY set
+function troughUtils:getPrimaryTroughFromDef(troughObject)
+    local troughSpriteName = troughObject:getSpriteName()
 
-    -- NOTE:
-    -- in the situation that the troughObject is in its isoObject mode we can't rely on any of the IsoFeedingTrough methods such as getLinkedX or getLinkedY
-    -- so we need to check the sprite name to determine if it is a single-tile trough
-    if not self:isTroughObject(troughObject) then
-        utils:modPrint("Trough object is not an IsoFeedingTrough yet: "..tostring(troughObject))
-        if self:isSingleTileTroughFromSprite(troughObject:getSpriteName()) then
+    for i,def in pairs(localFeedingTroughDef) do
+        if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
+            -- Provided troughObject is the primary trough
             return troughObject
         end
 
-        return nil
-    end
+        if def.sprite2 == troughSpriteName or def.spriteNorth2 == troughSpriteName then
+            local north = def.spriteNorth2 == troughSpriteName
+            local x, y, z = utils:getSquare2PosReverse(troughObject:getSquare(), north)
+            local primarySquare = getCell():getGridSquare(x, y, z)
+            local primarySpriteName = north and def.spriteNorth1 or def.sprite1
+            local primaryTrough = utils:getSpecificIsoObjectFromSquare(primarySquare, primarySpriteName)
+            if not primaryTrough then
+                utils:modPrint("Primary trough not found on square: "..tostring(primarySquare:getX())..","..tostring(primarySquare:getY())..","..tostring(primarySquare:getZ()))
+                return nil
+            end
 
-    local linkedX = troughObject:getLinkedX()
-    local linkedY = troughObject:getLinkedY()
-    if linkedX and linkedY and linkedX > 0 and linkedY > 0 then
-        local primaryTroughObject = self:getTroughObjectFromPos(linkedX, linkedY, troughObject:getSquare():getZ())
-        if primaryTroughObject == nil then
-            utils:modPrint("Primary trough object not found for: "..tostring(troughObject))
-            return nil
+            return primaryTrough
         end
-
-        return primaryTroughObject
     end
 
-    return troughObject
+    utils:modPrint("Primary trough not found for: "..tostring(troughObject))
+    return nil
 end
 
-function troughUtils:getSecondaryTrough(troughObject)
-    local linkedX = troughObject:getLinkedX()
-    local linkedY = troughObject:getLinkedY()
-    if linkedX and linkedY and linkedX > 0 and linkedY > 0 then
-        utils:modPrint("Secondary trough passed in as param: "..tostring(troughObject))
-        return troughObject
-    end
+function troughUtils:getSecondaryTroughFromDef(troughObject)
+    local troughSpriteName = troughObject:getSpriteName()
 
-    local north = self:isTroughNorth(troughObject)
-    local primaryTroughSquare = troughObject:getSquare()
-    local secondaryTroughSquare = utils:getSquare2(primaryTroughSquare, north, nil)
-    local secondaryTroughObject = self:getTroughFromSquare(secondaryTroughSquare)
-    if not secondaryTroughObject or not self:verifyLinkedTroughs(troughObject, secondaryTroughObject) then
-        utils:modPrint("Secondary trough not found on square: "..tostring(secondaryTroughSquare))
-        return nil
-    end
-
-    return secondaryTroughObject
-end
-
-function troughUtils:getOtherTroughSquare(troughObject)
-    local linkedX = troughObject:getLinkedX()
-    local linkedY = troughObject:getLinkedY()
-    if linkedX and linkedY and linkedX > 0 and linkedY > 0 then
-        return getCell():getGridSquare(linkedX, linkedY, troughObject:getSquare():getZ())
-    end
-
-    local north = self:isTroughNorth(troughObject)
-    local troughSquare = troughObject:getSquare()
-    return utils:getSquare2(troughSquare, north, nil)
-end
-
-function troughUtils:getOtherTrough(troughObject)
-    if self:isSingleTileTroughFromSprite(troughObject:getSpriteName()) then
-        return nil
-    end
-
-    if troughUtils:isPrimaryTrough(troughObject) then
-        -- Load secondary
-        local secondaryTrough = troughUtils:getSecondaryTrough(troughObject)
-        if not secondaryTrough then
-            utils:modPrint("Secondary trough not found for: "..tostring(troughObject))
-            return nil
+    for i,def in pairs(localFeedingTroughDef) do
+        if def.sprite2 == troughSpriteName or def.spriteNorth2 == troughSpriteName then
+            -- Provided troughObject is the secondary trough
+            return troughObject
         end
 
-        return secondaryTrough
-    else
-        -- Load primary
-        local primaryTrough = troughUtils:getPrimaryTrough(troughObject)
-        if not primaryTrough then
-            utils:modPrint("Primary trough not found for: "..tostring(troughObject))
-            return nil
-        end
+        if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
+            local north = def.spriteNorth1 == troughSpriteName
+            local x, y, z = utils:getSquare2Pos(troughObject:getSquare(), north)
+            local secondarySquare = getCell():getGridSquare(x, y, z)
+            local secondarySpriteName = north and def.spriteNorth2 or def.sprite2
+            local secondaryTrough = utils:getSpecificIsoObjectFromSquare(secondarySquare, secondarySpriteName)
+            if not secondaryTrough then
+                utils:modPrint("Secondary trough not found on square: "..tostring(secondarySquare:getX())..","..tostring(secondarySquare:getY())..","..tostring(secondarySquare:getZ()))
+                return nil
+            end
 
-        return primaryTrough
+            return secondaryTrough
+        end
     end
+
+    utils:modPrint("Primary trough not found for: "..tostring(troughObject))
+    return nil
+end
+
+function troughUtils:upgradeTroughToGlobalObject(primaryTrough)
+    -- Use a single isoObject trough to upgrade full trough context to IsoFeedingTrough with global object references
+    -- NOTE: param needs to be the primaryTrough not the secondaryTrough
+    if isClient() then return nil end
+    local troughSprite = primaryTrough:getSprite()
+    local troughSpriteName = troughSprite:getName()
+    local troughSquare = primaryTrough:getSquare()
+
+    for i,def in pairs(localFeedingTroughDef) do
+        if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
+            -- Upgrade the primary trough IsoObject -> IsoFeedingTrough w/ global object
+            local north = def.spriteNorth1 == troughSpriteName
+            troughSquare:transmitRemoveItemFromSquare(primaryTrough)
+            SFeedingTroughSystem.instance:addTrough(troughSquare, def, north, false)
+
+            if def.sprite2 then
+                local x, y, z = utils:getSquare2Pos(troughSquare, north)
+                local secondarySquare = getCell():getGridSquare(x, y, z)
+                if not secondarySquare then
+                    utils:modPrint("Secondary square not found for getSquare2Pos: "..tostring(x)..","..tostring(y)..","..tostring(z))
+                    return false
+                end
+
+                local secondaryTrough = self:getIsoObjectFromSquare(secondarySquare)
+                if not secondaryTrough then
+                    utils:modPrint("Secondary trough not found on square: "..tostring(secondarySquare:getX())..","..tostring(secondarySquare:getY())..","..tostring(secondarySquare:getZ()))
+                    return false
+                end
+
+                -- Upgrade the secondary trough IsoObject -> IsoFeedingTrough w/ global object
+                secondarySquare:transmitRemoveItemFromSquare(secondaryTrough);
+                SFeedingTroughSystem.instance:addTrough(secondarySquare, def, north, true)
+            end
+
+            return true
+        end
+    end
+
+    utils:modPrint("Trough sprite name not found in FeedingTroughDef: "..tostring(troughSpriteName))
+    return false
 end
 
 return troughUtils

@@ -99,7 +99,7 @@ function utils:getObjectScriptRainFactor(object)
 end
 
 local function predicateNotBroken(item)
-	return not item:isBroken()
+    return not item:isBroken()
 end
 
 function utils:playerHasItem(playerInv, itemName)
@@ -130,32 +130,48 @@ function utils:patchModData(object, replace)
 end
 
 function utils:getSquare2Pos(square, north)
-	local x = square:getX()
-	local y = square:getY()
-	local z = square:getZ()
-	if north then
-		x = x - 1
-	else
-		y = y - 1
-	end
-	return x, y, z
+    local x = square:getX()
+    local y = square:getY()
+    local z = square:getZ()
+    if north then
+        x = x - 1
+    else
+        y = y - 1
+    end
+    return x, y, z
 end
 
 function utils:getSquare2PosReverse(square, north)
-	local x = square:getX()
-	local y = square:getY()
-	local z = square:getZ()
-	if north then
-		x = x + 1
-	else
-		y = y + 1
-	end
-	return x, y, z
+    local x = square:getX()
+    local y = square:getY()
+    local z = square:getZ()
+    if north then
+        x = x + 1
+    else
+        y = y + 1
+    end
+    return x, y, z
 end
 
-function utils:getSquare2(square, north)
-    local x, y, z = self:getSquare2Pos(square, north)
+function utils:getSquare2(square, north, reverse)
+    local x, y, z
+    if reverse then
+        x, y, z = self:getSquare2PosReverse(square, north)
+    else
+        x, y, z = self:getSquare2Pos(square, north)
+    end
     return getCell():getGridSquare(x, y, z)
+end
+
+function utils:getSpecificIsoObjectFromSquare(square, spriteName)
+    local objects = square:getObjects()
+    for i = 0, objects:size() - 1 do
+        local object = objects:get(i)
+        if spriteName == object:getSpriteName() then
+            return object
+        end
+    end
+    return nil
 end
 
 function utils:getClassFieldIndex(classObject, fieldName)
@@ -184,7 +200,7 @@ function utils:getObjectDisplayName(object)
     if objectName then
         return objectName
     end
-  
+
     objectName = object:getObjectName()
     if objectName then
         return objectName

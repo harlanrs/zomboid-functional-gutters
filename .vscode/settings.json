@@ -26,6 +26,7 @@
         "luautils",
         "mklink",
         "newarray",
+        "olist",
         "worldobjects"
     ]
 }

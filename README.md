@@ -27,52 +27,75 @@ This behavior is meant to represent the rain water being funneled from the build
 
 * No, currently the only value changed is the entity's `RainFactor` which still requires being outdoors without an overhead tile.
 
+### Can I connect _______ to the gutter?
+
+* All vanilla rain collectors, troughs, and the amphora are supported. Additionally, any modded entities that use the game's FluidContainer system should work out of the box such as the Useful Barrels mod. That said, please notify me if  you are experiencing any conflicts with modded containers.
+
+### Does this work for build 41?
+
+* This mod relies on systems introduced in build `42.4+` and will not function in build `41`.
+
+## How To Use
+
+1. Place supported collector on the same tile as a gutter drain.
+    - Either tile will work for multi-tile troughs.
+
+2. Open the context menu by right-clicking on the collector.
+
+3. Find the `Gutter Drain` submenu and select the `Connect` option.
+    - Requires a pipe wrench (mod option)
+
+4. Enjoy the benefits of a fully functional rain collector system.
+
 
 ## Options 
 
 #### `Gutter Rain Factor`
 
-The rain factor applied to collectors on gutter tiles which is `0.8` by default. For context, crates are `0.4` and barrels are `0.25` by default. Range goes from `0.5` to `3.0`.
+The rain factor applied to collectors on gutter tiles which is `1.6` by default. For context, crates are `0.4` and barrels are `0.25` by default. Range goes from `1.0` to `10.0`.
+
+***
+
+#### `Require Pipe Wrench`
+
+If true, requires a pipe wrench to connect/disconnect containers with a gutter.
 
 ***
 
 #### `Debug Mode`
 
-Prints extra info to console.
+If true, prints debug messages to the console and adds an additional context menu option.
 
 ***
-
-#### `Show Context UI`
-
-Adds a section for mod-specific data in the right-click context menu.
 
 
 #### Notes:
 
 * Located in the main options menu: `Options -> Mods -> Functional Gutters`
 * Changes to `GutterRainFactor` will only impact newly built/placed items.
-* A reload/restart is required for changes to `DebugMode` or `ShowContextUI` to apply.
+* A reload/restart is required for changes to `DebugMode` to apply.
 
-### Supported Collector Entities
+## Supported Collectors
 * [x] Rain collector crate
 * [x] Rain collector crate (tarp)
 * [x] Rain collector barrel
 * [x] Rain collector barrel (tarp)
 * [x] Amphora
-* [ ] Single-tile feeding troughs
-* [ ] Multi-tile feeding troughs
+* [x] Single-tile feeding troughs
+* [x] Multi-tile feeding troughs
+* [x] Generic placeable entities with `FluidContainers`
 * [ ] Placeable world inventory items (pots)
 * [ ] Generic multi-tile entities with `FluidContainers`
-* [ ] Non-`FluidContainer` entities that fit thematically (bathtub, toilet)
 * [ ] Generic movable entities with `FluidContainers` (tanker trailer)
 
 <br/>
 
 <p align="left">
 <img src="containers.png" alt="Functional Gutters - Supported Containers" height="256" />
+<img src="containers_2.png" alt="Functional Gutters - Supported Containers" height="256" />
 </p>
 
-### Accepted Drainage Sprites
+## Accepted Drainage Sprites
 ```
 {
     -- Mostly used in water towers
@@ -98,61 +121,44 @@ Adds a section for mod-specific data in the right-click context menu.
 }
 ```
 
-## How It Works
+## Details
 Build 42 introduced a great variety of of new sprites that decorate buildings, however most are purely aesthetic and don't impact any systems in the game. Several buildings on the map use the new industrial pipe sprites to create roof gutter drains which inspired the creation of this mod.
 
-This mod allows these new gutter sprites to serve a functional purpose by increasing the amount of rain water collected for any rain collectors placed on the same grid square.
+This mod allows these new gutter sprites to serve a functional purpose by increasing the amount of rain water collected for any rain collectors placed on the same grid square (and connected).
 
-The increased rain factor is controlled by the mod option `GutterRainFactor` and can be changed through the mod options menu. This value defaults to `0.8` (2x the base value of crates and nearly 3x the base value of barrels) and can be customized in the mod's options panel to a value between `0.5` and `3.0`.
+The increased rain factor is controlled by the mod option `GutterRainFactor` and can be changed through the mod options menu. This value defaults to `1.6` (4x the base value of crates `0.4`, over 6x the base value of barrels `0.25`, and over 3x the base value of troughs `0.55`) and can be customized in the mod's options panel to a value between `1.0` and `10.0`.
 
-When a supported collector entity is built or placed on a square, the mod compares all object sprites in the square against a mod-managed list of gutter sprites. 
-- If the newly-placed collector shares a square with one of the "approved" sprites, its rain factor is set the to `GutterRainFactor`. 
-- If it doesn't share a square, a quick equality check is made against the entity's base rain factor and a reset occurs if there is any difference between these values.
+When a supported collector entity is built or placed on a square, the mod compares all object sprites in the square against a mod-managed list of gutter sprites. If the newly-placed collector shares a square with one of the "approved" sprites, it is allowed to be connected to the gutter. The connect action set the object's rain factor to that of the mod's `GutterRainFactor`. The disconnect action changes the object's rain factor back to its default.
 
 
-***
-#### Fun Fact
+### Fun Fact
 
-In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player.
+In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player. Then troughs come in with the highest rain factor (`0.55`). While this might not make as much sense for the wood troughs, most would agree that animal welfare comes first over extreme "realism".
 
-***
-
-<br/>
-
-Even though crates and barrels have a different base rain factor, this mod sets both types to the same rate `GutterRainFactor` when they are on an active drain pipe tile. When connected to the gutter system, the diameter of the pipes would be more important than the size of the container's open face so the current version of the mod treats all containers the same. That said, I am open to potentially exploring more involved options - such as including the size of the building's roof as a variable in the equation - at a later date.
 
 
 ## TODO / TBD
-* Add any missing drain pipe sprite identifiers!
-* Support for variable gutter rain factor that scales with roof size?
+* Add any missing drain pipe sprite identifiers
+* Support for variable gutter rain factor that scales with roof size? **<---- Probably Next**
 * Support stacked/multi tier rain collectors with connected pipe?
 * Support manually adding custom sprites to the core gutter list?
 * Buildable gutters?
-* Connectable containers?
-
-
+* Chainable containers?
 
 <br/>
 
-<img src="Contents/mods/FunctionalGutters/42/hey.png" alt="Functional Gutters - Hey You!" width="256" />
+<img src="hey.png" alt="Functional Gutters - Hey You!" width="256" />
 
 <br/>
 
 Please feel free to suggest ideas or provide missing sprite references that would fit the theme of this mod!
 
 
-
-## 1.1
-TODO
-- Use better display name for container object in context ui
-    - fallback to using the fluid container name
-- Add translation for context ui text
-
+## 1.1 
 Changelog
-- Added connect & disconnect plumbing actions 
+- Add connect & disconnect plumbing actions 
     - Includes "Requires Pipe Wrench" mod option which defaults to True
     - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
-- Support for animal troughs
-    - NOTE: depending on placement, 2-tile troughs may require the game to be reloaded before they can be connected to the gutter. This is due to how the game treats multi-tile objects 
-- Support for generic fluid container iso objects
-    - Works with the Useful Barrels mod
+- Support all vanilla animal troughs
+- Support generic fluid container iso objects
+    - Confirmed with the Useful Barrels mod

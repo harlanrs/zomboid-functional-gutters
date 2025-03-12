@@ -13,25 +13,20 @@ function serviceUtils:isValidContainerObject(containerObject)
 end
 
 function serviceUtils:getObjectBaseRainFactor(object)
-    -- Note: 
-    -- * Trough objects don't have an initial FluidContainer and the rain factor is hard set on trough creation
-    -- * Placing single-tile troughs runs into an issue were they become an isoObject instead of an IsoFeedingTrough until the game is reloaded
+    -- Note: trough objects don't have an initial FluidContainer and the rain factor is hard coded on initial creation
     if troughUtils:isTrough(object) then
-        utils:modPrint("Using trough base rain factor: "..tostring(enums.troughBaseRainFactor))
         return enums.troughBaseRainFactor
     end
 
     -- Check object's modData
     local baseRainFactor = utils:getModDataBaseRainFactor(object, nil)
     if baseRainFactor then
-        utils:modPrint("Using mod data rain factor: "..tostring(baseRainFactor))
         return baseRainFactor
     end
 
     -- Check object's GameEntityScript
     baseRainFactor = utils:getObjectScriptRainFactor(object)
     if baseRainFactor then
-        utils:modPrint("Using entity script rain factor: "..tostring(baseRainFactor))
         return baseRainFactor
     end
 
@@ -43,21 +38,18 @@ end
 function serviceUtils:getObjectBaseRainFactorDeep(object)
     -- Swap the order of checks to prioritize the GameEntityScript over the modData
     if troughUtils:isTrough(object) then
-        utils:modPrint("Using trough base rain factor: "..tostring(enums.troughBaseRainFactor))
         return enums.troughBaseRainFactor
     end
 
     -- Check object's GameEntityScript
     local baseRainFactor = utils:getObjectScriptRainFactor(object)
     if baseRainFactor then
-        utils:modPrint("Using entity script rain factor: "..tostring(baseRainFactor))
         return baseRainFactor
     end
 
     -- Check object's modData
     baseRainFactor = utils:getModDataBaseRainFactor(object, nil)
     if baseRainFactor then
-        utils:modPrint("Using mod data rain factor: "..tostring(baseRainFactor))
         return baseRainFactor
     end
 
@@ -74,9 +66,6 @@ function serviceUtils:syncSquareModData(square)
         -- No mod data, no drain pipe, no worries
         return nil
     end
-
-    -- Temp patch
-    utils:patchModData(square, true) -- TODO needed?
 
     local squareModData = square:getModData()
     if hasDrainPipe then

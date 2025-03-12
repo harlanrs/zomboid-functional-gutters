@@ -2,7 +2,6 @@ require "FluidType"
 
 local utils = require("FG_Utils")
 local troughUtils = require("FG_Utils_Trough")
-local mapObjectUtils = require("FG_Utils_MapObject")
 local FluidContainerService = require("FG_Service_FluidContainer")
 
 local TroughService = FluidContainerService:derive("TroughService")
@@ -15,19 +14,26 @@ end
 
 function TroughService:connectContainer(containerObject)
     if troughUtils:isTroughSprite(containerObject:getSpriteName()) and not troughUtils:isTroughObject(containerObject) then
-        -- The provided object is still an IsoObject and needs to be converted to a global IsoFeedingTrough object
-        containerObject = mapObjectUtils:loadTrough(containerObject)
+        -- Trough is still an IsoObject and needs to be converted to IsoFeedingTrough with a global object
+        local primaryTrough = troughUtils:getPrimaryTroughFromDef(containerObject)
+        if not primaryTrough then return false end
+
+        local success = troughUtils:upgradeTroughToGlobalObject(primaryTrough)
+        if not success then
+            utils:modPrint("Failed to convert placed object to global trough: "..tostring(containerObject))
+            return false
+        end
     end
 
     -- Ensure the 'primary' trough object is being used for multi-tile troughs
-    local primaryContainerObject = troughUtils:getPrimaryTrough(containerObject)
+    local primaryContainerObject = troughUtils:getPrimaryTroughFromDef(containerObject)
     if not primaryContainerObject then
         return false
     end
 
     local success = FluidContainerService:connectContainer(primaryContainerObject)
 
-    -- Add a small amount of water to prevent the FluidContainer from resetting when isoObject is converted to IsoFeedingTrough global object
+    -- Add a small amount of water to 'lock' the trough in fluid mode and prevent the FluidContainer from resetting in rare situations
     local fluidContainer = primaryContainerObject:getFluidContainer()
     if success and fluidContainer:isEmpty() then
         utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
@@ -42,10 +48,12 @@ end
 
 function TroughService:disconnectContainer(containerObject)
     -- Ensure the 'primary' trough object is being used for multi-tile troughs
-    local primaryContainerObject = troughUtils:getPrimaryTrough(containerObject)
-    local success = FluidContainerService:disconnectContainer(primaryContainerObject)
+    local primaryContainerObject = troughUtils:getPrimaryTroughFromDef(containerObject)
+    if not primaryContainerObject then
+        return false
+    end
 
-    return success
+    return FluidContainerService:disconnectContainer(primaryContainerObject)
 end
 
 return TroughService

@@ -10,31 +10,29 @@ require "FG_TA_DisconnectContainer"
 local debugMode = false
 
 local function DoConnectContainer(playerObject, collectorObject)
-    local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
-
     if luautils.walkAdj(playerObject, collectorObject:getSquare(), true) then
         if options:getRequireWrench() then
+            local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
                 ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TA_ConnectContainer:new(playerObject, collectorObject, nil))
         end
     end
 end
 
 local function DoDisconnectContainer(playerObject, collectorObject)
-    local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
-
     if luautils.walkAdj(playerObject, collectorObject:getSquare(), true) then
         if options:getRequireWrench() then
+            local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
             if wrench then
                 ISWorldObjectContextMenu.equip(playerObject, playerObject:getPrimaryHandItem(), wrench, true)
                 ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
             end
         else
-            ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, wrench))
+            ISTimedActionQueue.add(FG_TA_DisconnectContainer:new(playerObject, collectorObject, nil))
         end
     end
 end
@@ -42,17 +40,12 @@ end
 local function AddGutterContainerContext(player, context, square, containerObject, fluidContainer)
     -- Conditionally build primary gutter context menu
     local primaryContainer = containerObject
-
-    -- Temp patch
-    utils:patchModData(square, true) -- TODO needed?
-    utils:patchModData(containerObject, false)
-
     local squareHasGutter = utils:getModDataHasGutter(square, nil)
     local linkedSquareHasGutter
     local isTrough = troughUtils:isTrough(containerObject)
     if isTrough then
         -- Check the 2nd tile if multi-tile trough
-        local primaryTrough = troughUtils:getPrimaryTrough(containerObject)
+        local primaryTrough = troughUtils:getPrimaryTroughFromDef(containerObject)
         utils:modPrint("Primary trough object: "..tostring(primaryTrough))
         if not primaryTrough then
             return
@@ -61,7 +54,7 @@ local function AddGutterContainerContext(player, context, square, containerObjec
         local primaryTroughSprite = primaryTrough:getSprite()
         local troughSpriteGrid = primaryTroughSprite:getSpriteGrid()
         if troughSpriteGrid and (troughSpriteGrid:getWidth() > 0 or troughSpriteGrid:getHeight() > 0) then
-            local secondaryTrough = troughUtils:getSecondaryTrough(primaryTrough)
+            local secondaryTrough = troughUtils:getSecondaryTroughFromDef(primaryTrough)
             utils:modPrint("Secondary trough object: "..tostring(secondaryTrough))
             if secondaryTrough then
                 local secondarySquare = secondaryTrough:getSquare()
