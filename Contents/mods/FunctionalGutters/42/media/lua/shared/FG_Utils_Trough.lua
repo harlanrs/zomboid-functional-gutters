@@ -80,7 +80,6 @@ function troughUtils:getPrimaryTroughFromDef(troughObject)
             local primarySpriteName = north and def.spriteNorth1 or def.sprite1
             local primaryTrough = utils:getSpecificIsoObjectFromSquare(primarySquare, primarySpriteName)
             if not primaryTrough then
-                utils:modPrint("Primary trough not found on square: "..tostring(primarySquare:getX())..","..tostring(primarySquare:getY())..","..tostring(primarySquare:getZ()))
                 return nil
             end
 
@@ -108,7 +107,6 @@ function troughUtils:getSecondaryTroughFromDef(troughObject)
             local secondarySpriteName = north and def.spriteNorth2 or def.sprite2
             local secondaryTrough = utils:getSpecificIsoObjectFromSquare(secondarySquare, secondarySpriteName)
             if not secondaryTrough then
-                utils:modPrint("Secondary trough not found on square: "..tostring(secondarySquare:getX())..","..tostring(secondarySquare:getY())..","..tostring(secondarySquare:getZ()))
                 return nil
             end
 
@@ -116,7 +114,7 @@ function troughUtils:getSecondaryTroughFromDef(troughObject)
         end
     end
 
-    utils:modPrint("Primary trough not found for: "..tostring(troughObject))
+    utils:modPrint("Secondary trough not found for: "..tostring(troughObject))
     return nil
 end
 

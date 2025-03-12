@@ -18,7 +18,7 @@ function TroughService:connectContainer(containerObject)
         local primaryTrough = troughUtils:getPrimaryTroughFromDef(containerObject)
         if not primaryTrough then return false end
 
-        local success = troughUtils:upgradeTroughToGlobalObject(primaryTrough)
+        local success = troughUtils:loadTrough(primaryTrough)
         if not success then
             utils:modPrint("Failed to convert placed object to global trough: "..tostring(containerObject))
             return false
@@ -34,14 +34,11 @@ function TroughService:connectContainer(containerObject)
     local success = FluidContainerService:connectContainer(primaryContainerObject)
 
     -- Add a small amount of water to 'lock' the trough in fluid mode and prevent the FluidContainer from resetting in rare situations
-    -- local fluidContainer = primaryContainerObject:getFluidContainer()
-    -- if success and fluidContainer:isEmpty() then
-    --     utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
-    --     if troughUtils:isTroughObject(containerObject) then
-    --         -- Note: using IsoFeedingTrough object wrapper for addWater instead of FluidContainer
-    --         primaryContainerObject:addWater(fluidType.TaintedWater, 0.1)
-    --     end
-    -- end
+    local fluidContainer = primaryContainerObject:getFluidContainer()
+    if success and fluidContainer:isEmpty() then
+        utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
+        primaryContainerObject:addWater(fluidType.TaintedWater, 0.1337)
+    end
 
     return success
 end
