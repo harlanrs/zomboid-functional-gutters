@@ -7,6 +7,8 @@ local gutterService = require("FG_Service")
 local GutterServerManager = {}
 local GutterCommands = {}
 
+local troughTileCache = {}
+
 function GutterCommands.connectContainer(args)
     local containerObj = utils:parseObjectCommandArgs(args)
     if not containerObj then
@@ -54,25 +56,31 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
     end
 
-    -- Fix vanilla bug/gap where troughs are not being converted to global objects on placement like they are on build & reload
-    -- Causes some odd behavior that requires a reload for the trough to function properly even in vanilla
     local objectSpriteName = placedObject:getSpriteName()
     if troughUtils:isTroughSprite(objectSpriteName) then
         -- Ignore if this is already a global trough object
         if troughUtils:isTroughObject(placedObject) then return end
 
-        -- Ignore if this is a secondary trough
-        -- Due to order of operations, the secondary trough's sprite is placed before the primary trough's sprite 
-        -- so we need to wait for the primary trough to be placed before upgrading them both together
-        if not troughUtils:isPrimaryTroughSprite(objectSpriteName) then
+        local primaryTrough = troughUtils:getPrimaryTroughFromDef(placedObject)
+        if not primaryTrough then
+            -- Primary through hasn't been placed yet
             return
         end
 
-        local success = troughUtils:upgradeTroughToGlobalObject(placedObject)
-        if not success then
-            utils:modPrint("Failed to convert placed object to global trough: "..tostring(placedObject))
+        -- If single tile primary trough, upgrade it
+        if troughUtils:isSingleTileTroughFromSprite(objectSpriteName) then
+            troughUtils:loadTrough(primaryTrough)
             return
         end
+
+        local secondaryTrough = troughUtils:getSecondaryTroughFromDef(placedObject)
+        if not secondaryTrough then
+            -- Secondary through hasn't been placed yet
+            return
+        end
+
+        troughUtils:loadTrough(primaryTrough)
+        troughUtils:loadTrough(secondaryTrough)
 
         return
     end

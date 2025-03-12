@@ -1,7 +1,7 @@
 version=1.1
 id=3439305933
 title=[B42] Functional Gutters
-description=Functional Gutters increases the effectiveness of rain collectors and fluid containers by allowing them to be connected to a gutter drain on the same tile.
+description=Enables rain collectors and other fluid containers to be connected with a gutter drain pipe for increased efficiency.
 description=
 description=
 description=[h2]FAQ[/h2]

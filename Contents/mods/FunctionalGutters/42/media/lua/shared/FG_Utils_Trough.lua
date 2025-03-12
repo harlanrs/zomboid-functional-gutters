@@ -5,6 +5,7 @@ local troughUtils = {}
 
 local troughNorthFieldIndex = nil
 local localFeedingTroughDef = FeedingTroughDef
+-- local fluidType = FluidType
 
 function troughUtils:isTroughSprite(spriteName)
     for _, troughSprite in ipairs(enums.troughSprites) do
@@ -19,10 +20,19 @@ function troughUtils:isTroughObject(isoObject)
     return instanceof(isoObject, "IsoFeedingTrough")
 end
 
+function troughUtils:isSingleTileTroughFromSprite(spriteName)
+    for _, troughSprite in ipairs(enums.smallTroughSprites) do
+        if spriteName == troughSprite then
+            return true
+        end
+    end
+    return false
+end
+
 function troughUtils:isTrough(isoObject)
     -- NOTE: also checking sprite name due to special trough behavior:
-    -- When troughs are picked up and then placed back down
-    -- They become an isoObject instead of an IsoFeedingTrough until the game is reloaded
+    --       when troughs are picked up and then placed back down,
+    --       they become an isoObject instead of an IsoFeedingTrough until the game is reloaded
     return self:isTroughObject(isoObject) or self:isTroughSprite(isoObject:getSpriteName())
 end
 
@@ -110,6 +120,72 @@ function troughUtils:getSecondaryTroughFromDef(troughObject)
     return nil
 end
 
+function troughUtils:removeExistingLuaObject(square)
+    local troughSystem = SFeedingTroughSystem.instance
+	local luaObject = troughSystem:getLuaObjectOnSquare(square)
+	if luaObject then
+		troughSystem:removeLuaObject(luaObject)
+	end
+end
+
+-- TODO integrate FeedingTroughDef
+function troughUtils:replaceExistingTrough(isoObject)
+    if isClient() then return nil end
+
+    utils:modPrint('Upgrading IsoObject to IsoFeedingTrough: '..tostring(isoObject))
+    local square = isoObject:getSquare()
+    local spriteName = isoObject:getSprite():getName()
+    local index = isoObject:getObjectIndex()
+    self:removeExistingLuaObject(square)
+    square:transmitRemoveItemFromSquare(isoObject)
+    local north = true;
+    if "location_farm_accesories_01_14" == spriteName or "location_farm_accesories_01_4" == spriteName or "location_farm_accesories_01_5" == spriteName or "location_farm_accesories_01_34" == spriteName or "location_farm_accesories_01_35" == spriteName then
+        north = false;
+    end
+    isoObject = IsoFeedingTrough.new(square, spriteName, nil)
+    isoObject:setNorth(north);
+    if "location_farm_accesories_01_5" == spriteName then
+        isoObject:setLinkedX(square:getX());
+        isoObject:setLinkedY(square:getY() + 1);
+    end
+    if "location_farm_accesories_01_6" == spriteName then
+        isoObject:setLinkedX(square:getX() + 1);
+        isoObject:setLinkedY(square:getY());
+    end
+    if "location_farm_accesories_01_32" == spriteName then
+        isoObject:setLinkedX(square:getX() + 1);
+        isoObject:setLinkedY(square:getY());
+    end
+    if "location_farm_accesories_01_35" == spriteName then
+        isoObject:setLinkedX(square:getX());
+        isoObject:setLinkedY(square:getY() + 1);
+    end
+    isoObject:initWithDef();
+    square:AddSpecialObject(isoObject, index)
+    isoObject:transmitCompleteItemToClients()
+
+    -- Force the container to be a water container
+    -- if isoObject:getContainer() then
+    --     isoObject:addWater(fluidType.TaintedWater, 0.1)
+    -- end
+
+    isoObject:checkOverlayFull();
+    return isoObject
+end
+
+function troughUtils:loadTrough(isoObject)
+    if isClient() then return nil end
+    if not troughUtils:isTroughObject(isoObject) then
+        isoObject = troughUtils:replaceExistingTrough(isoObject)
+    end
+
+    -- Load the IsoFeedingTrough object into the global objects system
+    utils:modPrint("Loading IsoFeedingTrough into global trough system: "..tostring(isoObject))
+    SFeedingTroughSystem.instance:loadIsoObject(isoObject)
+    return isoObject
+end
+
+-- TODO fixme
 function troughUtils:upgradeTroughToGlobalObject(primaryTrough)
     -- Use a single isoObject trough to upgrade full trough context to IsoFeedingTrough with global object references
     -- NOTE: param needs to be the primaryTrough not the secondaryTrough
@@ -133,7 +209,7 @@ function troughUtils:upgradeTroughToGlobalObject(primaryTrough)
                     return false
                 end
 
-                local secondaryTrough = self:getIsoObjectFromSquare(secondarySquare)
+                local secondaryTrough = utils:getSpecificIsoObjectFromSquare(secondarySquare, def.sprite2)
                 if not secondaryTrough then
                     utils:modPrint("Secondary trough not found on square: "..tostring(secondarySquare:getX())..","..tostring(secondarySquare:getY())..","..tostring(secondarySquare:getZ()))
                     return false

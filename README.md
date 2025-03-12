@@ -1,5 +1,5 @@
 # Functional Gutters
-Functional Gutters is a mod for the video game `Project Zomboid [B42]` that increases the effectiveness of rain collectors when they are placed on the same tile as a gutter drain pipe.
+Functional Gutters is a mod for the video game `Project Zomboid [B42]` that enables rain collectors and other fluid containers to be connected with a gutter drain pipe for increased efficiency.
 
 This behavior is meant to represent the rain water being funneled from the building's roof through the gutter pipes and into the connected collector.
 

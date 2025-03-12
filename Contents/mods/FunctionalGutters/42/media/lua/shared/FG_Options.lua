@@ -5,7 +5,7 @@ local options = {}
 local function loadModOptions()
     local modOptions = PZAPI.ModOptions:create(enums.modName, enums.modDisplayName)
 
-    options.gutterRainFactorOption = modOptions:addSlider("GutterRainFactor", getText("UI_options_FunctionalGutters_GutterRainFactor"), 0.5, 10.0, 0.1, 0.8, getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
+    options.gutterRainFactorOption = modOptions:addSlider("GutterRainFactor", getText("UI_options_FunctionalGutters_GutterRainFactor"), 1.0, 10.0, 0.1, 1.6, getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
 
     -- NOTE: slider option doesn't appear to display the tooltip so including it again as a description
     modOptions:addDescription(getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))

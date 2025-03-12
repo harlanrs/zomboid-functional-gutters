@@ -34,14 +34,14 @@ function TroughService:connectContainer(containerObject)
     local success = FluidContainerService:connectContainer(primaryContainerObject)
 
     -- Add a small amount of water to 'lock' the trough in fluid mode and prevent the FluidContainer from resetting in rare situations
-    local fluidContainer = primaryContainerObject:getFluidContainer()
-    if success and fluidContainer:isEmpty() then
-        utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
-        if troughUtils:isTroughObject(containerObject) then
-            -- Note: using IsoFeedingTrough object wrapper for addWater instead of FluidContainer
-            primaryContainerObject:addWater(fluidType.TaintedWater, 0.1)
-        end
-    end
+    -- local fluidContainer = primaryContainerObject:getFluidContainer()
+    -- if success and fluidContainer:isEmpty() then
+    --     utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
+    --     if troughUtils:isTroughObject(containerObject) then
+    --         -- Note: using IsoFeedingTrough object wrapper for addWater instead of FluidContainer
+    --         primaryContainerObject:addWater(fluidType.TaintedWater, 0.1)
+    --     end
+    -- end
 
     return success
 end
