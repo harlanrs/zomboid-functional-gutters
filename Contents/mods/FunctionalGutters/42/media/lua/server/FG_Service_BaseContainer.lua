@@ -1,3 +1,5 @@
+if isClient() then return end
+
 require "ISBaseObject"
 
 local BaseContainerServiceInterface = ISBaseObject:derive("BaseContainerServiceInterface");

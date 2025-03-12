@@ -1,3 +1,5 @@
+if isClient() then return end
+
 local enums = require("FG_Enums")
 local options = require("FG_Options")
 local utils = require("FG_Utils")
@@ -17,7 +19,7 @@ function FluidContainerService:connectContainer(object)
         return false
     end
 
-    local baseRainFactor = serviceUtils:getObjectBaseRainFactorDeep(object)
+    local baseRainFactor = serviceUtils:getObjectBaseRainFactorHeavy(object)
     local gutterRainFactor = options:getGutterRainFactor()
     utils:modPrint("Setting rain factor from "..tostring(baseRainFactor).." to "..tostring(gutterRainFactor))
     fluidContainer:setRainCatcher(gutterRainFactor)
@@ -36,7 +38,7 @@ function FluidContainerService:disconnectContainer(object)
         return false
     end
 
-    local baseRainFactor = serviceUtils:getObjectBaseRainFactorDeep(object)
+    local baseRainFactor = serviceUtils:getObjectBaseRainFactorHeavy(object)
     utils:modPrint("Resetting rain factor from "..tostring(fluidContainer:getRainCatcher()).." to "..tostring(baseRainFactor))
     fluidContainer:setRainCatcher(baseRainFactor)
 

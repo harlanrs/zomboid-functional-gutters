@@ -16,23 +16,14 @@ local function loadModOptions()
 end
 
 function options:getGutterRainFactor()
-    if not self.gutterRainFactorOption then
-        loadModOptions()
-    end
     return self.gutterRainFactorOption:getValue()
 end
 
 function options:getRequireWrench()
-    if not self.requireWrench then
-        loadModOptions()
-    end
     return self.requireWrench:getValue()
 end
 
 function options:getDebug()
-    if not self.debugOption then
-        loadModOptions()
-    end
     return self.debugOption:getValue()
 end
 

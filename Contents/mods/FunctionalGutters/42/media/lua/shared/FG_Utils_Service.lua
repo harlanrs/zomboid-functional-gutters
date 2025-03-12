@@ -35,7 +35,7 @@ function serviceUtils:getObjectBaseRainFactor(object)
     return 0.0
 end
 
-function serviceUtils:getObjectBaseRainFactorDeep(object)
+function serviceUtils:getObjectBaseRainFactorHeavy(object)
     -- Swap the order of checks to prioritize the GameEntityScript over the modData
     if troughUtils:isTrough(object) then
         return enums.troughBaseRainFactor

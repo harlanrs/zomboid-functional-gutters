@@ -25,7 +25,7 @@ enums.drainPipeSprites = table.newarray(
 )
 
 -- TODO auto source from FeedingTroughDef?
--- ugh 'accessories' is misspelled in sprite names
+-- NOTE: 'accessories' is misspelled in sprite names
 enums.troughSprites = table.newarray(
     "location_farm_accesories_01_4", -- Wood Double West
     "location_farm_accesories_01_5", -- Wood Double West

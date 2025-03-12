@@ -1,3 +1,5 @@
+if isClient() then return end
+
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local FluidContainerService = require("FG_Service_FluidContainer")
@@ -5,7 +7,7 @@ local TroughService = require("FG_Service_Trough")
 
 local gutterService = {}
 
-gutterService.containerServiceMap = {
+gutterService.containerInterfaceMap = {
     [enums.containerType.fluidContainer] = FluidContainerService,
     [enums.containerType.trough] = TroughService,
 }

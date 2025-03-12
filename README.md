@@ -27,9 +27,9 @@ This behavior is meant to represent the rain water being funneled from the build
 
 * No, currently the only value changed is the entity's `RainFactor` which still requires being outdoors without an overhead tile.
 
-### Can I connect _______ to the gutter?
+### What can I connect to the gutter?
 
-* All vanilla rain collectors, troughs, and the amphora are supported. Additionally, any modded entities that use the game's FluidContainer system should work out of the box such as the Useful Barrels mod. That said, please notify me if  you are experiencing any conflicts with modded containers.
+* All vanilla rain collectors, troughs, and the amphora are supported. Additionally, any modded entities that use the game's FluidContainer system should work out of the box such as the Useful Barrels mod.
 
 ### Does this work for build 41?
 
@@ -133,8 +133,9 @@ When a supported collector entity is built or placed on a square, the mod compar
 
 ### Fun Fact
 
-In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player. Then troughs come in with the highest rain factor (`0.55`). While this might not make as much sense for the wood troughs, most would agree that animal welfare comes first over extreme "realism".
+In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player. 
 
+Then troughs come in with the highest rain factor (`0.55`) of vanilla items. While this rate might not make as much sense for the skinny wooden troughs, most would probably agree that animal welfare comes before "realism".
 
 
 ## TODO / TBD
@@ -154,11 +155,11 @@ In the base game, the square rain collector crates have a much greater base rain
 Please feel free to suggest ideas or provide missing sprite references that would fit the theme of this mod!
 
 
-## 1.1 
-Changelog
-- Add connect & disconnect plumbing actions 
-    - Includes "Requires Pipe Wrench" mod option which defaults to True
-    - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
+## Changelog 
+### 1.1
 - Support all vanilla animal troughs
 - Support generic fluid container iso objects
     - Confirmed with the Useful Barrels mod
+- Add connect & disconnect plumbing actions 
+    - Includes "Require Pipe Wrench" mod option which defaults to True
+    - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object

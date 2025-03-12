@@ -1,7 +1,10 @@
+if isClient() then return end
+
 require "FluidType"
 
 local utils = require("FG_Utils")
 local troughUtils = require("FG_Utils_Trough")
+local globalObjectUtils = require("FG_Utils_GlobalObject")
 local FluidContainerService = require("FG_Service_FluidContainer")
 
 local TroughService = FluidContainerService:derive("TroughService")
@@ -15,14 +18,8 @@ end
 function TroughService:connectContainer(containerObject)
     if troughUtils:isTroughSprite(containerObject:getSpriteName()) and not troughUtils:isTroughObject(containerObject) then
         -- Trough is still an IsoObject and needs to be converted to IsoFeedingTrough with a global object
-        local primaryTrough = troughUtils:getPrimaryTroughFromDef(containerObject)
-        if not primaryTrough then return false end
-
-        local success = troughUtils:loadTrough(primaryTrough)
-        if not success then
-            utils:modPrint("Failed to convert placed object to global trough: "..tostring(containerObject))
-            return false
-        end
+        containerObject = globalObjectUtils:loadFullTrough(containerObject)
+        if not containerObject then return false end
     end
 
     -- Ensure the 'primary' trough object is being used for multi-tile troughs
@@ -37,7 +34,7 @@ function TroughService:connectContainer(containerObject)
     local fluidContainer = primaryContainerObject:getFluidContainer()
     if success and fluidContainer:isEmpty() then
         utils:modPrint("Adding water to trough container: "..tostring(primaryContainerObject))
-        primaryContainerObject:addWater(fluidType.TaintedWater, 0.1337)
+        primaryContainerObject:addWater(fluidType.TaintedWater, 0.42)
     end
 
     return success
