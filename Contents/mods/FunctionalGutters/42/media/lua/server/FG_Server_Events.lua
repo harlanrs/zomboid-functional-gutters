@@ -2,6 +2,7 @@ if isClient() then return end
 
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local serviceUtils = require("FG_Utils_Service")
 local globalObjectUtils = require("FG_Utils_GlobalObject")
 local gutterService = require("FG_Service")
@@ -42,7 +43,7 @@ end
 function GutterServerManager.OnIsoObjectBuilt(square)
     -- React to the creation of a new iso object on a tile
     -- NOTE: param is square not the object itself
-    local squareModData = serviceUtils:syncSquareModData(square)
+    local squareModData = serviceUtils:syncSquareModData(square, nil)
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
     end
@@ -51,7 +52,7 @@ end
 function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
     local square = placedObject:getSquare()
-    local squareModData = serviceUtils:syncSquareModData(square)
+    local squareModData = serviceUtils:syncSquareModData(square, nil)
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
     end

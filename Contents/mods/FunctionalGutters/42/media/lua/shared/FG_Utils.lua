@@ -11,33 +11,62 @@ function utils:modPrint(message)
     end
 end
 
-function utils:isDrainPipeSprite(spriteName)
-    for _, drainPipeSprite in ipairs(enums.drainPipeSprites) do
-        if spriteName == drainPipeSprite then
+
+function utils:isSpriteCategoryMember(spriteName, spriteCategoryList)
+    for i = 1, #spriteCategoryList do
+        if spriteName == spriteCategoryList[i] then
             return true
         end
     end
     return false
 end
 
-function utils:isDrainPipe(object)
+function utils:isSpriteCategoryObject(object, spriteCategoryList)
     if not object then return false end
 
     local spriteName = object:getSpriteName()
     if not spriteName then return false end
 
-    return self:isDrainPipeSprite(spriteName)
+    return self:isSpriteCategoryMember(spriteName, spriteCategoryList)
 end
 
-function utils:hasDrainPipeOnTile(square)
+function utils:hasSpriteCategoryMemberOnTile(square, spriteCategoryList)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
-        if self:isDrainPipe(object) then
+        if self:isSpriteCategoryObject(object, spriteCategoryList) then
             return true
         end
     end
     return false
+end
+
+function utils:isDrainPipeSprite(spriteName)
+    return self:isSpriteCategoryMember(spriteName, enums.drainPipeSprites)
+end
+
+function utils:isDrainPipe(object)
+    return self:isSpriteCategoryObject(object, enums.drainPipeSprites)
+end
+
+function utils:isVerticalPipe(object)
+    return self:isSpriteCategoryObject(object, enums.verticalPipeSprites)
+end
+
+function utils:isHorizontalPipe(object)
+    return self:isSpriteCategoryObject(object, enums.horizontalPipeSprites)
+end
+
+function utils:hasVerticalPipeOnTile(square)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.verticalPipeSprites)
+end
+
+function utils:hasHorizontalPipeOnTile(square)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.horizontalPipeSprites)
+end
+
+function utils:hasDrainPipeOnTile(square)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.drainPipeSprites)
 end
 
 function utils:getModDataKeyValue(object, loadedModData, key)
@@ -62,6 +91,10 @@ end
 
 function utils:getModDataBaseRainFactor(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
+end
+
+function utils:getModDataRoofArea(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.roofArea)
 end
 
 function utils:getObjectEntityScript(object)
@@ -127,40 +160,6 @@ function utils:patchModData(object, replace)
     end
 
     return objectModData
-end
-
-function utils:getSquare2Pos(square, north)
-    local x = square:getX()
-    local y = square:getY()
-    local z = square:getZ()
-    if north then
-        x = x - 1
-    else
-        y = y - 1
-    end
-    return x, y, z
-end
-
-function utils:getSquare2PosReverse(square, north)
-    local x = square:getX()
-    local y = square:getY()
-    local z = square:getZ()
-    if north then
-        x = x + 1
-    else
-        y = y + 1
-    end
-    return x, y, z
-end
-
-function utils:getSquare2(square, north, reverse)
-    local x, y, z
-    if reverse then
-        x, y, z = self:getSquare2PosReverse(square, north)
-    else
-        x, y, z = self:getSquare2Pos(square, north)
-    end
-    return getCell():getGridSquare(x, y, z)
 end
 
 function utils:getSpecificIsoObjectFromSquare(square, spriteName)

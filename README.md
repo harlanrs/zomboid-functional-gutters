@@ -163,3 +163,13 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - Add connect & disconnect plumbing actions 
     - Includes "Require Pipe Wrench" mod option which defaults to True
     - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
+
+
+### 1.2 Notes
+- look into zone:getRoofAreasConnected():size() for roof calcs
+    - animal zones have some cool features for roofs but specific to that zone implementation
+- look into building = square:getRoofHideBuilding()
+- isoCell: associatedBuilding.getRoofRoomID
+- isosquare getRoofHideBuilding seems like the best bet
+    - isosquare -> isobuilding -> 
+- isoWorldRegion.getRoofCnt

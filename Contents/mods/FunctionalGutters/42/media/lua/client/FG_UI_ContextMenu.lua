@@ -1,6 +1,7 @@
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local options = require("FG_Options")
+local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 local serviceUtils = require("FG_Utils_Service")
 
@@ -122,10 +123,50 @@ local function AddDebugContainerContext(player, context, square, containerObject
         local baseRainFactor = serviceUtils:getObjectBaseRainFactor(containerObject)
         containerSubMenu:addOption("Base Rain Factor: " .. tostring(baseRainFactor), playerObject, nil)
 
-        containerSubMenu:addOption("Tile Gutter: " .. tostring(utils:getModDataHasGutter(square, nil)), playerObject, nil)
+        local tileHasGutter = utils:getModDataHasGutter(square, nil)
+        containerSubMenu:addOption("Tile Gutter: " .. tostring(tileHasGutter), playerObject, nil)
 
         local isGutterConnected = utils:getModDataIsGutterConnected(containerObject, nil)
         containerSubMenu:addOption("Gutter Connected: " .. tostring(isGutterConnected), playerObject, nil)
+
+
+        if tileHasGutter then
+            local gutterRoofArea = utils:getModDataRoofArea(square, nil)
+            if not gutterRoofArea then
+                gutterRoofArea = isoUtils:getGutterRoofArea(square)
+            end
+
+            local topGutterFloor = isoUtils:findGutterTopLevel(square)
+            containerSubMenu:addOption("Top Gutter Floor: " .. tostring(topGutterFloor), playerObject, nil)
+
+            containerSubMenu:addOption("Gutter Roof Area: " .. tostring(gutterRoofArea), playerObject, nil)
+        else
+            local building = square:getBuilding()
+            utils:modPrint("Tile in building: "..tostring(building))
+
+            local roofBuilding = square:getRoofHideBuilding()
+            if roofBuilding then
+                utils:modPrint("Roof Building: "..tostring(roofBuilding))
+            end
+
+            local buildingSquare = square
+            if not building then
+                building, buildingSquare = isoUtils:getAdjacentBuilding(square)
+                utils:modPrint("Adjacent Building: "..tostring(building))
+                if buildingSquare then
+                    roofBuilding = buildingSquare:getRoofHideBuilding()
+                    utils:modPrint("Adjacent Roof Building: "..tostring(roofBuilding))
+                end
+            end
+
+            if building then
+                -- Calculate area of top-floor assuming it's 1-1 square -> roof
+                local area = isoUtils:getBuildingFloorArea(building, nil)
+                containerSubMenu:addOption("Building Roof Size: " .. tostring(area), playerObject, nil)
+            else
+                containerSubMenu:addOption("No Connected Building", playerObject, nil)
+            end
+        end
     end
 end
 

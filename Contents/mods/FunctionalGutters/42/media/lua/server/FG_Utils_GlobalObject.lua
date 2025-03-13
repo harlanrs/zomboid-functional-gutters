@@ -1,6 +1,7 @@
 if isClient() then return end
 
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 
 local globalObjectUtils = {}
@@ -80,7 +81,7 @@ function globalObjectUtils:upgradeTroughToGlobalObject(primaryTrough)
             SFeedingTroughSystem.instance:addTrough(troughSquare, def, north, false)
 
             if def.sprite2 then
-                local x, y, z = utils:getSquare2Pos(troughSquare, north)
+                local x, y, z = isoUtils:getSquare2Pos(troughSquare, north)
                 local secondarySquare = getCell():getGridSquare(x, y, z)
                 if not secondarySquare then
                     utils:modPrint("Secondary square not found for getSquare2Pos: "..tostring(x)..","..tostring(y)..","..tostring(z))

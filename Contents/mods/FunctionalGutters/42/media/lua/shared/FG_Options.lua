@@ -1,11 +1,12 @@
 local enums = require("FG_Enums")
 
 local options = {}
+local modOptions = nil
 
 local function loadModOptions()
-    local modOptions = PZAPI.ModOptions:create(enums.modName, enums.modDisplayName)
+    modOptions = PZAPI.ModOptions:create(enums.modName, enums.modDisplayName)
 
-    options.gutterRainFactorOption = modOptions:addSlider("GutterRainFactor", getText("UI_options_FunctionalGutters_GutterRainFactor"), 1.0, 10.0, 0.1, 1.6, getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
+    options.gutterRainFactorOption = modOptions:addSlider("GutterRainFactor", getText("UI_options_FunctionalGutters_GutterRainFactor"), 0.0, 2.0, 0.1, 1.0, getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
 
     -- NOTE: slider option doesn't appear to display the tooltip so including it again as a description
     modOptions:addDescription(getText("UI_options_FunctionalGutters_GutterRainFactor_tooltip"))
@@ -28,7 +29,7 @@ function options:getDebug()
 end
 
 function options:getModOptions()
-    return options
+    return modOptions
 end
 
 Events.OnMainMenuEnter.Add(function()

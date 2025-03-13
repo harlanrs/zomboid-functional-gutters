@@ -10,7 +10,7 @@ function BaseContainerServiceInterface:isObjectType(object)
     return false
 end
 
-function BaseContainerServiceInterface:connectContainer(object)
+function BaseContainerServiceInterface:connectContainer(object, roofArea)
     assert(false, "Not implemented")
 end
 

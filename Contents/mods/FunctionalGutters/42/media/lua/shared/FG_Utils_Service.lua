@@ -1,5 +1,6 @@
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 
 local serviceUtils = {}
@@ -58,7 +59,9 @@ function serviceUtils:getObjectBaseRainFactorHeavy(object)
     return 0.0
 end
 
-function serviceUtils:syncSquareModData(square)
+
+
+function serviceUtils:syncSquareModData(square, full)
     -- Avoid initializing mod data if we don't need to
     local squareHasModData = square:hasModData()
     local hasDrainPipe = utils:hasDrainPipeOnTile(square)
@@ -71,6 +74,11 @@ function serviceUtils:syncSquareModData(square)
     if hasDrainPipe then
         -- The square has a drain pipe - ensure the square's mod data reflects this
         squareModData[enums.modDataKey.hasGutter] = true
+        
+        -- Calculate the number of 'roof' tiles above the drain pipe
+        if full or not utils:getModDataRoofArea(square, squareModData) then
+            squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
+        end
     else
         if utils:getModDataHasGutter(square, squareModData) then
             -- The square no longer has a drain pipe - ensure the square's mod data reflects this

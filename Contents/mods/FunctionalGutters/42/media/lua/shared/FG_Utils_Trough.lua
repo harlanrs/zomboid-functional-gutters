@@ -1,6 +1,6 @@
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
-
+local isoUtils = require("FG_Utils_Iso")
 local troughUtils = {}
 
 local troughNorthFieldIndex = nil
@@ -71,7 +71,7 @@ function troughUtils:getPrimaryTroughFromDef(troughObject)
 
         if def.sprite2 == troughSpriteName or def.spriteNorth2 == troughSpriteName then
             local north = def.spriteNorth2 == troughSpriteName
-            local x, y, z = utils:getSquare2PosReverse(troughObject:getSquare(), north)
+            local x, y, z = isoUtils:getSquare2PosReverse(troughObject:getSquare(), north)
             local primarySquare = getCell():getGridSquare(x, y, z)
             local primarySpriteName = north and def.spriteNorth1 or def.sprite1
             local primaryTrough = utils:getSpecificIsoObjectFromSquare(primarySquare, primarySpriteName)
@@ -98,7 +98,7 @@ function troughUtils:getSecondaryTroughFromDef(troughObject)
 
         if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
             local north = def.spriteNorth1 == troughSpriteName
-            local x, y, z = utils:getSquare2Pos(troughObject:getSquare(), north)
+            local x, y, z = isoUtils:getSquare2Pos(troughObject:getSquare(), north)
             local secondarySquare = getCell():getGridSquare(x, y, z)
             local secondarySpriteName = north and def.spriteNorth2 or def.sprite2
             local secondaryTrough = utils:getSpecificIsoObjectFromSquare(secondarySquare, secondarySpriteName)

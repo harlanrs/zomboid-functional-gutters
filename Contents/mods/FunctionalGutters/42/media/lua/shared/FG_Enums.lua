@@ -4,10 +4,10 @@ enums.modName = "FunctionalGutters"
 enums.modDisplayName = "Functional Gutters"
 enums.drainPipeSprites = table.newarray(
     -- Mostly used in water towers
-    "industry_02_76",
-    "industry_02_77",
-    "industry_02_78",
-    "industry_02_79",
+    "industry_02_76", -- drain facing east
+    "industry_02_77", -- north drain facing south
+    "industry_02_78", -- north drain facing north
+    "industry_02_79", -- drain facing west
 
     -- Vertical pipes with curve bottom
     "industry_02_236",
@@ -22,6 +22,23 @@ enums.drainPipeSprites = table.newarray(
     "industry_02_261",
     "industry_02_262",
     "industry_02_263"
+)
+
+enums.verticalPipeSprites = table.newarray(
+    -- water tower
+    "industry_02_34",
+
+    -- Standard industrial
+    "industry_02_238",
+    "industry_02_239",
+    "industry_02_243",
+    "industry_02_247"
+)
+
+enums.horizontalPipeSprites = table.newarray(
+    -- Water tower
+    "industry_02_37",
+    "industry_02_38"   -- north
 )
 
 -- TODO auto source from FeedingTroughDef?
@@ -57,6 +74,7 @@ enums.modDataKey = {
     hasGutter = "FG_hasGutter",
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
+    roofArea = "FG_roofArea",
 }
 
 -- Keep for a bit to phase out
