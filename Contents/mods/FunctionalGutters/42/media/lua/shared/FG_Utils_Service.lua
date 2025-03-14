@@ -60,33 +60,85 @@ function serviceUtils:getObjectBaseRainFactorHeavy(object)
 end
 
 
+function serviceUtils:setDrainPipeModData(square, squareModData, full)
+    utils:modPrint("Setting drain pipe mod data for square: "..tostring(square))
+    -- The square has a drain pipe - ensure the square's mod data reflects this
+    squareModData[enums.modDataKey.hasGutter] = true
+
+    -- Calculate the number of 'roof' tiles above the drain pipe
+    if full or not utils:getModDataRoofArea(square, squareModData) then
+        squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
+    end
+end
+
+function serviceUtils:cleanupDrainPipeModData(square, squareModData)
+    utils:modPrint("Clearing drain pipe mod data for square: "..tostring(square))
+    -- The square no longer has a drain pipe - ensure the square's mod data reflects this
+    squareModData[enums.modDataKey.hasGutter] = nil
+    squareModData[enums.modDataKey.roofArea] = nil
+end
+
+function serviceUtils:setVerticalPipeModData(square, squareModData, full)
+    utils:modPrint("Setting vertical pipe mod data for square: "..tostring(square))
+    -- The square has a vertical pipe - ensure the square's mod data reflects this
+    squareModData[enums.modDataKey.hasVerticalPipe] = true
+end
+
+function serviceUtils:cleanupVerticalPipeModData(square, squareModData)
+    utils:modPrint("Clearing vertical pipe mod data for square: "..tostring(square))
+    -- The square no longer has a drain pipe - ensure the square's mod data reflects this
+    squareModData[enums.modDataKey.hasVerticalPipe] = nil
+end
 
 function serviceUtils:syncSquareModData(square, full)
     -- Avoid initializing mod data if we don't need to
     local squareHasModData = square:hasModData()
-    local hasDrainPipe = utils:hasDrainPipeOnTile(square)
-    if not squareHasModData and not hasDrainPipe then
-        -- No mod data, no drain pipe, no worries
+    local index, pipeObject, spriteName, spriteCategory = utils:getSpriteCategoryMemberOnTile(square)
+    if not squareHasModData and not pipeObject then
+        -- No mod data, no pipes, no worries
         return nil
     end
 
     local squareModData = square:getModData()
-    if hasDrainPipe then
-        -- The square has a drain pipe - ensure the square's mod data reflects this
-        squareModData[enums.modDataKey.hasGutter] = true
-        
-        -- Calculate the number of 'roof' tiles above the drain pipe
-        if full or not utils:getModDataRoofArea(square, squareModData) then
-            squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
-        end
-    else
+    if not pipeObject then
         if utils:getModDataHasGutter(square, squareModData) then
             -- The square no longer has a drain pipe - ensure the square's mod data reflects this
-            squareModData[enums.modDataKey.hasGutter] = nil
+            self:cleanupDrainPipeModData(square, squareModData)
+        elseif utils:getModDataHasVerticalPipe(square, squareModData) then
+            -- The square no longer has a vertical pipe - ensure the square's mod data reflects this
+            self:cleanupVerticalPipeModData(square, squareModData)
         end
+
+        -- TODO general cleanup of any/all mod data keys?
+
+        return squareModData
+    end
+
+    local hasDrainPipe = spriteCategory == enums.pipeCategory.drain
+    local hasVerticalPipe = spriteCategory == enums.pipeCategory.vertical
+    -- local hasHorizontalPipe = spriteCategory == enums.pipeCategory.horizontal
+
+    if hasDrainPipe then
+        self:setDrainPipeModData(square, squareModData, full)
+    elseif hasVerticalPipe then
+        self:setVerticalPipeModData(square, squareModData, full)
     end
 
     return squareModData
+end
+
+local function wrapSyncSquareModData(square, full)
+    local squareModData = serviceUtils:syncSquareModData(square, full)
+    if squareModData == nil then
+        return false -- breaks
+    end
+
+    return nil -- continues
+end
+
+function serviceUtils:syncSquareStackModData(square, full)
+    local z = isoUtils:applyToSquareStack(square, function(sq) return wrapSyncSquareModData(sq, full) end)
+    utils:modPrint("Called syncSquareModData up to level: "..tostring(z))
 end
 
 return serviceUtils

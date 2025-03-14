@@ -40,12 +40,14 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
     end
 end
 
-function GutterServerManager.OnIsoObjectBuilt(square)
+function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     -- NOTE: param is square not the object itself
     local squareModData = serviceUtils:syncSquareModData(square, nil)
-    if squareModData and utils:getModDataHasGutter(square, squareModData) then
-        utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
+    if squareModData then
+        if utils:getModDataHasGutter(square, squareModData) then
+            utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
+        end
     end
 end
 
@@ -73,7 +75,7 @@ function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
     -- NOTE: using ISBuildIsoEntity:setInfo instead of ISBuildIsoEntity:create as it is possible for the create function to exit early unsuccessfully
     ISBuildIsoEntity_setInfo(self, square, north, sprite, openSprite)
 
-    GutterServerManager.OnIsoObjectBuilt(square)
+    GutterServerManager.OnIsoObjectBuilt(square, sprite)
 end
 
 Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)

@@ -40,11 +40,16 @@ end
 
 function isoUtils:getAdjacentBuilding(square, dir)
     if not dir then
+        -- South & East tiles are least likely objects due to isometric view
         dir = table.newarray(
             localIsoDirections.N,
-            localIsoDirections.S,
             localIsoDirections.W,
-            localIsoDirections.E
+            localIsoDirections.NW,
+            localIsoDirections.SW,
+            localIsoDirections.NE,
+            localIsoDirections.S,
+            localIsoDirections.E,
+            localIsoDirections.SE
         )
     end
 
@@ -112,7 +117,10 @@ function isoUtils:findGutterTopLevel(square)
     for i=1, 4 do
         local nextFloor = z + 1
         local nextSquare = cell:getGridSquare(x, y, nextFloor)
-        if not utils:hasVerticalPipeOnTile(nextSquare) then
+        if not nextSquare then
+            utils:modPrint("next square level not found: "..tostring(nextFloor))
+            break
+        elseif not utils:hasVerticalPipeOnTile(nextSquare) then
             break
         end
 
@@ -154,6 +162,37 @@ end
 
 -- function isoUtils:getPlayerBuildingFloorArea(square, z)
 --     --
+-- end
+
+function isoUtils:applyToSquareStack(square, func)
+    local cell = square:getCell()
+    local x = square:getX()
+    local y = square:getY()
+    local z = 0
+
+    -- Check 5 max
+    for i=1, 4 do
+        local nextFloor = z + 1
+        local nextSquare = cell:getGridSquare(x, y, nextFloor)
+        local value = func(nextSquare)
+        if value then
+            return z
+        elseif value == false then
+            break
+        end
+
+        z = nextFloor
+    end
+
+    return z
+end
+
+-- function isoUtils:applyToSquareStackUp(square, func)
+    
+-- end
+
+-- function isoUtils:applyToSquareStackDown(square, func)
+
 -- end
 
 return isoUtils

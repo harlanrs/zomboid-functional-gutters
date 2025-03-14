@@ -172,4 +172,16 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - isoCell: associatedBuilding.getRoofRoomID
 - isosquare getRoofHideBuilding seems like the best bet
     - isosquare -> isobuilding -> 
-- isoWorldRegion.getRoofCnt
+    - isosquare:getBuilding
+- building -> getDef():getRoofRoomID(var4.z)
+- building -> isEntirelyEmptyOutside
+- buildingDef -> CalculateBounds
+
+TODO
+- icons for buildables
+- need moveable def for pickup/move/scrap?
+- scrap definition
+- recognize player floors
+- post add script that triggers base gutter resync
+- verify sprite alignment
+    - give feedback on construction

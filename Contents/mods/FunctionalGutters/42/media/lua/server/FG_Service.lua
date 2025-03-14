@@ -39,7 +39,7 @@ function gutterService:connectContainer(containerObject, roofArea)
     -- TODO Need to get the connected tile if the object is a multi-tile trough
     -- Get the square's roofArea
     local square = containerObject:getSquare()
-    local squareModData = serviceUtils:syncSquareModData(square, nil)
+    local squareModData = serviceUtils:syncSquareModData(square, true)
     local gutterRoofArea = utils:getModDataRoofArea(square, squareModData)
 
     containerService:connectContainer(containerObject, gutterRoofArea)

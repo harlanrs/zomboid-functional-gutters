@@ -11,4 +11,6 @@ UI_EN = {
     UI_context_menu_FunctionalGutters_GutterSubMenu = "Gutter Drain"
     UI_context_menu_FunctionalGutters_ConnectContainer = "Connect"
     UI_context_menu_FunctionalGutters_DisconnectContainer = "Disconnect"
+
+    UI_craft_FunctionalGutters_MetalDrainPipe_tooltip = "Craft gutter drain pipe"
 }

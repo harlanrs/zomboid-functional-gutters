@@ -12,62 +12,105 @@ function utils:modPrint(message)
 end
 
 
-function utils:isSpriteCategoryMember(spriteName, spriteCategoryList)
-    for i = 1, #spriteCategoryList do
-        if spriteName == spriteCategoryList[i] then
-            return true
-        end
+function utils:getSpriteCategory(spriteName)
+    local spriteCategory = enums.pipes[spriteName]
+    if spriteCategory then
+        return spriteCategory
     end
-    return false
+    return nil
 end
 
-function utils:isSpriteCategoryObject(object, spriteCategoryList)
+
+function utils:isSpriteCategoryMember(spriteName, spriteCategory)
+    local foundSpriteCategory = self:getSpriteCategory(spriteName)
+    if foundSpriteCategory == spriteCategory then
+        return true
+    end
+    return nil
+end
+
+function utils:isSpriteCategoryObject(object, spriteCategory)
     if not object then return false end
 
     local spriteName = object:getSpriteName()
     if not spriteName then return false end
 
-    return self:isSpriteCategoryMember(spriteName, spriteCategoryList)
+    return self:isSpriteCategoryMember(spriteName, spriteCategory)
 end
 
-function utils:hasSpriteCategoryMemberOnTile(square, spriteCategoryList)
+function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
-        if self:isSpriteCategoryObject(object, spriteCategoryList) then
+        local foundSpriteCategory = self:getSpriteCategory(object:getSpriteName())
+        if foundSpriteCategory == spriteCategory then
             return true
         end
     end
+
+    return false
+end
+
+function utils:getSpriteCategoryMemberOnTile(square)
+    local objects = square:getObjects()
+    for i = 0, objects:size() - 1 do
+        local object = objects:get(i)
+        local spriteName = object:getSpriteName()
+        local foundSpriteCategory = self:getSpriteCategory(object:getSpriteName())
+        if foundSpriteCategory then
+            return i, object, spriteName, foundSpriteCategory
+        end
+    end
+
+    return nil, nil, nil, nil
+end
+
+
+function utils:isAnyPipeSprite(spriteName)
+    if self:getSpriteCategory(spriteName) then
+        return true
+    end
+
     return false
 end
 
 function utils:isDrainPipeSprite(spriteName)
-    return self:isSpriteCategoryMember(spriteName, enums.drainPipeSprites)
+    local spriteCategory = self:getSpriteCategory(spriteName)
+    if spriteCategory == enums.pipeCategory.drain then
+        return true
+    end
+    return false
 end
 
 function utils:isDrainPipe(object)
-    return self:isSpriteCategoryObject(object, enums.drainPipeSprites)
+    return self:isSpriteCategoryObject(object, enums.pipeCategory.drain)
 end
 
 function utils:isVerticalPipe(object)
-    return self:isSpriteCategoryObject(object, enums.verticalPipeSprites)
+    return self:isSpriteCategoryObject(object, enums.pipeCategory.vertical)
 end
 
 function utils:isHorizontalPipe(object)
-    return self:isSpriteCategoryObject(object, enums.horizontalPipeSprites)
+    return self:isSpriteCategoryObject(object, enums.pipeCategory.horizontal)
 end
 
 function utils:hasVerticalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.verticalPipeSprites)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.vertical)
 end
 
 function utils:hasHorizontalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.horizontalPipeSprites)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.horizontal)
 end
 
 function utils:hasDrainPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.drainPipeSprites)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.drain)
 end
+
+-- TODO
+-- function utils:hasAnyPipeOnTile(square)
+
+--     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeSprites)
+-- end
 
 function utils:getModDataKeyValue(object, loadedModData, key)
     local modData = loadedModData
@@ -87,6 +130,10 @@ end
 
 function utils:getModDataHasGutter(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasGutter)
+end
+
+function utils:getModDataHasVerticalPipe(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasVerticalPipe)
 end
 
 function utils:getModDataBaseRainFactor(object, loadedModData)

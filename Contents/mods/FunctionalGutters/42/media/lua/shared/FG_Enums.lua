@@ -2,6 +2,13 @@ local enums = {}
 
 enums.modName = "FunctionalGutters"
 enums.modDisplayName = "Functional Gutters"
+
+enums.pipeCategory = {
+    drain = "drain",
+    vertical = "vertical",
+    horizontal = "horizontal",
+}
+
 enums.drainPipeSprites = table.newarray(
     -- Mostly used in water towers
     "industry_02_76", -- drain facing east
@@ -18,10 +25,10 @@ enums.drainPipeSprites = table.newarray(
     "industry_02_244",
     "industry_02_245",
     "industry_02_246",
-    "industry_02_260",
-    "industry_02_261",
-    "industry_02_262",
-    "industry_02_263"
+    "industry_02_260", -- point south
+    "industry_02_261", -- point east
+    "industry_02_262", -- point south
+    "industry_02_263" -- point east
 )
 
 enums.verticalPipeSprites = table.newarray(
@@ -38,8 +45,19 @@ enums.verticalPipeSprites = table.newarray(
 enums.horizontalPipeSprites = table.newarray(
     -- Water tower
     "industry_02_37",
-    "industry_02_38"   -- north
+    "industry_02_38",   -- north
+    "industry_02_226",
+    "industry_02_230",
+    "industry_02_224",  -- north
+    "industry_02_231",   -- north
+    "roofs_06_6", -- roof gutter south
+    "roofs_06_7", -- roof gutter east
+    "roofs_06_21", -- roof south east corner small
+    "roofs_06_20" -- roof north west corner large
 )
+
+-- TBD
+-- tiles2x 128
 
 -- TODO auto source from FeedingTroughDef?
 -- NOTE: 'accessories' is misspelled in sprite names
@@ -72,8 +90,11 @@ enums.options = {
 -- and make it easier to find in blanket search
 enums.modDataKey = {
     hasGutter = "FG_hasGutter",
+    hasVerticalPipe = "FG_hasVerticalPipe",
+    hasHorizontalPipe = "FG_hasHorizontalPipe",
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
+    isPipeConnected = "FG_isPipeConnected",
     roofArea = "FG_roofArea",
 }
 
@@ -95,5 +116,27 @@ enums.modCommands = {
     connectContainer = "connectContainer",
     disconnectContainer = "disconnectContainer",
 }
+
+enums.pipes = {}
+
+local function loadAllPipes()
+    -- Build quick lookup tables for pipe identity
+    for _, sprite in ipairs(enums.drainPipeSprites) do
+        enums.pipes[sprite] = enums.pipeCategory.drain
+    end
+
+    for _, sprite in ipairs(enums.verticalPipeSprites) do
+        enums.pipes[sprite] = enums.pipeCategory.vertical
+    end
+
+    for _, sprite in ipairs(enums.horizontalPipeSprites) do
+        enums.pipes[sprite] = enums.pipeCategory.horizontal
+    end
+end
+
+loadAllPipes()
+
+-- TODO load trough def details
+
 
 return enums
