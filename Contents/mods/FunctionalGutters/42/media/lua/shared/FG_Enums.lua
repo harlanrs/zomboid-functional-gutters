@@ -3,61 +3,157 @@ local enums = {}
 enums.modName = "FunctionalGutters"
 enums.modDisplayName = "Functional Gutters"
 
-enums.pipeCategory = {
+enums.pipeType = {
     drain = "drain",
     vertical = "vertical",
     horizontal = "horizontal",
 }
 
-enums.drainPipeSprites = table.newarray(
+enums.collectorType = {
+    fluidContainer = "fluidContainer",
+    trough = "trough",
+}
+
+enums.pipes = {
+    -- Drain pipes
     -- Mostly used in water towers
-    "industry_02_76", -- drain facing east
-    "industry_02_77", -- north drain facing south
-    "industry_02_78", -- north drain facing north
-    "industry_02_79", -- drain facing west
+    industry_02_76 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.W, -- verify
+        facing = IsoDirections.E,
+    }, -- drain facing east
+    industry_02_77 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.S,
+    }, -- north drain facing south
+    industry_02_78 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.N,
+    }, -- north drain facing north
+    industry_02_79 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NE, -- verify
+        facing = IsoDirections.W,
+    }, -- drain facing west
 
     -- Vertical pipes with curve bottom
-    "industry_02_236",
-    "industry_02_237",
-    "industry_02_240",
-    "industry_02_241",
-    "industry_02_242",
-    "industry_02_244",
-    "industry_02_245",
-    "industry_02_246",
-    "industry_02_260", -- point south
-    "industry_02_261", -- point east
-    "industry_02_262", -- point south
-    "industry_02_263" -- point east
-)
+    -- industry_02_236 = {}, -- vertical pipes with curve bottom
+    -- industry_02_237 = {},
+    -- industry_02_240 = {},
+    -- industry_02_241 = {},
+    -- industry_02_242 = {},
+    -- industry_02_244 = {},
+    -- industry_02_245 = {},
+    -- industry_02_246 = {},
+    industry_02_260 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.S,
+    }, -- nw corner | point south 
+    industry_02_261 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.E,
+    }, -- nw corner | point east
+    industry_02_262 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.S,
+    }, -- nw corner | point south
+    industry_02_263 = {
+        type = enums.pipeType.drain,
+        position = IsoDirections.NW, -- verify
+        facing = IsoDirections.E,
+    }, -- nw corner | point east
 
-enums.verticalPipeSprites = table.newarray(
+    --------------------------------------
+    -- Vertical pipes 
     -- water tower
-    "industry_02_34",
+    -- industry_02_34 = {}, -- TBD
 
     -- Standard industrial
-    "industry_02_238",
-    "industry_02_239",
-    "industry_02_243",
-    "industry_02_247"
-)
+    industry_02_238 = {
+        type = enums.pipeType.vertical,
+        position = IsoDirections.NW,
+        facing = nil,
+    }, -- nw corner
+    industry_02_239 = {
+        type = enums.pipeType.vertical,
+        position = IsoDirections.SE,
+        facing = nil,
+    }, -- se corner
+    industry_02_243 = {
+        type = enums.pipeType.vertical,
+        position = IsoDirections.NE,
+        facing = nil,
+    }, -- ne corner
+    industry_02_247 = {
+        type = enums.pipeType.vertical,
+        position = IsoDirections.SW,
+        facing = nil,
+    }, -- sw corner
 
-enums.horizontalPipeSprites = table.newarray(
+    --------------------------------------
+    -- Horizontal pipes
     -- Water tower
-    "industry_02_37",
-    "industry_02_38",   -- north
-    "industry_02_226",
-    "industry_02_230",
-    "industry_02_224",  -- north
-    "industry_02_231",   -- north
-    "roofs_06_6", -- roof gutter south
-    "roofs_06_7", -- roof gutter east
-    "roofs_06_21", -- roof south east corner small
-    "roofs_06_20" -- roof north west corner large
-)
+    -- "industry_02_37",
+    -- "industry_02_38",   -- north
+    -- "industry_02_226",
+    -- "industry_02_230",
+    -- "industry_02_224",  -- north
+    -- "industry_02_231",   -- north
+    -- "roofs_06_6", -- roof gutter south
+    -- "roofs_06_7", -- roof gutter east
+    -- "roofs_06_21", -- roof south east corner small
+    -- "roofs_06_20" -- roof north west corner large
 
--- TBD
--- tiles2x 128
+    -- TODO add to base pipes def
+}
+
+local function mapPipesByType(pipeCategory)
+    local categoryPipes = {}
+
+    for spriteName, spriteDef in ipairs(enums.pipes) do
+        if spriteDef.type == pipeCategory then
+            categoryPipes[spriteName] = spriteDef
+        end
+    end
+
+    return categoryPipes
+end
+
+local function mapPipesByPosition(position)
+    local positionPipes = {}
+
+    for spriteName, spriteDef in ipairs(enums.pipes) do
+        if spriteDef.position == position then
+            positionPipes[spriteName] = spriteDef
+        end
+    end
+
+    return positionPipes
+end
+
+enums.drainPipeSprites = mapPipesByType(enums.pipeType.drain)
+
+enums.verticalPipeSprites = mapPipesByType(enums.pipeType.vertical)
+
+enums.horizontalPipeSprites = mapPipesByType(enums.pipeType.horizontal)
+
+
+enums.pipeAtlas = {}
+enums.pipeAtlas.type = {}
+enums.pipeAtlas.type[enums.pipeType.drain] = enums.drainPipeSprites
+enums.pipeAtlas.type[enums.pipeType.vertical] = enums.verticalPipeSprites
+enums.pipeAtlas.type[enums.pipeType.horizontal] = enums.horizontalPipeSprites
+
+enums.pipeAtlas.position = {}
+enums.pipeAtlas.position[IsoDirections.NW] = mapPipesByPosition(IsoDirections.NW)
+enums.pipeAtlas.position[IsoDirections.NE] = mapPipesByPosition(IsoDirections.NE)
+enums.pipeAtlas.position[IsoDirections.SW] = mapPipesByPosition(IsoDirections.SW)
+enums.pipeAtlas.position[IsoDirections.SE] = mapPipesByPosition(IsoDirections.SE)
 
 -- TODO auto source from FeedingTroughDef?
 -- NOTE: 'accessories' is misspelled in sprite names
@@ -105,38 +201,11 @@ enums.oldModDataKey = {
     isGutterConnected = "isGutterConnected",
 }
 
-enums.containerType = {
-    fluidContainer = "fluidContainer",
-    trough = "trough",
-}
-
 enums.troughBaseRainFactor = 0.55
 
 enums.modCommands = {
-    connectContainer = "connectContainer",
-    disconnectContainer = "disconnectContainer",
+    connectCollector = "connectCollector",
+    disconnectCollector = "disconnectCollector",
 }
-
-enums.pipes = {}
-
-local function loadAllPipes()
-    -- Build quick lookup tables for pipe identity
-    for _, sprite in ipairs(enums.drainPipeSprites) do
-        enums.pipes[sprite] = enums.pipeCategory.drain
-    end
-
-    for _, sprite in ipairs(enums.verticalPipeSprites) do
-        enums.pipes[sprite] = enums.pipeCategory.vertical
-    end
-
-    for _, sprite in ipairs(enums.horizontalPipeSprites) do
-        enums.pipes[sprite] = enums.pipeCategory.horizontal
-    end
-end
-
-loadAllPipes()
-
--- TODO load trough def details
-
 
 return enums

@@ -40,7 +40,7 @@ end
 
 function isoUtils:getAdjacentBuilding(square, dir)
     if not dir then
-        -- South & East tiles are least likely objects due to isometric view
+        -- South & East tiles are least likely
         dir = table.newarray(
             localIsoDirections.N,
             localIsoDirections.W,
@@ -63,6 +63,32 @@ function isoUtils:getAdjacentBuilding(square, dir)
 
     return nil, nil
 end
+
+-- function isoUtils:getAdjacentWall(square, dir)
+--     if not dir then
+--         -- South & East tiles are least likely
+--         dir = table.newarray(
+--             localIsoDirections.N,
+--             localIsoDirections.W,
+--             localIsoDirections.NW,
+--             localIsoDirections.SW,
+--             localIsoDirections.NE,
+--             localIsoDirections.S,
+--             localIsoDirections.E,
+--             localIsoDirections.SE
+--         )
+--     end
+
+--     for i=1, #dir do
+--         local adjacentSquare = square:getAdjacentSquare(dir[i])
+--         local adjacentWall = adjacentSquare:getWall()
+--         if adjacentBuilding then
+--             return adjacentBuilding, adjacentSquare
+--         end
+--     end
+
+--     return nil, nil
+-- end
 
 function isoUtils:getBuildingRoofRoom(building, z)
     local buildingDef = building:getDef()

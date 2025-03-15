@@ -11,15 +11,13 @@ function utils:modPrint(message)
     end
 end
 
-
 function utils:getSpriteCategory(spriteName)
-    local spriteCategory = enums.pipes[spriteName]
-    if spriteCategory then
-        return spriteCategory
+    local spriteDef = enums.pipes[spriteName]
+    if spriteDef and spriteDef.type then
+        return spriteDef.type
     end
     return nil
 end
-
 
 function utils:isSpriteCategoryMember(spriteName, spriteCategory)
     local foundSpriteCategory = self:getSpriteCategory(spriteName)
@@ -51,6 +49,7 @@ function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     return false
 end
 
+-- TODO will need to rethink once multiple sprites can be on the same tile (ex: vertical and horizontal pipes)
 function utils:getSpriteCategoryMemberOnTile(square)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -76,34 +75,34 @@ end
 
 function utils:isDrainPipeSprite(spriteName)
     local spriteCategory = self:getSpriteCategory(spriteName)
-    if spriteCategory == enums.pipeCategory.drain then
+    if spriteCategory == enums.pipeType.drain then
         return true
     end
     return false
 end
 
 function utils:isDrainPipe(object)
-    return self:isSpriteCategoryObject(object, enums.pipeCategory.drain)
+    return self:isSpriteCategoryObject(object, enums.pipeType.drain)
 end
 
 function utils:isVerticalPipe(object)
-    return self:isSpriteCategoryObject(object, enums.pipeCategory.vertical)
+    return self:isSpriteCategoryObject(object, enums.pipeType.vertical)
 end
 
 function utils:isHorizontalPipe(object)
-    return self:isSpriteCategoryObject(object, enums.pipeCategory.horizontal)
+    return self:isSpriteCategoryObject(object, enums.pipeType.horizontal)
 end
 
 function utils:hasVerticalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.vertical)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.vertical)
 end
 
 function utils:hasHorizontalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.horizontal)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.horizontal)
 end
 
 function utils:hasDrainPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeCategory.drain)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
 end
 
 -- TODO

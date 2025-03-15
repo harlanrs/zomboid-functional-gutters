@@ -114,9 +114,9 @@ function serviceUtils:syncSquareModData(square, full)
         return squareModData
     end
 
-    local hasDrainPipe = spriteCategory == enums.pipeCategory.drain
-    local hasVerticalPipe = spriteCategory == enums.pipeCategory.vertical
-    -- local hasHorizontalPipe = spriteCategory == enums.pipeCategory.horizontal
+    local hasDrainPipe = spriteCategory == enums.pipeType.drain
+    local hasVerticalPipe = spriteCategory == enums.pipeType.vertical
+    -- local hasHorizontalPipe = spriteCategory == enums.pipeType.horizontal
 
     if hasDrainPipe then
         self:setDrainPipeModData(square, squareModData, full)

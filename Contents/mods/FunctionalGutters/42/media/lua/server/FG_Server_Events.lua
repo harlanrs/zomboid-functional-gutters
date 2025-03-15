@@ -2,7 +2,6 @@ if isClient() then return end
 
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
-local isoUtils = require("FG_Utils_Iso")
 local serviceUtils = require("FG_Utils_Service")
 local globalObjectUtils = require("FG_Utils_GlobalObject")
 local gutterService = require("FG_Service")
@@ -10,22 +9,22 @@ local gutterService = require("FG_Service")
 local GutterServerManager = {}
 local GutterCommands = {}
 
-function GutterCommands.connectContainer(args)
-    local containerObj = utils:parseObjectCommandArgs(args)
-    if not containerObj then
+function GutterCommands.connectCollector(args)
+    local collectorObject = utils:parseObjectCommandArgs(args)
+    if not collectorObject then
         return
     end
 
-    gutterService:connectContainer(containerObj)
+    gutterService:connectCollector(collectorObject)
 end
 
-function GutterCommands.disconnectContainer(args)
-    local containerObj = utils:parseObjectCommandArgs(args)
-    if not containerObj then
+function GutterCommands.disconnectCollector(args)
+    local collectorObject = utils:parseObjectCommandArgs(args)
+    if not collectorObject then
         return
     end
 
-    gutterService:disconnectContainer(containerObj)
+    gutterService:disconnectCollector(collectorObject)
 end
 
 function GutterServerManager.OnClientCommand(module, command, player, args)
@@ -65,7 +64,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- Can't properly clean up all object types on pickup so have to check here for placement
     if utils:getModDataIsGutterConnected(placedObject, nil) then
         utils:modPrint("Object marked as having a gutter after placing: "..tostring(placedObject))
-        gutterService:disconnectContainer(placedObject)
+        gutterService:disconnectCollector(placedObject)
     end
 end
 

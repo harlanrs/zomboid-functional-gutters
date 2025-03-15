@@ -6,19 +6,19 @@ module Base
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Drain,
-			Icon		= Build_RainCollectorCrate2,
+			Icon		= Build_GutterDrainPipe,
 		}
         entity ES_GutterPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Pipe - Vertical,
-			Icon		= Pipe,
+			Icon		= Build_GutterVerticalPipe,
 		}
         entity ES_RoofPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Pipe - Roof,
-			Icon		= Pipe,
+			Icon		= Build_GutterRoofPipe,
 		}
         
 	}
@@ -34,6 +34,13 @@ module Base
 
         component SpriteConfig
         {
+            /*
+            OnCreate = 
+            needToBeAgainstWall = true,
+            */
+
+            OnIsValid = FG_BuildRecipeCode.pipe.drain.OnIsValid,
+
             face E
             {
                 layer
@@ -81,27 +88,18 @@ module Base
 
         component SpriteConfig
         {
+            OnIsValid = FG_BuildRecipeCode.pipe.vertical.OnIsValid,
+
+            /* nw corner */
             face N
-            {
-                layer
-                {
-                    row = industry_02_243,
-                }
-            }
-            face S
             {
                 layer
                 {
                     row = industry_02_238,
                 }
             }
-            face E
-            {
-                layer
-                {
-                    row = industry_02_239,
-                }
-            }
+
+            /* sw corner */
             face W
             {
                 layer
@@ -109,6 +107,27 @@ module Base
                     row = industry_02_247,
                 }
             }
+
+            /* ne corner */
+            face E
+            {
+                layer
+                {
+                    row = industry_02_243,
+                }
+            }
+
+            /* se corner */
+            /*
+            face S
+            {
+                layer
+                {
+                    row = industry_02_239,
+                }
+            }
+            */
+            
         }
         
         component CraftRecipe

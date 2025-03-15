@@ -169,7 +169,9 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - look into zone:getRoofAreasConnected():size() for roof calcs
     - animal zones have some cool features for roofs but specific to that zone implementation
 - look into building = square:getRoofHideBuilding()
+    - still not sure what this is yet or how to get a value
 - isoCell: associatedBuilding.getRoofRoomID
+    - able to get roof room id for pre-built but does match any rooms in the building or in the cell. Do I need to check a larger area?
 - isosquare getRoofHideBuilding seems like the best bet
     - isosquare -> isobuilding -> 
     - isosquare:getBuilding
@@ -182,6 +184,15 @@ TODO
 - need moveable def for pickup/move/scrap?
 - scrap definition
 - recognize player floors
-- post add script that triggers base gutter resync
-- verify sprite alignment
-    - give feedback on construction
+- post add script that triggers resync of entire gutter system
+    - need to catch gaps in pipes and 'pause' any connected collectors
+- take roof angle into consideration
+
+
+entity options
+- config script
+    - OnCreate
+    - OnIsValid
+    - BreakSound -> metal
+    - isProp - TBD
+    - needToBeAgainstWall -> Nope for 'inside' of walls only so works for west wall but not north
