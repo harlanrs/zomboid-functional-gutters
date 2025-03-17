@@ -7,6 +7,7 @@ enums.pipeType = {
     drain = "drain",
     vertical = "vertical",
     horizontal = "horizontal",
+    gutter = "gutter",
 }
 
 enums.collectorType = {
@@ -49,22 +50,22 @@ enums.pipes = {
     -- industry_02_246 = {},
     industry_02_260 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.S,
     }, -- nw corner | point south 
     industry_02_261 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.E,
     }, -- nw corner | point east
     industry_02_262 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.S,
     }, -- nw corner | point south
     industry_02_263 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.E,
     }, -- nw corner | point east
 
@@ -98,18 +99,62 @@ enums.pipes = {
     --------------------------------------
     -- Horizontal pipes
     -- Water tower
-    -- "industry_02_37",
-    -- "industry_02_38",   -- north
-    -- "industry_02_226",
-    -- "industry_02_230",
-    -- "industry_02_224",  -- north
-    -- "industry_02_231",   -- north
+    industry_02_37 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.W,
+        facing = nil,
+    }, -- TODO verify
+    industry_02_38 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.N,
+        facing = nil,
+    }, -- TODO verify north
+    industry_02_226 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.W,
+        facing = nil,
+    }, -- TODO verify
+    industry_02_230 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.W,
+        facing = nil,
+    }, -- TODO verify
+    industry_02_224 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.N,
+        facing = nil,
+    },  -- TODO verify north
+    industry_02_231 = {
+        type = enums.pipeType.horizontal,
+        position = IsoDirections.N,
+        facing = nil,
+    },   -- TODO verify north
     -- "roofs_06_6", -- roof gutter south
     -- "roofs_06_7", -- roof gutter east
     -- "roofs_06_21", -- roof south east corner small
     -- "roofs_06_20" -- roof north west corner large
 
-    -- TODO add to base pipes def
+    -- Custom sprites
+    gutter_01_5 = {
+        type = enums.pipeType.gutter,
+        position = IsoDirections.W,
+        facing = nil,
+    },
+    gutter_01_6 = {
+        type = enums.pipeType.gutter,
+        position = IsoDirections.N,
+        facing = nil,
+    },
+    gutter_01_4 = {
+        type = enums.pipeType.gutter,
+        position = IsoDirections.NW,
+        facing = nil,
+    },
+    gutter_01_8 = {
+        type = enums.pipeType.gutter,
+        position = IsoDirections.NW,
+        facing = nil,
+    },
 }
 
 local function mapPipesByType(pipeCategory)
@@ -142,12 +187,14 @@ enums.verticalPipeSprites = mapPipesByType(enums.pipeType.vertical)
 
 enums.horizontalPipeSprites = mapPipesByType(enums.pipeType.horizontal)
 
+enums.gutterPipeSprites = mapPipesByType(enums.pipeType.gutter)
 
 enums.pipeAtlas = {}
 enums.pipeAtlas.type = {}
 enums.pipeAtlas.type[enums.pipeType.drain] = enums.drainPipeSprites
 enums.pipeAtlas.type[enums.pipeType.vertical] = enums.verticalPipeSprites
 enums.pipeAtlas.type[enums.pipeType.horizontal] = enums.horizontalPipeSprites
+enums.pipeAtlas.type[enums.pipeType.gutter] = enums.gutterPipeSprites
 
 enums.pipeAtlas.position = {}
 enums.pipeAtlas.position[IsoDirections.NW] = mapPipesByPosition(IsoDirections.NW)
@@ -188,10 +235,20 @@ enums.modDataKey = {
     hasGutter = "FG_hasGutter",
     hasVerticalPipe = "FG_hasVerticalPipe",
     hasHorizontalPipe = "FG_hasHorizontalPipe",
+    hasGutterPipe = "FG_hasGutterPipe",
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
     isPipeConnected = "FG_isPipeConnected",
     roofArea = "FG_roofArea",
+
+    -- pipeConnectedUp
+    -- pipeConnectedDown
+    -- pipeConnectedNorth
+    -- pipeConnectedSouth
+    -- pipeConnectedEast
+    -- pipeConnectedWest
+    -- hasSlopedRoofNorth
+    -- hasSlopedRoofWest
 }
 
 -- Keep for a bit to phase out

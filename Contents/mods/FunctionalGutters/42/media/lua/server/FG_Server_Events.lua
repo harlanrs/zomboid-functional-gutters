@@ -42,7 +42,7 @@ end
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     -- NOTE: param is square not the object itself
-    local squareModData = serviceUtils:syncSquareModData(square, nil)
+    local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
     if squareModData then
         if utils:getModDataHasGutter(square, squareModData) then
             utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
@@ -53,7 +53,7 @@ end
 function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
     local square = placedObject:getSquare()
-    local squareModData = serviceUtils:syncSquareModData(square, nil)
+    local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
     end

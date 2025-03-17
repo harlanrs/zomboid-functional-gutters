@@ -5,7 +5,7 @@ module Base
 		entity ES_GutterDrainPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Drain,
+			DisplayName	= Gutter Pipe - Drain,
 			Icon		= Build_GutterDrainPipe,
 		}
         entity ES_GutterPipe
@@ -20,7 +20,12 @@ module Base
 			DisplayName	= Gutter Pipe - Roof,
 			Icon		= Build_GutterRoofPipe,
 		}
-        
+        entity ES_GutterPipe_Corner
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Gutter Pipe - Corner,
+			Icon		= Build_GutterRoofPipe,
+		}
 	}
 
     entity Metal_GutterDrainPipe
@@ -29,7 +34,7 @@ module Base
         {
             xuiSkin         = default,
             entityStyle     = ES_GutterDrainPipe,
-            uiEnabled       = false,
+            uiEnabled       = true,
         }
 
         component SpriteConfig
@@ -160,32 +165,67 @@ module Base
 
         component SpriteConfig
         {
-            face S
-            {
-                layer
-                {
-                    row = roofs_06_6,
-                }
-            }
-            face E
-            {
-                layer
-                {
-                    row = roofs_06_7,
-                }
-            }
+            OnIsValid = FG_BuildRecipeCode.pipe.gutter.OnIsValid,
+
             face N
             {
                 layer
                 {
-                    row = roofs_06_20,
+                    row = gutter_01_6,
                 }
             }
             face W
             {
                 layer
                 {
-                    row = roofs_06_21,
+                    row = gutter_01_5,
+                }
+            }
+        }
+        
+        component CraftRecipe
+        {
+            timedAction   = BuildMetalStructureMedium,
+            time          = 100,
+            SkillRequired = MetalWelding:2,
+            xpAward       = MetalWelding:5,
+            category      = Outdoors,
+            tags          = Welding,
+            ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
+            inputs
+            {
+                item 2 [Base.BlowTorch] flags[Prop1],
+                item 1 [Base.MetalPipe],
+                item 1 [Base.WeldingRods],
+            }
+        }
+    }
+
+    entity Metal_GutterPipe_Corner
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_GutterPipe_Corner,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+            OnIsValid = FG_BuildRecipeCode.pipe.gutter.OnIsValid,
+
+            face N
+            {
+                layer
+                {
+                    row = gutter_01_4,
+                }
+            }
+            face W
+            {
+                layer
+                {
+                    row = gutter_01_8,
                 }
             }
         }

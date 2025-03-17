@@ -1,0 +1,97 @@
+version = 1
+tileset
+{
+    file = gutter_01
+    size = 8,8
+    id = 1
+    // gutter_01_0
+    tile
+    {
+        xy = 0,0
+        MaterialType = Metal
+    }
+    // gutter_01_1
+    tile
+    {
+        xy = 1,0
+        MaterialType = Metal
+    }
+    // gutter_01_2
+    tile
+    {
+        xy = 2,0
+        MaterialType = Metal
+    }
+    // gutter_01_3
+    tile
+    {
+        xy = 3,0
+        MaterialType = Metal
+    }
+    // gutter_01_4
+    tile
+    {
+        xy = 4,0
+        IsMoveAble = 
+        MaterialType = Metal
+        MoveType = WallObject
+        PickUpTool = Wrench
+        PickUpWeight = 50
+        PlaceTool = Wrench
+        attachedW = 
+    }
+    // gutter_01_5
+    tile
+    {
+        xy = 5,0
+        Facing = E
+        GroupName = Gutter
+        IsMoveAble = 
+        MaterialType = Metal
+        MoveType = WallObject
+        PickUpTool = Wrench
+        PickUpWeight = 50
+        PlaceTool = Wrench
+        WallObjectAllowDoorframe = 
+        attachedW = 
+    }
+    // gutter_01_6
+    tile
+    {
+        xy = 6,0
+        Facing = S
+        GroupName = Gutter
+        IsMoveAble = 
+        MaterialType = Metal
+        MoveType = WallObject
+        PickUpTool = Wrench
+        PickUpWeight = 50
+        PlaceTool = Wrench
+        WallObjectAllowDoorframe = 
+        attachedN = 
+    }
+    // gutter_01_7
+    tile
+    {
+        xy = 7,0
+        MaterialType = Metal
+    }
+    // gutter_01_8
+    tile
+    {
+        xy = 0,1
+        IsMoveAble = 
+        MaterialType = Metal
+        MoveType = WallObject
+        PickUpTool = Wrench
+        PickUpWeight = 50
+        PlaceTool = Wrench
+        attachedW = 
+    }
+    // gutter_01_9
+    tile
+    {
+        xy = 1,1
+        MaterialType = Metal
+    }
+}

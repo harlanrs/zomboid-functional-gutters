@@ -50,13 +50,13 @@ function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
 end
 
 -- TODO will need to rethink once multiple sprites can be on the same tile (ex: vertical and horizontal pipes)
-function utils:getSpriteCategoryMemberOnTile(square)
+function utils:getSpriteCategoryMemberOnTile(square, spriteCategory)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
         local spriteName = object:getSpriteName()
         local foundSpriteCategory = self:getSpriteCategory(object:getSpriteName())
-        if foundSpriteCategory then
+        if foundSpriteCategory == spriteCategory then
             return i, object, spriteName, foundSpriteCategory
         end
     end
@@ -93,6 +93,10 @@ function utils:isHorizontalPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.horizontal)
 end
 
+function utils:isGutterPipe(object)
+    return self:isSpriteCategoryObject(object, enums.pipeType.gutter)
+end
+
 function utils:hasVerticalPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.vertical)
 end
@@ -103,6 +107,10 @@ end
 
 function utils:hasDrainPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
+end
+
+function utils:hasGutterPipeOnTile(square)
+    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
 end
 
 -- TODO
@@ -133,6 +141,10 @@ end
 
 function utils:getModDataHasVerticalPipe(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasVerticalPipe)
+end
+
+function utils:getModDataHasGutterPipe(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasGutterPipe)
 end
 
 function utils:getModDataBaseRainFactor(object, loadedModData)
@@ -279,6 +291,9 @@ end
 
 local function checkDebugMode()
     debugMode = options:getDebug()
+    for k,v in ipairs(enums.pipeAtlas.position) do
+        utils:modPrint("Pipe atlas position: "..tostring(k).." -> "..tostring(v))
+    end
 end
 
 Events.OnLoad.Add(checkDebugMode)

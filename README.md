@@ -180,9 +180,9 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - buildingDef -> CalculateBounds
 
 TODO
-- icons for buildables
 - need moveable def for pickup/move/scrap?
 - scrap definition
+    -- bare min needs scrap def
 - recognize player floors
 - post add script that triggers resync of entire gutter system
     - need to catch gaps in pipes and 'pause' any connected collectors
@@ -194,5 +194,3 @@ entity options
     - OnCreate
     - OnIsValid
     - BreakSound -> metal
-    - isProp - TBD
-    - needToBeAgainstWall -> Nope for 'inside' of walls only so works for west wall but not north
