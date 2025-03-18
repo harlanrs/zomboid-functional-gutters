@@ -44,8 +44,8 @@ tileset
     tile
     {
         xy = 5,0
+        CustomName = Gutter
         Facing = E
-        GroupName = Gutter
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject
@@ -59,8 +59,8 @@ tileset
     tile
     {
         xy = 6,0
+        CustomName = Gutter
         Facing = S
-        GroupName = Gutter
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject

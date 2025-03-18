@@ -7,6 +7,8 @@ local serviceUtils = require("FG_Utils_Service")
 local FluidContainerService = require("collector/FG_Collector_FluidContainer")
 local TroughService = require("collector/FG_Collector_Trough")
 
+require("FG_Utils_MapObjects")
+
 local gutterService = {}
 
 gutterService.collectorServiceMap = {

@@ -67,13 +67,25 @@ function serviceUtils:setDrainPipeModData(square, squareModData, pipeObject, ful
     -- The square has a drain pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasGutter] = true
 
-    -- Calculate the number of 'roof' tiles above the drain pipe
+    -- TODO
+    -- Test setting object property
+    -- local pipeSpriteProps = pipeObject:getSprite():getProperties()
+    -- -- if not pipeObjectProps:Is("IsDrainPipe") then
+    -- pipeSpriteProps:Set("IsDrainPipe", "", true)
+    -- -- end
+
+    -- -- Calculate the number of 'roof' tiles above the drain pipe
     if full or not utils:getModDataRoofArea(square, squareModData) then
         squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
     end
 end
 
 function serviceUtils:cleanupDrainPipeModData(square, squareModData)
+    -- TODO check cases where squareModData is nil
+    if squareModData == nil then
+        squareModData = square:getModData()
+    end
+
     utils:modPrint("Clearing drain pipe mod data for square: "..tostring(square))
     -- The square no longer has a drain pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasGutter] = nil
@@ -84,9 +96,19 @@ function serviceUtils:setVerticalPipeModData(square, squareModData, pipeObject, 
     utils:modPrint("Setting vertical pipe mod data for square: "..tostring(square))
     -- The square has a vertical pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasVerticalPipe] = true
+
+    -- local pipeSpriteProps = pipeObject:getSprite():getProperties()
+    -- if not pipeObjectProps:Is("IsVerticalPipe") then
+    -- pipeSpriteProps:Set("IsVerticalPipe", "", true)
+    -- end
 end
 
 function serviceUtils:cleanupVerticalPipeModData(square, squareModData)
+    -- TODO check cases where squareModData is nil
+    if squareModData == nil then
+        squareModData = square:getModData()
+    end
+
     utils:modPrint("Clearing vertical pipe mod data for square: "..tostring(square))
     -- The square no longer has a vertical pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasVerticalPipe] = nil
@@ -104,6 +126,10 @@ function serviceUtils:setGutterPipeModData(square, squareModData, pipeObject, fu
         utils:modPrint("Pipe definition not found for sprite: "..tostring(spriteName))
         return
     end
+
+    -- Test
+    local hasGutterPipeProp = square:getProperties():Is("IsGutterPipe")
+    utils:modPrint("Has gutter pipe prop: "..tostring(hasGutterPipeProp))
 
     -- TODO move to dedicated section
     -- if pipeDef.position == localIsoDirections.N then
@@ -124,9 +150,17 @@ function serviceUtils:setGutterPipeModData(square, squareModData, pipeObject, fu
 end
 
 function serviceUtils:cleanupGutterPipeModData(square, squareModData)
+    -- TODO check cases where squareModData is nil
+    if squareModData == nil then
+        squareModData = square:getModData()
+    end
+
     utils:modPrint("Clearing gutter pipe mod data for square: "..tostring(square))
     -- The square no longer has a gutter pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasGutterPipe] = nil
+
+    local hasGutterPipeProp = square:getProperties():Is("IsGutterPipe")
+    utils:modPrint("Has gutter pipe prop: "..tostring(hasGutterPipeProp))
 
     -- TODO gutterWest, gutterEast, gutterNorth, gutterSouth
 end
@@ -174,9 +208,11 @@ function serviceUtils:syncSquareModData(square, full)
     if utils:getModDataHasGutter(square, squareModData) and not hasDrainPipe then
         self:cleanupDrainPipeModData(square, squareModData)
     end
+
     if utils:getModDataHasVerticalPipe(square, squareModData) and not hasVerticalPipe then
         self:cleanupVerticalPipeModData(square, squareModData)
     end
+
     if utils:getModDataHasGutterPipe(square, squareModData) and not hasGutterPipe then
         self:cleanupGutterPipeModData(square, squareModData)
     end

@@ -81,6 +81,11 @@ function utils:isDrainPipeSprite(spriteName)
     return false
 end
 
+function utils:isAnyPipe(object)
+    local spriteName = object:getSpriteName()
+    return self:isAnyPipeSprite(spriteName)
+end
+
 function utils:isDrainPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.drain)
 end
@@ -120,15 +125,14 @@ end
 -- end
 
 function utils:getModDataKeyValue(object, loadedModData, key)
-    local modData = loadedModData
-    if not modData and not object:hasModData() then
+    if not loadedModData and not object:hasModData() then
         -- Ignore if object has no existing mod data to avoid unwanted initialization
         return nil
-    elseif not modData then
+    elseif not loadedModData then
         -- Load mod data if not provided
-        modData = object:getModData()
+        loadedModData = object:getModData()
     end
-    return modData[key]
+    return loadedModData[key]
 end
 
 function utils:getModDataIsGutterConnected(object, loadedModData)

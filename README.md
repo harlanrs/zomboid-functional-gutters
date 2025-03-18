@@ -180,13 +180,13 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - buildingDef -> CalculateBounds
 
 TODO
-- need moveable def for pickup/move/scrap?
-- scrap definition
-    -- bare min needs scrap def
+- Explore using tile props instead of having to properly sync modData on object add/remove
+    - Would require setting props on non-managed tiles
+- scrap definition?
 - recognize player floors
 - post add script that triggers resync of entire gutter system
     - need to catch gaps in pipes and 'pause' any connected collectors
-- take roof angle into consideration
+- take roof angle into consideration?
 
 
 entity options

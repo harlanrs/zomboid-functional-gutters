@@ -46,6 +46,7 @@ tileset
         xy = 5,0
         CustomName = Gutter
         Facing = E
+        IsGutterPipe = 
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject
@@ -61,6 +62,7 @@ tileset
         xy = 6,0
         CustomName = Gutter
         Facing = S
+        IsGutterPipe = 
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject
