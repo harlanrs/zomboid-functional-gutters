@@ -156,43 +156,43 @@ local function AddDebugContainerContext(player, context, square, containerObject
         containerSubMenu:addOption("Gutter Connected: " .. tostring(isGutterConnected), playerObject, nil)
 
 
-        if tileHasGutter then
-            local gutterRoofArea = utils:getModDataRoofArea(square, nil)
-            if not gutterRoofArea then
-                gutterRoofArea = isoUtils:getGutterRoofArea(square)
-            end
+        -- if tileHasGutter then
+        --     local gutterRoofArea = utils:getModDataRoofArea(square, nil)
+        --     if not gutterRoofArea then
+        --         gutterRoofArea = isoUtils:getGutterRoofArea(square)
+        --     end
 
-            local topGutterFloor = isoUtils:findGutterTopLevel(square)
-            containerSubMenu:addOption("Top Gutter Floor: " .. tostring(topGutterFloor), playerObject, nil)
+        --     local topGutterFloor = isoUtils:findGutterTopLevel(square)
+        --     containerSubMenu:addOption("Top Gutter Floor: " .. tostring(topGutterFloor), playerObject, nil)
 
-            containerSubMenu:addOption("Gutter Roof Area: " .. tostring(gutterRoofArea), playerObject, nil)
-        else
-            local building = square:getBuilding()
-            utils:modPrint("Tile in building: "..tostring(building))
+        --     containerSubMenu:addOption("Gutter Roof Area: " .. tostring(gutterRoofArea), playerObject, nil)
+        -- else
+        --     local building = square:getBuilding()
+        --     utils:modPrint("Tile in building: "..tostring(building))
 
-            local roofBuilding = square:getRoofHideBuilding()
-            if roofBuilding then
-                utils:modPrint("Roof Building: "..tostring(roofBuilding))
-            end
+        --     local roofBuilding = square:getRoofHideBuilding()
+        --     if roofBuilding then
+        --         utils:modPrint("Roof Building: "..tostring(roofBuilding))
+        --     end
 
-            local buildingSquare = square
-            if not building then
-                building, buildingSquare = isoUtils:getAdjacentBuilding(square)
-                utils:modPrint("Adjacent Building: "..tostring(building))
-                if buildingSquare then
-                    roofBuilding = buildingSquare:getRoofHideBuilding()
-                    utils:modPrint("Adjacent Roof Building: "..tostring(roofBuilding))
-                end
-            end
+        --     local buildingSquare = square
+        --     if not building then
+        --         building, buildingSquare = isoUtils:getAdjacentBuilding(square)
+        --         utils:modPrint("Adjacent Building: "..tostring(building))
+        --         if buildingSquare then
+        --             roofBuilding = buildingSquare:getRoofHideBuilding()
+        --             utils:modPrint("Adjacent Roof Building: "..tostring(roofBuilding))
+        --         end
+        --     end
 
-            if building then
-                -- Calculate area of top-floor assuming it's 1-1 square -> roof
-                local area = isoUtils:getBuildingFloorArea(building, nil)
-                containerSubMenu:addOption("Building Roof Size: " .. tostring(area), playerObject, nil)
-            else
-                containerSubMenu:addOption("No Connected Building", playerObject, nil)
-            end
-        end
+        --     if building then
+        --         -- Calculate area of top-floor assuming it's 1-1 square -> roof
+        --         local area = isoUtils:getBuildingFloorArea(building, nil)
+        --         containerSubMenu:addOption("Building Roof Size: " .. tostring(area), playerObject, nil)
+        --     else
+        --         containerSubMenu:addOption("No Connected Building", playerObject, nil)
+        --     end
+        -- end
     end
 end
 
@@ -203,6 +203,7 @@ local function AddWaterContainerContext(player, context, worldobjects, test)
             if fluidContainer then
                 local square = worldObject:getSquare()
                 if fluidContainer and square and serviceUtils:isValidContainerObject(worldObject) then
+                    -- TODO check for gutter drain pipe not collector entity
                     AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
                     AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
                     break

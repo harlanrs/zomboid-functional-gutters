@@ -18,9 +18,6 @@ local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():g
 
 function FG_UI_GutterInfoPanel:initialise()
     ISPanel.initialise(self);
-    -- self:create();
-    -- self:setVisible(true);
-    -- self:addToUIManager();
 end
 
 function FG_UI_GutterInfoPanel:prerender() -- Call before render, it's for harder stuff that need init, ect
@@ -52,7 +49,7 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
         self.pipeInfo.gutter.value = tostring(gutterCount);
     end
 
-    local pipeContainerW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
+    -- local pipeContainerW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
     local tagWid = math.max(
             getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.drain.tag),
             getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.vertical.tag),
@@ -60,8 +57,6 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     )
     local tagx = UI_BORDER_SPACING + 1 + tagWid
     local valx = tagx + UI_BORDER_SPACING;
-
-    -- y = FONT_HGT_SMALL - UI_BORDER_SPACING - 4;
 
     y = y + FONT_HGT_SMALL + UI_BORDER_SPACING + 1
     c = self.tagColor;
@@ -295,6 +290,7 @@ function FG_UI_GutterInfoPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _fu
 end
 
 function FG_UI_GutterInfoPanel:reloadInfo()
+    -- TODO should this info be passed in/managed by parent panel?
     self.square = self.gutter:getSquare()
     self.gutterMap = isoUtils:crawlGutterSystem(self.square)
     self.coveredFloors = isoUtils:getGutterCoveredFloors(self.gutterMap)

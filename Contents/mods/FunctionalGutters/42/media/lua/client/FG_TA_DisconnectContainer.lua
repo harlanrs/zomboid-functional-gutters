@@ -10,7 +10,7 @@ function FG_TA_DisconnectContainer:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
-	return 40
+	return 120
 end
 
 function FG_TA_DisconnectContainer:new(character, containerObject, wrench)

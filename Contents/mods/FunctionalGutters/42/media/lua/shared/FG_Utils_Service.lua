@@ -291,7 +291,7 @@ end
 function serviceUtils:getGutterRainFactor(roofArea)
     -- Aim for this value to be 1.0 with mod options between 0.0 and 2.0
     local roofTileRainFactor = options:getGutterRainFactor() -- TODO rename to "gutterTileRainFactor"
-    local gutterEfficiencyFactor = 0.70 -- TODO each gutter pipe can has its own factor based on 'quality' up to 95% efficiency
+    local gutterEfficiencyFactor = 1 -- TODO each gutter pipe can has its own factor based on 'quality' up to 95% efficiency
     -- TODO should take an average of quality across all connected gutter pipes but maybe save that for later
 
     local _, gutterTileCount = self:getEstimatedGutterDrainCount(roofArea)

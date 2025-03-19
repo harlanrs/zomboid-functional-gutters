@@ -1,5 +1,8 @@
 require "ISUI/ISPanelJoypad"
 
+require "FG_UI_GutterInfoPanel"
+require "FG_UI_CollectorInfoPanel"
+
 local utils = require("FG_Utils")
 local options = require("FG_Options")
 local enums = require("FG_Enums")
@@ -55,7 +58,7 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _container, _source)
         FG_UI_GutterPanel.players[playerNum] = {};
     end
 
-    local ui = FG_UI_GutterPanel:new(x,y,400,600, _player, _gutter, _container);
+    local ui = FG_UI_GutterPanel:new(x,y, 400, 600, _player, _gutter, _container);
     ui:initialise();
     ui:instantiate();
     ui:setVisible(true);
@@ -84,22 +87,22 @@ function FG_UI_GutterPanel:addCollectorPanel()
     -- local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING+1;
     local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING;
 
-    self.panelText = getText("Fluid_Info_Panel");
-    self.panel = ISFluidContainerPanel:new(x, y, self.player, self.uiContainer, true, true, self.isIsoPanel);
-    self.panel.customTitle = "";
-    self.panel.title = "";
-    self.panel.doTitle = false;
-    self.panel:initialise();
-    self.panel:instantiate();
-    self.panel:noBackground();
-    self.panel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0};
-    self:addChild(self.panel);
+    -- self.panelText = getText("Fluid_Info_Panel");
+    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.uiContainer, true, true, self.isIsoPanel);
+    self.collectorPanel.customTitle = "";
+    self.collectorPanel.title = "";
+    self.collectorPanel.doTitle = false;
+    self.collectorPanel:initialise();
+    self.collectorPanel:instantiate();
+    self.collectorPanel:noBackground();
+    self.collectorPanel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0};
+    self:addChild(self.collectorPanel);
 
-    if self.panel.itemDropBox then
-        self.panel.itemDropBox.isLocked = true;
-        self.panel.itemDropBox.doInvalidHighlight = false;
+    if self.collectorPanel.itemDropBox then
+        self.collectorPanel.itemDropBox.isLocked = true;
+        self.collectorPanel.itemDropBox.doInvalidHighlight = false;
         if self.owner then
-            self.panel.itemDropBox:setStoredItem( self.owner )
+            self.collectorPanel.itemDropBox:setStoredItem( self.owner )
         end
     end
 end
@@ -107,7 +110,7 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1;
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
-    local w = self:getWidth() + UI_BORDER_SPACING*2+2;
+    local w = self:getWidth() - (UI_BORDER_SPACING * 2);
     self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter);
     self:addChild(self.gutterPanel);
 end
@@ -120,10 +123,8 @@ function FG_UI_GutterPanel:createChildren()
 
     self.gutterPanel:bringToTop();
 
-
     local btnText = "X";
     local closeX = self:getRight() - 20;
-    -- local closeX = UI_BORDER_SPACING+1;
     local closeW = 20;
     local closeY = UI_BORDER_SPACING+1;
     self.btnClose = ISButton:new(closeX, closeY, closeW, 20, btnText, self, FG_UI_GutterPanel.onButton);
@@ -133,16 +134,9 @@ function FG_UI_GutterPanel:createChildren()
     self.btnClose:enableCancelColor()
     self:addChild(self.btnClose);
 
-    self:setWidth(self.panel:getRight() + UI_BORDER_SPACING + 1);
-    self:setHeight(self.btnClose:getBottom() + UI_BORDER_SPACING+1);
-
-
-    -- local toggleX = self.width - 100;
-    -- local toggleY = self.panel:getBottom() - BUTTON_HGT - UI_BORDER_SPACING;
     local toggleX = UI_BORDER_SPACING+1;
-    local toggleY = self.panel:getBottom() + UI_BORDER_SPACING;
-    -- local toggleW = 100;
-    local toggleW = self.panel:getWidth();
+    local toggleY = self.collectorPanel:getBottom() + UI_BORDER_SPACING;
+    local toggleW = self.collectorPanel:getWidth();
     self.toggleConnectBtn = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton);
     self.toggleConnectBtn.internal = "TOGGLE_CONNECT";
     self.toggleConnectBtn:initialise();
@@ -152,17 +146,17 @@ function FG_UI_GutterPanel:createChildren()
         self.toggleConnectBtn:enableAcceptColor();
     else
         self.toggleConnectBtn.title = "Disconnect";
-        local bgC = self.btnDefault.backgroundColor
-        local bgCMO = self.btnDefault.backgroundColorMouseOver
-        local bC = self.btnDefault.borderColor
-        self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a)
-        self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
-        self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
+        local bgC = self.btnDefault.backgroundColor;
+        local bgCMO = self.btnDefault.backgroundColorMouseOver;
+        local bC = self.btnDefault.borderColor;
+        self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a);
+        self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a);
+        self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a);
     end
 
     self:addChild(self.toggleConnectBtn);
 
-    self:setWidth(self.panel:getRight() + UI_BORDER_SPACING + 1);
+    self:setWidth(self.collectorPanel:getRight() + UI_BORDER_SPACING + 1);
     self:setHeight(self.toggleConnectBtn:getBottom() + UI_BORDER_SPACING+1);
 end
 
@@ -170,64 +164,74 @@ function FG_UI_GutterPanel:renderContainerInfo()
     local baseRainFactor = self.baseRainFactor
     if self.containerInfo.baseRainFactor.cache~=baseRainFactor then
         self.containerInfo.baseRainFactor.cache = baseRainFactor;
-        self.containerInfo.baseRainFactor.value = tostring(round(baseRainFactor, 2));
+        self.containerInfo.baseRainFactor.value = baseRainFactor == 0.0 and "0.0" or tostring(round(baseRainFactor, 2));
     end
 
     local gutterRainFactor = self.gutterRainFactor;
     if self.containerInfo.gutterRainFactor.cache~=gutterRainFactor then
         self.containerInfo.gutterRainFactor.cache = gutterRainFactor;
-        self.containerInfo.gutterRainFactor.value = tostring(round(gutterRainFactor, 2));
+        self.containerInfo.gutterRainFactor.value = gutterRainFactor == 0.0 and "0.0" or tostring(round(gutterRainFactor, 2));
     end
 
     local totalRainFactor = self.totalRainFactor;
     if self.containerInfo.totalRainFactor.cache~=totalRainFactor then
         self.containerInfo.totalRainFactor.cache = totalRainFactor;
-        self.containerInfo.totalRainFactor.value = tostring(round(totalRainFactor, 2));
+        self.containerInfo.totalRainFactor.value = totalRainFactor == 0.0 and "0.0" or tostring(round(totalRainFactor, 2));
     end
 
-    local tagWid = math.max(
-        getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag),
-        -- getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.gutterRainFactor.tag),
-        getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
-    )
+    -- local tagWid = math.max(
+    --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag),
+    --     -- getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.gutterRainFactor.tag),
+    --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
+    -- )
 
-    local x = self.panel:getWidth() - (3 * UI_BORDER_SPACING) - 2;
-    local y = self.panel:getBottom() - UI_BORDER_SPACING - UI_BORDER_SPACING;
+    local x = self.collectorPanel:getWidth() - (3 * UI_BORDER_SPACING) - 2;
+    local y = self.collectorPanel:getBottom() - UI_BORDER_SPACING - UI_BORDER_SPACING;
+    local tagX = x
+    local valX = tagX + UI_BORDER_SPACING;
 
-    local c = self.textColor;
-
-    local tagx = x
-    local valx = tagx + UI_BORDER_SPACING;
-
-    -- y = y + FONT_HGT_SMALL + UI_BORDER_SPACING + 1
-    c = self.tagColor;
-    self:renderText(self.containerInfo.totalRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    local c = self.tagColor;
+    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
     c = self.isGutterConnected and self.goodColor or self.textColor;
-    self:renderText(self.containerInfo.totalRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+    self:renderText(self.containerInfo.totalRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
     y = y - BUTTON_HGT;
     c = self.tagColor;
-    self:renderText(self.containerInfo.baseRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    self:renderText(self.containerInfo.baseRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
     c = self.textColor;
-    self:renderText(self.containerInfo.baseRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+    self:renderText(self.containerInfo.baseRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
     -- y = y + BUTTON_HGT;
     -- c = self.tagColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
     -- c = self.textColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+    -- self:renderText(self.containerInfo.gutterRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 end
 
 function FG_UI_GutterPanel:prerender()
     ISPanelJoypad.prerender(self);
+
+    --draws a background for button that marks action progress if action exists.
+    if self.toggleConnectBtn then
+        local x = self.toggleConnectBtn:getX();
+        local y = self.toggleConnectBtn:getY();
+        local w = self.toggleConnectBtn:getWidth();
+        local h = self.toggleConnectBtn:getHeight();
+        local borderColor = self.toggleConnectBtn.borderColor
+        self:drawRect(x, y, w, h, 1.0, 0, 0, 0);
+        if self.action and self.action.action then
+            -- local c = self.transferColor;
+            w = w * self.action:getJobDelta();
+            self:drawRect(x, y, w, h, .5, borderColor.r, borderColor.g, borderColor.b);
+        end
+    end
 end
 
 function FG_UI_GutterPanel:render()
     self:renderJoypadFocus()
 
     local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING + 1;
-
-    self:drawText("Rain Gutter", x, y, 1, 1, 1, 1, UIFont.Medium);
+    self:drawText("Gutter System", x, y, 1, 1, 1, 1, UIFont.Medium);
 
     self:renderContainerInfo()
 end
@@ -261,31 +265,31 @@ function FG_UI_GutterPanel:validatePanel()
         end
     end
 
-    self.toggleConnectBtn:setEnable(not self.disableConnect);
+    self.toggleConnectBtn.enabled = not self.disableConnect;
 end
 
 function FG_UI_GutterPanel:alignElements()
-    self:setWidth(self.panel.width + UI_BORDER_SPACING*2+2);
-    self.gutterPanel:setWidth(self.panel.width);
-    self.btnClose:setX(self.panel.width - UI_BORDER_SPACING - 1);
-    self.toggleConnectBtn:setWidth(self.panel.width)
+    self:setWidth(self.collectorPanel.width + UI_BORDER_SPACING*2+2);
+    self.gutterPanel:setWidth(self.collectorPanel.width);
+    self.btnClose:setX(self.collectorPanel.width - UI_BORDER_SPACING - 1);
+    self.toggleConnectBtn:setWidth(self.collectorPanel.width)
 end
 
 function FG_UI_GutterPanel:update()
     --range check for isoPanels.
-    -- if self.isIsoPanel then
-    --     if ISFluidUtil.validateContainer(self.container) and self.owner and self.owner:getSquare() and self.player then
-    --         local square = self.owner:getSquare();
-    --         local dist = ISFluidUtil.isoMaxPanelDist;
-    --         if self.player:getX() < square:getX()-dist or self.player:getX() > square:getX()+dist or self.player:getY() < square:getY()-dist or self.player:getY() > square:getY()+dist then
-    --             self:close();
-    --             return
-    --         end
-    --     else
-    --         self:close();
-    --         return
-    --     end
-    -- end
+    if self.isIsoPanel then
+        if ISFluidUtil.validateContainer(self.uiContainer) and self.owner and self.owner:getSquare() and self.player then
+            local square = self.owner:getSquare();
+            local dist = ISFluidUtil.isoMaxPanelDist;
+            if self.player:getX() < square:getX()-dist or self.player:getX() > square:getX()+dist or self.player:getY() < square:getY()-dist or self.player:getY() > square:getY()+dist then
+                self:close();
+                return
+            end
+        else
+            self:close();
+            return
+        end
+    end
 
     self:validatePanel();
     self:alignElements();
@@ -371,7 +375,7 @@ function FG_UI_GutterPanel:reloadInfo()
     if fluidContainer then
         self.totalRainFactor = fluidContainer:getRainCatcher();
     else
-        self.totalRainFactor = 0;
+        self.totalRainFactor = 0.0;
     end
     self.isGutterConnected = utils:getModDataIsGutterConnected(self.container, nil);
 end
@@ -394,27 +398,31 @@ function FG_UI_GutterPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _func)
 end
 
 function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container)
-    local o = ISPanelJoypad.new(self, x, y, 400, height);
-    o.variableColor={r=0.9, g=0.55, b=0.1, a=1};
+    local w = 300 + (2 * UI_BORDER_SPACING);
+    local o = ISPanelJoypad.new(self, x, y, w, height);
+    o.variableColor={r=0.9, g=0.55, b=0.1, a=1}; -- TODO remove
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5};
-
     o.btnDefault = {
         borderColor = {r=0.7, g=0.7, b=0.7, a=1};
-	    backgroundColor = {r=0, g=0, b=0, a=1.0};
-	    backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0};
+	    backgroundColor = {r=0, g=0, b=0, a=0.25};
+	    backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=0.5};
     }
     o.textColor = {r=1,g=1,b=1,a=1}
     o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
     o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
     o.goodColor = {r=GOOD_COLOR:getR(), g=GOOD_COLOR:getG(), b=GOOD_COLOR:getB(), a=1}
+    o.transferColor = {r=0.0, g=1.0, b=0.0, a=0.5};
 
     o.zOffsetSmallFont = 25;
     o.moveWithMouse = true;
     o.player = _player;
     o.gutter = _gutter;
     o.container = _container;
+
+    o.gutterPanel = nil;
+    o.collectorPanel = nil;
     o.uiContainer = ISFluidContainer:new(_container:getFluidContainer()) or nil;
     o.owner = o.uiContainer:getOwner();
     o.isIsoPanel = o.uiContainer:isIsoPanel(); -- instanceof(_container:getOwner(), "IsoObject");
@@ -426,9 +434,9 @@ function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container
     o:reloadInfo(o);
 
     o.containerInfo = {
-        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0", cache = 0 },
-        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0", cache = 0 },
-        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0", cache = 0 },
+        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 },
+        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0.0", cache = 0.0 },
+        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 },
     }
 
     return o;
