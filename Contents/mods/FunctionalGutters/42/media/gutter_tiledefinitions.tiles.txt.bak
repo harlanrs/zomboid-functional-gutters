@@ -46,6 +46,7 @@ tileset
         xy = 5,0
         CustomName = Gutter
         Facing = E
+        IsGutterPipe = 
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject
@@ -61,6 +62,7 @@ tileset
         xy = 6,0
         CustomName = Gutter
         Facing = S
+        IsGutterPipe = 
         IsMoveAble = 
         MaterialType = Metal
         MoveType = WallObject
@@ -92,6 +94,68 @@ tileset
     tile
     {
         xy = 1,1
+        MaterialType = Metal
+    }
+}
+tileset
+{
+    file = industry_02
+    size = 8,34
+    id = 2
+    // industry_02_238
+    tile
+    {
+        xy = 6,29
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_239
+    tile
+    {
+        xy = 7,29
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_243
+    tile
+    {
+        xy = 3,30
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_247
+    tile
+    {
+        xy = 7,30
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_260
+    tile
+    {
+        xy = 4,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_261
+    tile
+    {
+        xy = 5,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_262
+    tile
+    {
+        xy = 6,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_263
+    tile
+    {
+        xy = 7,32
+        IsDrainPipe = 
         MaterialType = Metal
     }
 }

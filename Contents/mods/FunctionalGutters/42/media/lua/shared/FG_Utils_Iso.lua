@@ -128,11 +128,15 @@ end
 
 function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps)
     if not square then return nil end
+    -- local squareModData = square:getModData()
+    -- local hasDrainPipe = utils:getModDataHasGutter(square, squareModData)
+    -- local hasVerticalPipe = utils:getModDataHasVerticalPipe(square, squareModData)
+    -- local hasGutterPipe = utils:getModDataHasGutterPipe(square, squareModData)
 
-    local squareModData = square:getModData()
-    local hasDrainPipe = utils:getModDataHasGutter(square, squareModData)
-    local hasVerticalPipe = utils:getModDataHasVerticalPipe(square, squareModData)
-    local hasGutterPipe = utils:getModDataHasGutterPipe(square, squareModData)
+    local squareProps = square:getProperties()
+    local hasDrainPipe = utils:checkPropIsDrainPipe(square, squareProps)
+    local hasVerticalPipe = utils:checkPropIsVerticalPipe(square, squareProps)
+    local hasGutterPipe = utils:checkPropIsGutterPipe(square, squareProps)
     if not hasGutterPipe and not hasVerticalPipe and not hasDrainPipe then
         utils:modPrint("No gutter item found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return nil
@@ -175,7 +179,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
                 -- Check west
                 -- local westSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
                 if prevDir ~= localIsoDirections.E then
-                    local westSquare = square:getW()
+                    local westSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
                     local crawlWest = self:crawlGutterSquare(westSquare, gutterSystemMap, localIsoDirections.W, crawlSteps)
                     if crawlWest then
                         utils:modPrint("Crawled west to square: "..tostring(crawlWest:getX())..","..tostring(crawlWest:getY())..","..tostring(crawlWest:getZ()))
@@ -188,7 +192,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
                 -- Check east
                 -- local southSquare = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ())
                 if prevDir ~= localIsoDirections.W then
-                    local eastSquare = square:getE()
+                    local eastSquare = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ())
                     local crawlSouth = self:crawlGutterSquare(eastSquare, gutterSystemMap, localIsoDirections.E, crawlSteps)
                     if crawlSouth then
                         utils:modPrint("Crawled east to square: "..tostring(crawlSouth:getX())..","..tostring(crawlSouth:getY())..","..tostring(crawlSouth:getZ()))
@@ -201,7 +205,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
                 -- Check north
                 -- local northSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
                 if prevDir ~= localIsoDirections.S then
-                    local northSquare = square:getN()
+                    local northSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
                     local crawlNorth = self:crawlGutterSquare(northSquare, gutterSystemMap, localIsoDirections.N, crawlSteps)
                     if crawlNorth then
                         utils:modPrint("Crawled north to square: "..tostring(crawlNorth:getX())..","..tostring(crawlNorth:getY())..","..tostring(crawlNorth:getZ()))
@@ -214,7 +218,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
                 -- Check south
                 -- local southSquare = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ())
                 if prevDir ~= localIsoDirections.N then
-                    local southSquare = square:getS()
+                    local southSquare = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ())
                     local crawlSouth = self:crawlGutterSquare(southSquare, gutterSystemMap, localIsoDirections.S, crawlSteps)
                     if crawlSouth then
                         utils:modPrint("Crawled south to square: "..tostring(crawlSouth:getX())..","..tostring(crawlSouth:getY())..","..tostring(crawlSouth:getZ()))
@@ -231,7 +235,10 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
 end
 
 function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps)
-    if not square then return nil end
+    if not square then
+        utils:modPrint("No square found")
+        return nil
+    end
 
     local hasPlayerBuiltFloor = square:getPlayerBuiltFloor()
     if not hasPlayerBuiltFloor then
@@ -246,7 +253,6 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     -- * no roof / is external
     -- * has a floor
     -- * no occupied by a solidTrans or solid object
-    -- Check if square is 'occupied' (solidTrans or solid is true)
     -- Ex: don't want to count a square that has a rain catcher already on it
     local isOccupied = square:isSolid() or square:isSolidTrans()
     if square:isOutside() and not isOccupied then
@@ -262,7 +268,15 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     end
 
     -- Prioritize following vertical pipes up z levels
-    local nextSquare = dir == IsoDirections.N and square:getN() or square:getW()
+    local nextSquare
+    if dir == IsoDirections.N then
+        -- nextSquare = square:getN()
+        nextSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
+    else
+        -- nextSquare = square:getW()
+        nextSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
+    end
+    -- local nextSquare = dir == IsoDirections.N and square:getN() or square:getW()
     local crawlNext = self:crawlPlayerBuildingRoofSquare(nextSquare, roofMap, dir, crawlSteps) -- TODO up dir?
     if crawlNext then
         utils:modPrint("Crawled to square: "..tostring(crawlNext:getX())..","..tostring(crawlNext:getY())..","..tostring(crawlNext:getZ()))
@@ -272,12 +286,7 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     return square
 end
 
-function isoUtils:getPlayerBuildingFloorArea(square)
-    -- TODO instead of trying to walk every all directions
-    -- lets use the gutter pipes to determine a length
-    -- and walk 'in' from each segment of gutter pipes
-    -- ex: 6 gutter pipes long, walk 4 in from each for a total area of 24
-    
+function isoUtils:crawlGutterSystem(square)
     local gutterSystemMap = {
         [enums.pipeType.drain] = table.newarray(),
         [enums.pipeType.vertical] = table.newarray(),
@@ -293,14 +302,16 @@ function isoUtils:getPlayerBuildingFloorArea(square)
         utils:modPrint("Last square: "..tostring(lastSquare:getX())..","..tostring(lastSquare:getY())..","..tostring(lastSquare:getZ()))
     end
 
-    -- TODO check each gutter square for 
+    return gutterSystemMap
+end
 
+function isoUtils:getGutterCoveredFloors(gutterSystemMap)
     local validRoofTiles = {}
 
     for i=1, #gutterSystemMap[enums.pipeType.gutter] do
         local gutterSquare = gutterSystemMap[enums.pipeType.gutter][i]
         local objectIndex, squareGutter, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(gutterSquare, enums.pipeType.gutter)
-        -- TODO use attachedN and attachedW or facing props?
+        -- TODO use facing props?
         local spriteDef = enums.pipes[spriteName]
         local squareCrawlSteps = 0
 
@@ -310,6 +321,20 @@ function isoUtils:getPlayerBuildingFloorArea(square)
         -- local crawlDirection = spriteDef.position == IsoDirections.N and IsoDirections.N or IsoDirections.W
         self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, spriteDef.position, squareCrawlSteps)
     end
+
+    return validRoofTiles
+end
+
+function isoUtils:getPlayerBuildingFloorArea(square, gutterSystemMap)
+    -- TODO instead of trying to walk every all directions
+    -- lets use the gutter pipes to determine a length
+    -- and walk 'in' from each segment of gutter pipes
+    -- ex: 6 gutter pipes long, walk 4 in from each for a total area of 24
+    if not gutterSystemMap then
+        gutterSystemMap = self:crawlGutterSystem(square)
+    end
+
+    local validRoofTiles = self:getGutterCoveredFloors(gutterSystemMap)
 
     local totalArea = 0
     for k, v in pairs(validRoofTiles) do
@@ -418,7 +443,7 @@ function isoUtils:getGutterRoofArea(square)
 
     if not building then
         -- Check for player built floors
-        return self:getPlayerBuildingFloorArea(square)
+        return self:getPlayerBuildingFloorArea(square, nil)
     end
 
     return isoUtils:getBuildingFloorArea(building, topGutterFloor)

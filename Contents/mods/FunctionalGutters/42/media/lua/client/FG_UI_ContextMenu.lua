@@ -7,6 +7,7 @@ local serviceUtils = require("FG_Utils_Service")
 
 require "FG_TA_ConnectContainer"
 require "FG_TA_DisconnectContainer"
+require "FG_TA_OpenGutterPanel"
 
 local debugMode = false
 
@@ -38,10 +39,17 @@ local function DoDisconnectContainer(playerObject, collectorObject)
     end
 end
 
+local function DoOpenGutterPanel(playerObject, drainObject, connectedContainer)
+    if luautils.walkAdj(playerObject, drainObject:getSquare(), true) then
+        ISTimedActionQueue.add(FG_TA_OpenGutterPanel:new(playerObject, drainObject, connectedContainer, FG_UI_GutterPanel, nil))
+    end
+end
+
 local function AddGutterContainerContext(player, context, square, containerObject, fluidContainer)
     -- Conditionally build primary gutter context menu
     local primaryContainer = containerObject
     local squareHasGutter = utils:getModDataHasGutter(square, nil)
+    local linkedSquare
     local linkedSquareHasGutter
     local isTrough = troughUtils:isTrough(containerObject)
     if isTrough then
@@ -62,6 +70,7 @@ local function AddGutterContainerContext(player, context, square, containerObjec
                 linkedSquareHasGutter = utils:getModDataHasGutter(secondarySquare, nil)
                 if linkedSquareHasGutter then
                     squareHasGutter = true
+                    linkedSquare = secondarySquare
                 end
             end
 
@@ -105,6 +114,23 @@ local function AddGutterContainerContext(player, context, square, containerObjec
                 connectGutterOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
             end
         end
+
+        -- Gutter Info 
+        -- DoOpenGutterPanel
+        local gutterDrain
+        if linkedSquareHasGutter then
+            local i, object, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(linkedSquare, enums.pipeType.drain)
+            gutterDrain = object
+        else
+            local i, object, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
+            gutterDrain = object
+        end
+        local openGutterPanelOption = gutterSubMenu:addOption("Show Info", playerObject, DoOpenGutterPanel, gutterDrain, primaryContainer);
+        -- openGutterPanelOption.notAvailable = notAvailable
+        -- if notAvailable then
+        --     openGutterPanelOption.toolTip = ISWorldObjectContextMenu.addToolTip()
+        --     openGutterPanelOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
+        -- end
     end
 end
 

@@ -54,7 +54,6 @@ tileset
         PickUpWeight = 50
         PlaceTool = Wrench
         WallObjectAllowDoorframe = 
-        attachedW = 
     }
     // gutter_01_6
     tile
@@ -70,7 +69,6 @@ tileset
         PickUpWeight = 50
         PlaceTool = Wrench
         WallObjectAllowDoorframe = 
-        attachedN = 
     }
     // gutter_01_7
     tile
@@ -88,12 +86,73 @@ tileset
         PickUpTool = Wrench
         PickUpWeight = 50
         PlaceTool = Wrench
-        attachedW = 
     }
     // gutter_01_9
     tile
     {
         xy = 1,1
+        MaterialType = Metal
+    }
+}
+tileset
+{
+    file = industry_02
+    size = 8,34
+    id = 2
+    // industry_02_238
+    tile
+    {
+        xy = 6,29
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_239
+    tile
+    {
+        xy = 7,29
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_243
+    tile
+    {
+        xy = 3,30
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_247
+    tile
+    {
+        xy = 7,30
+        IsVerticalPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_260
+    tile
+    {
+        xy = 4,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_261
+    tile
+    {
+        xy = 5,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_262
+    tile
+    {
+        xy = 6,32
+        IsDrainPipe = 
+        MaterialType = Metal
+    }
+    // industry_02_263
+    tile
+    {
+        xy = 7,32
+        IsDrainPipe = 
         MaterialType = Metal
     }
 }

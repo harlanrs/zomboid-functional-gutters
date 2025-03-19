@@ -159,6 +159,26 @@ function utils:getModDataRoofArea(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.roofArea)
 end
 
+-- TODO prop value for other things?
+function utils:checkProp(square, props, propName)
+    if not props then
+        props = square:getProperties()
+    end
+    return props:Is(propName)
+end
+
+function utils:checkPropIsDrainPipe(square, props)
+    return self:checkProp(square, props, enums.customProps.IsDrainPipe)
+end
+
+function utils:checkPropIsVerticalPipe(square, props)
+    return self:checkProp(square, props, enums.customProps.IsVerticalPipe)
+end
+
+function utils:checkPropIsGutterPipe(square, props)
+    return self:checkProp(square, props, enums.customProps.IsGutterPipe)
+end
+
 function utils:getObjectEntityScript(object)
     local entityScriptName = object:getName()
     if not entityScriptName then

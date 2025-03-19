@@ -229,6 +229,12 @@ enums.options = {
     requireWrench = "RequireWrench",
 }
 
+enums.customProps = {
+    IsDrainPipe = "IsDrainPipe",
+    IsVerticalPipe = "IsVerticalPipe",
+    IsGutterPipe = "IsGutterPipe",
+}
+
 -- Adding prefix to avoid potential namespace conflicts
 -- and make it easier to find in blanket search
 enums.modDataKey = {
