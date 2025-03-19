@@ -100,3 +100,6 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
+
+-- TODO for placed/scrapped items
+-- Events.OnProcessTransaction.Add(OnProcessTransaction)

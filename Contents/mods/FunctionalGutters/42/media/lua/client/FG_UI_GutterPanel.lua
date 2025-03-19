@@ -1,6 +1,9 @@
 require "ISUI/ISPanelJoypad"
 
 local utils = require("FG_Utils")
+local options = require("FG_Options")
+local enums = require("FG_Enums")
+local serviceUtils = require("FG_Utils_Service")
 
 FG_UI_GutterPanel = ISPanelJoypad:derive("FG_UI_GutterPanel");
 FG_UI_GutterPanel.players = {};
@@ -11,6 +14,7 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
+local GOOD_COLOR = getCore():getGoodHighlitedColor()
 
 -- Container = FluidContainer instance
 function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _container, _source)
@@ -101,11 +105,10 @@ function FG_UI_GutterPanel:addCollectorPanel()
 end
 
 function FG_UI_GutterPanel:addGutterInfoPanel()
-    local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING+1;
-    -- local x, y = UI_BORDER_SPACING+1, self.panel:getBottom() + UI_BORDER_SPACING;
-    -- local w = self.panel:getWidth();
+    local x = UI_BORDER_SPACING+1;
+    local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
     local w = self:getWidth() + UI_BORDER_SPACING*2+2;
-    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 200, self.gutter);
+    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter);
     self:addChild(self.gutterPanel);
 end
 
@@ -117,21 +120,13 @@ function FG_UI_GutterPanel:createChildren()
 
     self.gutterPanel:bringToTop();
 
-    local toggleX = self.width - 100;
-    -- local toggleY = self.gutterPanel:getBottom() + UI_BORDER_SPACING;
-    local toggleY = self.panel:getBottom() - BUTTON_HGT - UI_BORDER_SPACING;
-    self.toggleConnectBtn = ISButton:new(toggleX, toggleY, 100, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton);
-    self.toggleConnectBtn.internal = "TOGGLE_CONNECT";
-    self.toggleConnectBtn:initialise();
-    self.toggleConnectBtn:instantiate();
-    self:addChild(self.toggleConnectBtn);
 
-    self.panelX = self.panel:getX();
-    local w = self.panel:getWidth();
-    local y = self.panel:getBottom() + UI_BORDER_SPACING
-
-    local btnText = "Close";
-    self.btnClose = ISButton:new(UI_BORDER_SPACING+1, y, w, BUTTON_HGT, btnText, self, FG_UI_GutterPanel.onButton);
+    local btnText = "X";
+    local closeX = self:getRight() - 20;
+    -- local closeX = UI_BORDER_SPACING+1;
+    local closeW = 20;
+    local closeY = UI_BORDER_SPACING+1;
+    self.btnClose = ISButton:new(closeX, closeY, closeW, 20, btnText, self, FG_UI_GutterPanel.onButton);
     self.btnClose.internal = "CLOSE";
     self.btnClose:initialise();
     self.btnClose:instantiate();
@@ -140,6 +135,87 @@ function FG_UI_GutterPanel:createChildren()
 
     self:setWidth(self.panel:getRight() + UI_BORDER_SPACING + 1);
     self:setHeight(self.btnClose:getBottom() + UI_BORDER_SPACING+1);
+
+
+    -- local toggleX = self.width - 100;
+    -- local toggleY = self.panel:getBottom() - BUTTON_HGT - UI_BORDER_SPACING;
+    local toggleX = UI_BORDER_SPACING+1;
+    local toggleY = self.panel:getBottom() + UI_BORDER_SPACING;
+    -- local toggleW = 100;
+    local toggleW = self.panel:getWidth();
+    self.toggleConnectBtn = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton);
+    self.toggleConnectBtn.internal = "TOGGLE_CONNECT";
+    self.toggleConnectBtn:initialise();
+    self.toggleConnectBtn:instantiate();
+    if not utils:getModDataIsGutterConnected(self.container, nil) then
+        self.toggleConnectBtn.title = "Connect";
+        self.toggleConnectBtn:enableAcceptColor();
+    else
+        self.toggleConnectBtn.title = "Disconnect";
+        local bgC = self.btnDefault.backgroundColor
+        local bgCMO = self.btnDefault.backgroundColorMouseOver
+        local bC = self.btnDefault.borderColor
+        self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a)
+        self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
+        self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
+    end
+
+    self:addChild(self.toggleConnectBtn);
+
+    self:setWidth(self.panel:getRight() + UI_BORDER_SPACING + 1);
+    self:setHeight(self.toggleConnectBtn:getBottom() + UI_BORDER_SPACING+1);
+end
+
+function FG_UI_GutterPanel:renderContainerInfo()
+    local baseRainFactor = self.baseRainFactor
+    if self.containerInfo.baseRainFactor.cache~=baseRainFactor then
+        self.containerInfo.baseRainFactor.cache = baseRainFactor;
+        self.containerInfo.baseRainFactor.value = tostring(round(baseRainFactor, 2));
+    end
+
+    local gutterRainFactor = self.gutterRainFactor;
+    if self.containerInfo.gutterRainFactor.cache~=gutterRainFactor then
+        self.containerInfo.gutterRainFactor.cache = gutterRainFactor;
+        self.containerInfo.gutterRainFactor.value = tostring(round(gutterRainFactor, 2));
+    end
+
+    local totalRainFactor = self.totalRainFactor;
+    if self.containerInfo.totalRainFactor.cache~=totalRainFactor then
+        self.containerInfo.totalRainFactor.cache = totalRainFactor;
+        self.containerInfo.totalRainFactor.value = tostring(round(totalRainFactor, 2));
+    end
+
+    local tagWid = math.max(
+        getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag),
+        -- getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.gutterRainFactor.tag),
+        getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
+    )
+
+    local x = self.panel:getWidth() - (3 * UI_BORDER_SPACING) - 2;
+    local y = self.panel:getBottom() - UI_BORDER_SPACING - UI_BORDER_SPACING;
+
+    local c = self.textColor;
+
+    local tagx = x
+    local valx = tagx + UI_BORDER_SPACING;
+
+    -- y = y + FONT_HGT_SMALL + UI_BORDER_SPACING + 1
+    c = self.tagColor;
+    self:renderText(self.containerInfo.totalRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    c = self.isGutterConnected and self.goodColor or self.textColor;
+    self:renderText(self.containerInfo.totalRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+
+    y = y - BUTTON_HGT;
+    c = self.tagColor;
+    self:renderText(self.containerInfo.baseRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    c = self.textColor;
+    self:renderText(self.containerInfo.baseRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+
+    -- y = y + BUTTON_HGT;
+    -- c = self.tagColor;
+    -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    -- c = self.textColor;
+    -- self:renderText(self.containerInfo.gutterRainFactor.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
 end
 
 function FG_UI_GutterPanel:prerender()
@@ -148,6 +224,51 @@ end
 
 function FG_UI_GutterPanel:render()
     self:renderJoypadFocus()
+
+    local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING + 1;
+
+    self:drawText("Rain Gutter", x, y, 1, 1, 1, 1, UIFont.Medium);
+
+    self:renderContainerInfo()
+end
+
+function FG_UI_GutterPanel:validatePanel()
+    self.disableConnect = false;
+    if self.action then
+        if ISTimedActionQueue.hasAction(self.action) then
+            self.disableConnect = true;
+        else
+            self.action = false;
+            self.disableConnect = false;
+
+            self:reloadInfo();
+        end
+    else
+        if not self.disableConnect then
+            -- TODO isValid check for container
+            if not utils:getModDataIsGutterConnected(self.container, nil) then
+                self.toggleConnectBtn.title = "Connect";
+                self.toggleConnectBtn:enableAcceptColor();
+            else
+                self.toggleConnectBtn.title = "Disconnect";
+                local bgC = self.btnDefault.backgroundColor
+                local bgCMO = self.btnDefault.backgroundColorMouseOver
+                local bC = self.btnDefault.borderColor
+                self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a)
+                self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
+                self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
+            end
+        end
+    end
+
+    self.toggleConnectBtn:setEnable(not self.disableConnect);
+end
+
+function FG_UI_GutterPanel:alignElements()
+    self:setWidth(self.panel.width + UI_BORDER_SPACING*2+2);
+    self.gutterPanel:setWidth(self.panel.width);
+    self.btnClose:setX(self.panel.width - UI_BORDER_SPACING - 1);
+    self.toggleConnectBtn:setWidth(self.panel.width)
 end
 
 function FG_UI_GutterPanel:update()
@@ -165,10 +286,9 @@ function FG_UI_GutterPanel:update()
     --         return
     --     end
     -- end
-    self:setWidth(self.panel.width + UI_BORDER_SPACING*2+2);
-    self.gutterPanel:setWidth(self.panel.width);
-    self.toggleConnectBtn:setX(self.panel.width - 100);
-    self.btnClose:setWidth(self.panel.width)
+
+    self:validatePanel();
+    self:alignElements();
 end
 
 function FG_UI_GutterPanel:close()
@@ -194,7 +314,48 @@ function FG_UI_GutterPanel:onButton(_btn)
     if _btn.internal=="CLOSE" then
         self:close()
     elseif _btn.internal=="TOGGLE_CONNECT" then
-        utils:modPrint("TODO toggle connect")
+        if utils:getModDataIsGutterConnected(self.container, nil) then
+            self:DoDisconnectCollector()
+        else
+            self:DoConnectCollector()
+        end
+    end
+end
+
+function FG_UI_GutterPanel:DoConnectCollector()
+    self.toggleConnectBtn.title = "Connecting...";
+
+    if luautils.walkAdj(self.player, self.container:getSquare(), true) then
+        if options:getRequireWrench() then
+            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
+            if wrench then
+                ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
+                self.action = FG_TA_ConnectContainer:new(self.player, self.container, wrench)
+                ISTimedActionQueue.add(self.action)
+
+            end
+        else
+            self.action = FG_TA_ConnectContainer:new(self.player, self.container, nil)
+            ISTimedActionQueue.add(self.action)
+        end
+    end
+end
+
+function FG_UI_GutterPanel:DoDisconnectCollector()
+    self.toggleConnectBtn.title = "Disconnecting...";
+
+    if luautils.walkAdj(self.player, self.container:getSquare(), true) then
+        if options:getRequireWrench() then
+            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
+            if wrench then
+                ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
+                self.action = FG_TA_DisconnectContainer:new(self.player, self.container, wrench)
+                ISTimedActionQueue.add(self.action)
+            end
+        else
+            self.action = FG_TA_DisconnectContainer:new(self.player, self.container, nil)
+            ISTimedActionQueue.add(self.action)
+        end
     end
 end
 
@@ -203,13 +364,52 @@ function FG_UI_GutterPanel:onGainJoypadFocus(joypadData)
     self:setISButtonForB(self.btnClose)
 end
 
+function FG_UI_GutterPanel:reloadInfo()
+    self.baseRainFactor = utils:getModDataBaseRainFactor(self.container);
+    self.gutterRainFactor = serviceUtils:calculateGutterSystemRainFactor(self.gutter:getSquare());
+    local fluidContainer = self.container:getFluidContainer();
+    if fluidContainer then
+        self.totalRainFactor = fluidContainer:getRainCatcher();
+    else
+        self.totalRainFactor = 0;
+    end
+    self.isGutterConnected = utils:getModDataIsGutterConnected(self.container, nil);
+end
+
+function FG_UI_GutterPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _func)
+    local alpha = 1.0;
+    if _func then
+        _func(self, _s, _x+1, _y-1, 0, 0, 0, alpha, _font);
+        _func(self, _s, _x+1, _y+1, 0, 0, 0, alpha, _font);
+        _func(self, _s, _x-1, _y+1, 0, 0, 0, alpha, _font);
+        _func(self, _s, _x-1, _y-1, 0, 0, 0, alpha, _font);
+        _func(self, _s, _x, _y, _r, _g, _b, _a, _font);
+    else
+        self:drawText(_s, _x+1, _y-1, 0, 0, 0, alpha, _font);
+        self:drawText(_s, _x+1, _y+1, 0, 0, 0, alpha, _font);
+        self:drawText(_s, _x-1, _y+1, 0, 0, 0, alpha, _font);
+        self:drawText(_s, _x-1, _y-1, 0, 0, 0, alpha, _font);
+        self:drawText(_s, _x, _y, _r, _g, _b, _a, _font);
+    end
+end
+
 function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container)
     local o = ISPanelJoypad.new(self, x, y, 400, height);
     o.variableColor={r=0.9, g=0.55, b=0.1, a=1};
     o.borderColor = {r=0.4, g=0.4, b=0.4, a=1};
     o.backgroundColor = {r=0, g=0, b=0, a=0.8};
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5};
-    o.transferColor = {r=0.0, g=1.0, b=0.0, a=0.5}; -- TODO  remove artifacts from ISFluidPanel
+
+    o.btnDefault = {
+        borderColor = {r=0.7, g=0.7, b=0.7, a=1};
+	    backgroundColor = {r=0, g=0, b=0, a=1.0};
+	    backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0};
+    }
+    o.textColor = {r=1,g=1,b=1,a=1}
+    o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
+    o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
+    o.goodColor = {r=GOOD_COLOR:getR(), g=GOOD_COLOR:getG(), b=GOOD_COLOR:getB(), a=1}
+
     o.zOffsetSmallFont = 25;
     o.moveWithMouse = true;
     o.player = _player;
@@ -218,6 +418,18 @@ function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container
     o.uiContainer = ISFluidContainer:new(_container:getFluidContainer()) or nil;
     o.owner = o.uiContainer:getOwner();
     o.isIsoPanel = o.uiContainer:isIsoPanel(); -- instanceof(_container:getOwner(), "IsoObject");
+
+    o.action = nil;
+    o.disableConnect = false;
+    o.isGutterConnected = false;
+
+    o:reloadInfo(o);
+
+    o.containerInfo = {
+        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0", cache = 0 },
+        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0", cache = 0 },
+        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0", cache = 0 },
+    }
 
     return o;
 end
