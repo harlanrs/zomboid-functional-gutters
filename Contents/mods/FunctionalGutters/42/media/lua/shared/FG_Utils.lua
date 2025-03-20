@@ -320,6 +320,8 @@ local function checkDebugMode()
     end
 end
 
+LuaEventManager.AddEvent(enums.modEvents.OnGutterTileUpdate)
+
 Events.OnLoad.Add(checkDebugMode)
 
 return utils

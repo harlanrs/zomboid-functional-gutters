@@ -39,22 +39,30 @@ local function DoDisconnectContainer(playerObject, collectorObject)
     end
 end
 
-local function DoOpenGutterPanel(playerObject, drainObject, connectedContainer)
+local function DoOpenGutterPanel(playerObject, drainObject, connectedContainer, linkedSquare)
     if luautils.walkAdj(playerObject, drainObject:getSquare(), true) then
         ISTimedActionQueue.add(FG_TA_OpenGutterPanel:new(playerObject, drainObject, connectedContainer, FG_UI_GutterPanel, nil))
     end
 end
 
-local function AddGutterContainerContext(player, context, square, containerObject, fluidContainer)
+local function AddGutterSystemContext(player, context, square, drainObject)
+    -- Check square for valid container
+    local squareObjects = square:getObjects()
+    local squareCollector = nil
+    for i = 0, squareObjects:size() - 1 do
+        local object = squareObjects:get(i)
+        if serviceUtils:isValidContainerObject(object) then
+            squareCollector = object
+            break
+        end
+    end
+
     -- Conditionally build primary gutter context menu
-    local primaryContainer = containerObject
-    local squareHasGutter = utils:getModDataHasGutter(square, nil)
+    local primaryContainer = squareCollector
     local linkedSquare
-    local linkedSquareHasGutter
-    local isTrough = troughUtils:isTrough(containerObject)
-    if isTrough then
+    if primaryContainer and troughUtils:isTrough(primaryContainer) then
         -- Check the 2nd tile if multi-tile trough
-        local primaryTrough = troughUtils:getPrimaryTroughFromDef(containerObject)
+        local primaryTrough = troughUtils:getPrimaryTroughFromDef(squareCollector)
         utils:modPrint("Primary trough object: "..tostring(primaryTrough))
         if not primaryTrough then
             return
@@ -66,15 +74,8 @@ local function AddGutterContainerContext(player, context, square, containerObjec
             local secondaryTrough = troughUtils:getSecondaryTroughFromDef(primaryTrough)
             utils:modPrint("Secondary trough object: "..tostring(secondaryTrough))
             if secondaryTrough then
-                local secondarySquare = secondaryTrough:getSquare()
-                linkedSquareHasGutter = utils:getModDataHasGutter(secondarySquare, nil)
-                if linkedSquareHasGutter then
-                    squareHasGutter = true
-                    linkedSquare = secondarySquare
-                end
+                linkedSquare = secondaryTrough:getSquare()
             end
-
-            utils:modPrint("Secondary trough tile on gutter tile: "..tostring(linkedSquareHasGutter))
         end
 
         -- Ensure the primary trough object is used for context menu interacts
@@ -82,21 +83,22 @@ local function AddGutterContainerContext(player, context, square, containerObjec
     end
 
     -- Build context menu
-    if squareHasGutter or linkedSquareHasGutter then
-        local playerObject = getSpecificPlayer(player)
-        local gutterSubMenu = context:getNew(context)
-        local gutterSubMenuOption = context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, nil);
-        context:addSubMenu(gutterSubMenuOption, gutterSubMenu)
+    local playerObject = getSpecificPlayer(player)
+    local gutterSubMenu = context:getNew(context)
+    local gutterSubMenuOption = context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, nil);
+    context:addSubMenu(gutterSubMenuOption, gutterSubMenu)
 
-        local notAvailable = false
-        local requireWrench = options:getRequireWrench()
-        if requireWrench then
-            local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
-            if not wrench then
-                notAvailable = true
-            end
+    local notAvailable = false
+    local requireWrench = options:getRequireWrench()
+    if requireWrench then
+        local wrench = utils:playerGetItem(playerObject:getInventory(), "PipeWrench")
+        if not wrench then
+            notAvailable = true
         end
+    end
 
+    -- Quick connect/disconnect option for primary container
+    if primaryContainer then
         local containerName = utils:getObjectDisplayName(primaryContainer)
         local isGutterConnected = utils:getModDataIsGutterConnected(primaryContainer, nil)
         if isGutterConnected then
@@ -114,24 +116,10 @@ local function AddGutterContainerContext(player, context, square, containerObjec
                 connectGutterOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
             end
         end
-
-        -- Gutter Info 
-        -- DoOpenGutterPanel
-        local gutterDrain
-        if linkedSquareHasGutter then
-            local i, object, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(linkedSquare, enums.pipeType.drain)
-            gutterDrain = object
-        else
-            local i, object, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
-            gutterDrain = object
-        end
-        local openGutterPanelOption = gutterSubMenu:addOption("Show Info", playerObject, DoOpenGutterPanel, gutterDrain, primaryContainer);
-        -- openGutterPanelOption.notAvailable = notAvailable
-        -- if notAvailable then
-        --     openGutterPanelOption.toolTip = ISWorldObjectContextMenu.addToolTip()
-        --     openGutterPanelOption.toolTip.description = getText("Tooltip_NeedWrench", getItemName("Base.PipeWrench"))
-        -- end
     end
+
+    -- Gutter System Panel
+    local openGutterPanelOption = gutterSubMenu:addOption("Show Info", playerObject, DoOpenGutterPanel, drainObject, primaryContainer, linkedSquare);
 end
 
 local function AddDebugContainerContext(player, context, square, containerObject, fluidContainer)
@@ -199,15 +187,21 @@ end
 local function AddWaterContainerContext(player, context, worldobjects, test)
     for _,worldObject in ipairs(worldobjects) do
         if worldObject then
-            local fluidContainer = worldObject:getFluidContainer()
-            if fluidContainer then
+            if utils:isDrainPipe(worldObject) then
                 local square = worldObject:getSquare()
-                if fluidContainer and square and serviceUtils:isValidContainerObject(worldObject) then
-                    -- TODO check for gutter drain pipe not collector entity
-                    AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
-                    AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
-                    break
-                end
+                AddGutterSystemContext(player, context, square, worldObject)
+                break
+
+                -- local fluidContainer = worldObject:getFluidContainer()
+                -- if fluidContainer then
+                --     local square = worldObject:getSquare()
+                --     if fluidContainer and square and serviceUtils:isValidContainerObject(worldObject) then
+                --         AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
+
+                --         -- AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
+                --         break
+                --     end
+                -- end
             end
         end
     end

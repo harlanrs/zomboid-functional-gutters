@@ -160,6 +160,7 @@ function serviceUtils:cleanupGutterPipeModData(square, squareModData)
     -- TODO gutterWest, gutterEast, gutterNorth, gutterSouth
 end
 
+-- TODO try to replace all mod data with props checks when possible
 function serviceUtils:syncSquareModData(square, full)
     local objects = square:getObjects()
     local pipeObjects = table.newarray()

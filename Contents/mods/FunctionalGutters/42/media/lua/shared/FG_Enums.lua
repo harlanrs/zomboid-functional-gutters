@@ -271,4 +271,8 @@ enums.modCommands = {
     disconnectCollector = "disconnectCollector",
 }
 
+enums.modEvents = {
+    OnGutterTileUpdate ="OnGutterTileUpdate"
+}
+
 return enums

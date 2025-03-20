@@ -19,18 +19,17 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GOOD_COLOR = getCore():getGoodHighlitedColor()
 
--- Container = FluidContainer instance
-function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _container, _source)
-   -- _container = ISFluidContainer:new(_container);
+function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _collector, _source)
+   -- _collector = ISFluidContainer:new(_collector);
 
     -- TODO gutter object not container
-    -- if _container and not ISFluidUtil.validateContainer(_container) then
+    -- if _collector and not ISFluidUtil.validateContainer(_collector) then
     --     print("GutterPanelUI not a valid (ISFluidContainer) container?")
     --     return;
     -- end
 
     -- -- TODO
-    -- if _container and not _container:isValid() then
+    -- if _collector and not _collector:isValid() then
     --     print("GutterPanelUI container nil or has no owner.")
     --     return;
     -- end
@@ -58,7 +57,7 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _container, _source)
         FG_UI_GutterPanel.players[playerNum] = {};
     end
 
-    local ui = FG_UI_GutterPanel:new(x,y, 400, 600, _player, _gutter, _container);
+    local ui = FG_UI_GutterPanel:new(x,y, 400, 600, _player, _gutter, _collector);
     ui:initialise();
     ui:instantiate();
     ui:setVisible(true);
@@ -84,14 +83,11 @@ function FG_UI_GutterPanel:initialise()
 end
 
 function FG_UI_GutterPanel:addCollectorPanel()
-    -- local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING+1;
     local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING;
 
-    -- self.panelText = getText("Fluid_Info_Panel");
-    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.uiContainer, true, true, self.isIsoPanel);
-    self.collectorPanel.customTitle = "";
-    self.collectorPanel.title = "";
-    self.collectorPanel.doTitle = false;
+    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutter, self.collector, self.isIsoPanel);
+    -- self.collectorPanel.customTitle = "";
+    -- self.collectorPanel.title = "";
     self.collectorPanel:initialise();
     self.collectorPanel:instantiate();
     self.collectorPanel:noBackground();
@@ -110,7 +106,7 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1;
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
-    local w = self:getWidth() - (UI_BORDER_SPACING * 2);
+    -- local w = self:getWidth() - (UI_BORDER_SPACING * 2);
     self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter);
     self:addChild(self.gutterPanel);
 end
@@ -125,9 +121,10 @@ function FG_UI_GutterPanel:createChildren()
 
     local btnText = "X";
     local closeX = self:getRight() - 20;
-    local closeW = 20;
     local closeY = UI_BORDER_SPACING+1;
-    self.btnClose = ISButton:new(closeX, closeY, closeW, 20, btnText, self, FG_UI_GutterPanel.onButton);
+    local closeW = 20;
+    local closeH = 20;
+    self.btnClose = ISButton:new(closeX, closeY, closeW, closeH, btnText, self, FG_UI_GutterPanel.onButton);
     self.btnClose.internal = "CLOSE";
     self.btnClose:initialise();
     self.btnClose:instantiate();
@@ -141,71 +138,30 @@ function FG_UI_GutterPanel:createChildren()
     self.toggleConnectBtn.internal = "TOGGLE_CONNECT";
     self.toggleConnectBtn:initialise();
     self.toggleConnectBtn:instantiate();
-    if not utils:getModDataIsGutterConnected(self.container, nil) then
-        self.toggleConnectBtn.title = "Connect";
-        self.toggleConnectBtn:enableAcceptColor();
+
+    if self.collector then
+        if not utils:getModDataIsGutterConnected(self.collector, nil) then
+            self.toggleConnectBtn.title = "Connect";
+            self.toggleConnectBtn:enableAcceptColor();
+        else
+            self.toggleConnectBtn.title = "Disconnect";
+            local bgC = self.btnDefault.backgroundColor;
+            local bgCMO = self.btnDefault.backgroundColorMouseOver;
+            local bC = self.btnDefault.borderColor;
+            self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a);
+            self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a);
+            self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a);
+        end
     else
-        self.toggleConnectBtn.title = "Disconnect";
-        local bgC = self.btnDefault.backgroundColor;
-        local bgCMO = self.btnDefault.backgroundColorMouseOver;
-        local bC = self.btnDefault.borderColor;
-        self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a);
-        self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a);
-        self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a);
+        self.toggleConnectBtn.title = "No Collector";
+        self.toggleConnectBtn:setEnable(false);
+        self.disableConnect = true;
     end
 
     self:addChild(self.toggleConnectBtn);
 
     self:setWidth(self.collectorPanel:getRight() + UI_BORDER_SPACING + 1);
     self:setHeight(self.toggleConnectBtn:getBottom() + UI_BORDER_SPACING+1);
-end
-
-function FG_UI_GutterPanel:renderContainerInfo()
-    local baseRainFactor = self.baseRainFactor
-    if self.containerInfo.baseRainFactor.cache~=baseRainFactor then
-        self.containerInfo.baseRainFactor.cache = baseRainFactor;
-        self.containerInfo.baseRainFactor.value = baseRainFactor == 0.0 and "0.0" or tostring(round(baseRainFactor, 2));
-    end
-
-    local gutterRainFactor = self.gutterRainFactor;
-    if self.containerInfo.gutterRainFactor.cache~=gutterRainFactor then
-        self.containerInfo.gutterRainFactor.cache = gutterRainFactor;
-        self.containerInfo.gutterRainFactor.value = gutterRainFactor == 0.0 and "0.0" or tostring(round(gutterRainFactor, 2));
-    end
-
-    local totalRainFactor = self.totalRainFactor;
-    if self.containerInfo.totalRainFactor.cache~=totalRainFactor then
-        self.containerInfo.totalRainFactor.cache = totalRainFactor;
-        self.containerInfo.totalRainFactor.value = totalRainFactor == 0.0 and "0.0" or tostring(round(totalRainFactor, 2));
-    end
-
-    -- local tagWid = math.max(
-    --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag),
-    --     -- getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.gutterRainFactor.tag),
-    --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
-    -- )
-
-    local x = self.collectorPanel:getWidth() - (3 * UI_BORDER_SPACING) - 2;
-    local y = self.collectorPanel:getBottom() - UI_BORDER_SPACING - UI_BORDER_SPACING;
-    local tagX = x
-    local valX = tagX + UI_BORDER_SPACING;
-
-    local c = self.tagColor;
-    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    c = self.isGutterConnected and self.goodColor or self.textColor;
-    self:renderText(self.containerInfo.totalRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
-
-    y = y - BUTTON_HGT;
-    c = self.tagColor;
-    self:renderText(self.containerInfo.baseRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    c = self.textColor;
-    self:renderText(self.containerInfo.baseRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
-
-    -- y = y + BUTTON_HGT;
-    -- c = self.tagColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    -- c = self.textColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 end
 
 function FG_UI_GutterPanel:prerender()
@@ -232,11 +188,16 @@ function FG_UI_GutterPanel:render()
 
     local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING + 1;
     self:drawText("Gutter System", x, y, 1, 1, 1, 1, UIFont.Medium);
-
-    self:renderContainerInfo()
 end
 
 function FG_UI_GutterPanel:validatePanel()
+    if not self.collector then
+        -- self.disableConnect = true;
+        -- self.toggleConnectBtn.title = "No Collector";
+        -- self.toggleConnectBtn:setEnable(false);
+        return;
+    end
+
     self.disableConnect = false;
     if self.action then
         if ISTimedActionQueue.hasAction(self.action) then
@@ -245,12 +206,12 @@ function FG_UI_GutterPanel:validatePanel()
             self.action = false;
             self.disableConnect = false;
 
-            self:reloadInfo();
+            self:reloadCollectorInfo();
         end
     else
         if not self.disableConnect then
             -- TODO isValid check for container
-            if not utils:getModDataIsGutterConnected(self.container, nil) then
+            if not utils:getModDataIsGutterConnected(self.collector, nil) then
                 self.toggleConnectBtn.title = "Connect";
                 self.toggleConnectBtn:enableAcceptColor();
             else
@@ -269,23 +230,29 @@ function FG_UI_GutterPanel:validatePanel()
 end
 
 function FG_UI_GutterPanel:alignElements()
-    self:setWidth(self.collectorPanel.width + UI_BORDER_SPACING*2+2);
-    self.gutterPanel:setWidth(self.collectorPanel.width);
-    self.btnClose:setX(self.collectorPanel.width - UI_BORDER_SPACING - 1);
-    self.toggleConnectBtn:setWidth(self.collectorPanel.width)
+    local childPanelW = 300;
+    local mainPanelW = 300 + (2 * UI_BORDER_SPACING);
+    if self.width > mainPanelW then
+        self:setWidth(mainPanelW);
+    end
+
+    if self.gutterPanel.width > childPanelW then
+        self.gutterPanel.width = childPanelW;
+    end
+
+    if self.collectorPanel.width > childPanelW then
+        self.collectorPanel.width = childPanelW;
+    end
+
+    self.toggleConnectBtn:setWidth(childPanelW);
+    self.btnClose:setX(childPanelW - UI_BORDER_SPACING - 1);
 end
 
 function FG_UI_GutterPanel:update()
-    --range check for isoPanels.
-    if self.isIsoPanel then
-        if ISFluidUtil.validateContainer(self.uiContainer) and self.owner and self.owner:getSquare() and self.player then
-            local square = self.owner:getSquare();
-            local dist = ISFluidUtil.isoMaxPanelDist;
-            if self.player:getX() < square:getX()-dist or self.player:getX() > square:getX()+dist or self.player:getY() < square:getY()-dist or self.player:getY() > square:getY()+dist then
-                self:close();
-                return
-            end
-        else
+    -- Range check for gutter drain square
+    if self.gutterSquare and self.player then
+        local dist = 10;
+        if self.player:getX() < self.gutterSquare:getX()-dist or self.player:getX() > self.gutterSquare:getX()+dist or self.player:getY() < self.gutterSquare:getY()-dist or self.player:getY() > self.gutterSquare:getY()+dist then
             self:close();
             return
         end
@@ -307,8 +274,12 @@ function FG_UI_GutterPanel:close()
         end
     end
 
+    -- Remove event listener
+    Events.OnGutterTileUpdate.Remove(self.eventWrapper)
+
     -- Cleanup panels
     self.gutterPanel:close()
+    self.collectorPanel:onClose() -- TODO sync terms
 
     self:setVisible(false);
     self:removeFromUIManager();
@@ -317,8 +288,8 @@ end
 function FG_UI_GutterPanel:onButton(_btn)
     if _btn.internal=="CLOSE" then
         self:close()
-    elseif _btn.internal=="TOGGLE_CONNECT" then
-        if utils:getModDataIsGutterConnected(self.container, nil) then
+    elseif _btn.internal=="TOGGLE_CONNECT" and self.collector then
+        if utils:getModDataIsGutterConnected(self.collector, nil) then
             self:DoDisconnectCollector()
         else
             self:DoConnectCollector()
@@ -327,37 +298,38 @@ function FG_UI_GutterPanel:onButton(_btn)
 end
 
 function FG_UI_GutterPanel:DoConnectCollector()
+    if not self.collector then return end
     self.toggleConnectBtn.title = "Connecting...";
 
-    if luautils.walkAdj(self.player, self.container:getSquare(), true) then
+    if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
             local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
             if wrench then
                 ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
-                self.action = FG_TA_ConnectContainer:new(self.player, self.container, wrench)
+                self.action = FG_TA_ConnectContainer:new(self.player, self.collector, wrench)
                 ISTimedActionQueue.add(self.action)
-
             end
         else
-            self.action = FG_TA_ConnectContainer:new(self.player, self.container, nil)
+            self.action = FG_TA_ConnectContainer:new(self.player, self.collector, nil)
             ISTimedActionQueue.add(self.action)
         end
     end
 end
 
 function FG_UI_GutterPanel:DoDisconnectCollector()
+    if not self.collector then return end
     self.toggleConnectBtn.title = "Disconnecting...";
 
-    if luautils.walkAdj(self.player, self.container:getSquare(), true) then
+    if luautils.walkAdj(self.player, self.collector:getSquare(), true) then
         if options:getRequireWrench() then
             local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
             if wrench then
                 ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
-                self.action = FG_TA_DisconnectContainer:new(self.player, self.container, wrench)
+                self.action = FG_TA_DisconnectContainer:new(self.player, self.collector, wrench)
                 ISTimedActionQueue.add(self.action)
             end
         else
-            self.action = FG_TA_DisconnectContainer:new(self.player, self.container, nil)
+            self.action = FG_TA_DisconnectContainer:new(self.player, self.collector, nil)
             ISTimedActionQueue.add(self.action)
         end
     end
@@ -368,36 +340,60 @@ function FG_UI_GutterPanel:onGainJoypadFocus(joypadData)
     self:setISButtonForB(self.btnClose)
 end
 
-function FG_UI_GutterPanel:reloadInfo()
-    self.baseRainFactor = utils:getModDataBaseRainFactor(self.container);
-    self.gutterRainFactor = serviceUtils:calculateGutterSystemRainFactor(self.gutter:getSquare());
-    local fluidContainer = self.container:getFluidContainer();
-    if fluidContainer then
-        self.totalRainFactor = fluidContainer:getRainCatcher();
-    else
-        self.totalRainFactor = 0.0;
+function FG_UI_GutterPanel:reloadCollectorInfo(full)
+    if full then
+        self.collectorPanel.collector = self.collector;
     end
-    self.isGutterConnected = utils:getModDataIsGutterConnected(self.container, nil);
-end
 
-function FG_UI_GutterPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _func)
-    local alpha = 1.0;
-    if _func then
-        _func(self, _s, _x+1, _y-1, 0, 0, 0, alpha, _font);
-        _func(self, _s, _x+1, _y+1, 0, 0, 0, alpha, _font);
-        _func(self, _s, _x-1, _y+1, 0, 0, 0, alpha, _font);
-        _func(self, _s, _x-1, _y-1, 0, 0, 0, alpha, _font);
-        _func(self, _s, _x, _y, _r, _g, _b, _a, _font);
-    else
-        self:drawText(_s, _x+1, _y-1, 0, 0, 0, alpha, _font);
-        self:drawText(_s, _x+1, _y+1, 0, 0, 0, alpha, _font);
-        self:drawText(_s, _x-1, _y+1, 0, 0, 0, alpha, _font);
-        self:drawText(_s, _x-1, _y-1, 0, 0, 0, alpha, _font);
-        self:drawText(_s, _x, _y, _r, _g, _b, _a, _font);
+    if self.collectorPanel then
+        self.collectorPanel:reloadInfo(full);
+    end
+
+    if self.collector then
+        self.isGutterConnected = utils:getModDataIsGutterConnected(self.collector, nil);
     end
 end
 
-function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container)
+function FG_UI_GutterPanel:onUpdateGutterTile(square)
+    if self.gutterSquare:getID() == square:getID() then
+        if not utils:checkPropIsDrainPipe(square) then
+            -- Gutter no longer exists on square so close the panel
+            self:close();
+            return;
+        end
+
+        -- TODO handle multi-tile troughs
+        local squareCollector
+        local squareObjects = square:getObjects()
+        for i = 0, squareObjects:size() - 1 do
+            local object = squareObjects:get(i)
+            if serviceUtils:isValidContainerObject(object) then
+                squareCollector = object
+                break
+            end
+        end
+
+        -- TODO consolidate some of this logic to init and destroy methods for the collector
+        if not squareCollector and self.collector then
+            -- Collector removed from square - refresh the panel
+            self.collector = nil
+            self.disableConnect = true
+            self.toggleConnectBtn.title = "No Collector";
+            self.toggleConnectBtn:setEnable(false);
+            self:reloadCollectorInfo(true)
+        elseif squareCollector and not self.collector then
+            -- Collector added to square - refresh the panel
+            self.collector = squareCollector
+            self.disableConnect = false;
+            self.toggleConnectBtn.title = "Connect";
+            self.toggleConnectBtn:setEnable(true);
+            self.toggleConnectBtn:enableAcceptColor();
+            self:reloadCollectorInfo(true)
+        end
+    end
+end
+
+function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _collector)
     local w = 300 + (2 * UI_BORDER_SPACING);
     local o = ISPanelJoypad.new(self, x, y, w, height);
     o.variableColor={r=0.9, g=0.55, b=0.1, a=1}; -- TODO remove
@@ -419,25 +415,23 @@ function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _container
     o.moveWithMouse = true;
     o.player = _player;
     o.gutter = _gutter;
-    o.container = _container;
+    o.collector = _collector;
+    o.gutterSquare = o.gutter:getSquare()
 
     o.gutterPanel = nil;
     o.collectorPanel = nil;
-    o.uiContainer = ISFluidContainer:new(_container:getFluidContainer()) or nil;
-    o.owner = o.uiContainer:getOwner();
-    o.isIsoPanel = o.uiContainer:isIsoPanel(); -- instanceof(_container:getOwner(), "IsoObject");
 
     o.action = nil;
     o.disableConnect = false;
     o.isGutterConnected = false;
 
-    o:reloadInfo(o);
+    o.eventWrapper = function(square)
+        o:onUpdateGutterTile(square)
+    end
 
-    o.containerInfo = {
-        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 },
-        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0.0", cache = 0.0 },
-        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 },
-    }
+    Events.OnGutterTileUpdate.Add(o.eventWrapper)
 
     return o;
 end
+
+

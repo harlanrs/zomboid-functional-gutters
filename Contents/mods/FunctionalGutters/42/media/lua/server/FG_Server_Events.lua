@@ -46,6 +46,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     if squareModData then
         if utils:getModDataHasGutter(square, squareModData) then
             utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
+            triggerEvent("OnGutterTileUpdate", square)
         end
     end
 end
@@ -56,8 +57,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
-
-        -- TODO check if placed items need to be 'upgraded' to thumpables from iso object
+        triggerEvent("OnGutterTileUpdate", square) -- TODO is this too early to trigger?
     end
 
     -- Check if the placed object is a trough and convert it to a global object if necessary
@@ -79,30 +79,16 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
             -- Cleanup square's mod data when any pipes are removed
             utils:modPrint("Pipe object removed from square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
             local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil
-
             -- TODO need to trigger a re-crawl of the pipe system to downscale a connected collector's rain factor 
             -- in case the removed pipe affects how much roof is connected to the gutter system
         end
+
+        if utils:checkPropIsDrainPipe(square) then
+            utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
+            triggerEvent("OnGutterTileUpdate", square)
+        end
     end
 end
-
-
--- NOTE: same issue as OnTileRemoved where the object's FluidContainer has already been removed so we can't disconnect directly
--- Need to figure out where the info is being stored 
--- function GutterServerManager.OnIsoObjectAboutToBeRemoved(removedObject)
---     -- React before the removal of an existing iso object on a tile
---     local square = removedObject:getSquare()
---     if square then
---         if utils:getModDataIsGutterConnected(removedObject) then
---             -- Cleanup collector if still connected to a gutter system
---             utils:modPrint("Connected collector removed from square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
-            
---             -- Check for the generated item version of object in player's inventory
-
---             -- NOTE: will need to check world inventory as well for things like large troughs that become multiple items but can be done in other event
---         end
---     end
--- end
 
 -- TODO re-evaluate if we can get this event from any other source beside having to wrap the function
 local ISBuildIsoEntity_setInfo = ISBuildIsoEntity.setInfo
@@ -119,17 +105,3 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
-
--- TODO cleanup any connected collectors before pickup
--- Events.OnObjectAboutToBeRemoved.Add(GutterServerManager.OnIsoObjectAboutToBeRemoved)
-
-local function OnProcessTransaction(type, player, item, sourceId, destinationId, unknown)
-    utils:modPrint("OnProcessTransaction: "..tostring(type))
-end
-Events.OnProcessTransaction.Add(OnProcessTransaction)
-
-local function OnProcessAction(unknown, player, argTable)
-    utils:modPrint("OnProcessAction: "..tostring(unknown))
-end
-Events.OnProcessAction.Add(OnProcessAction)
-
