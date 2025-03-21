@@ -11,6 +11,14 @@ function utils:modPrint(message)
     end
 end
 
+function utils:getPipeSpriteDef(spriteName)
+    local spriteDef = enums.pipes[spriteName]
+    if spriteDef then
+        return spriteDef
+    end
+    return nil
+end
+
 function utils:getSpriteCategory(spriteName)
     local spriteDef = enums.pipes[spriteName]
     if spriteDef and spriteDef.type then
@@ -177,6 +185,13 @@ end
 
 function utils:checkPropIsGutterPipe(square, props)
     return self:checkProp(square, props, enums.customProps.IsGutterPipe)
+end
+
+function utils:checkPropIsAnyPipe(square, props)
+    if not props then
+        props = square:getProperties()
+    end
+    return self:checkPropIsDrainPipe(square, props) or self:checkPropIsVerticalPipe(square, props) or self:checkPropIsGutterPipe(square, props)
 end
 
 function utils:getObjectEntityScript(object)

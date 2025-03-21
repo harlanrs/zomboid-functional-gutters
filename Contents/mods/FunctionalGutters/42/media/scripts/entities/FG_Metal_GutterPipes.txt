@@ -76,7 +76,7 @@ module Base
             inputs
             {
                 item 4 [Base.BlowTorch] flags[Prop1],
-                item 4 [Base.MetalPipe],
+                item 4 [Base.SheetMetal],
                 item 4 [Base.IronBandSmall],
                 item 4 [Base.WeldingRods],
             }
@@ -147,10 +147,10 @@ module Base
             ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
             inputs
             {
-                item 4 [Base.BlowTorch] flags[Prop1],
-                item 3 [Base.MetalPipe],
+                item 3 [Base.BlowTorch] flags[Prop1],
+                item 3 [Base.SheetMetal],
                 item 3 [Base.IronBandSmall],
-                item 4 [Base.WeldingRods],
+                item 3 [Base.WeldingRods],
             }
         }
     }
@@ -197,8 +197,8 @@ module Base
             inputs
             {
                 item 2 [Base.BlowTorch] flags[Prop1],
-                item 1 [Base.MetalPipe],
-                item 1 [Base.WeldingRods],
+                item 2 [Base.SmallSheetMetal],
+                item 2 [Base.WeldingRods],
             }
         }
     }
@@ -244,8 +244,8 @@ module Base
             inputs
             {
                 item 2 [Base.BlowTorch] flags[Prop1],
-                item 1 [Base.MetalPipe],
-                item 1 [Base.WeldingRods],
+                item 2 [Base.SmallSheetMetal],
+                item 2 [Base.WeldingRods],
             }
         }
     }

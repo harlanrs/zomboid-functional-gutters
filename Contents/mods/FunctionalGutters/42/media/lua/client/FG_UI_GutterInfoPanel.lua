@@ -18,6 +18,8 @@ local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():g
 
 function FG_UI_GutterInfoPanel:initialise()
     ISPanel.initialise(self);
+
+    -- self:reloadInfo()
 end
 
 function FG_UI_GutterInfoPanel:prerender() -- Call before render, it's for harder stuff that need init, ect
@@ -30,6 +32,10 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
 
     local c = self.textColor;
     self:renderText("Pipes", x, y, c.r, c.g, c.b, c.a, UIFont.Small);
+
+    if self.gutterMap == nil then
+        return
+    end
 
     local drainCount = #self.gutterMap[enums.pipeType.drain]
     if self.pipeInfo.drain.cache~=drainCount then
@@ -106,7 +112,7 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     local gutterTileCount = self.gutterTileCount;
     if self.roofInfo.gutterTileCount.cache~=gutterTileCount then
         self.roofInfo.gutterTileCount.cache = gutterTileCount;
-        self.roofInfo.gutterTileCount.value = tostring(gutterTileCount);
+        self.roofInfo.gutterTileCount.value = (not gutterTileCount or gutterTileCount == 0) and "0" or tostring(round(gutterTileCount, 2));
     end
 
     local tagWid = math.max(
@@ -161,8 +167,6 @@ function FG_UI_GutterInfoPanel:onPipes()
         self.btnPipes:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
         self.btnPipes:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
     end
-
-    -- self.btnPipes:setImage(highlight and eyeOn or eyeOff)
 end
 
 function FG_UI_GutterInfoPanel:onRoof()
@@ -179,8 +183,6 @@ function FG_UI_GutterInfoPanel:onRoof()
         self.btnRoof:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
         self.btnRoof:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
     end
-
-    -- self.btnRoof:setImage(highlight and eyeOn or eyeOff)
 end
 
 
@@ -191,9 +193,8 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     local btnPipesText = "View Pipes";  -- TODO translate
     self.btnPipes = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, btnPipesText, self, self.onPipes);
     self.btnPipes.internal = "PIPES";
-    -- self.btnPipes:setImage(self.gutterHighlight and eyeOn or eyeOff)
     self.btnPipes:initialise();
-    self.btnPipes:instantiate();
+    -- self.btnPipes:instantiate();
     self:addChild(self.btnPipes);
     utils:modPrint("button pipes: "..tostring(self.btnPipes))
 
@@ -201,9 +202,8 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     btnX = btnX + btnW + UI_BORDER_SPACING + 1
     self.btnRoof = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, roofBtnText, self, self.onRoof);
     self.btnRoof.internal = "ROOF";
-    -- self.btnRoof:setImage(self.roofAreaHighlight and eyeOn or eyeOff)
     self.btnRoof:initialise();
-    self.btnRoof:instantiate();
+    -- self.btnRoof:instantiate();
     self:addChild(self.btnRoof);
 end
 
@@ -289,9 +289,18 @@ function FG_UI_GutterInfoPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _fu
     end
 end
 
+function FG_UI_GutterInfoPanel:onUpdateGutterTile(square)
+    if isoUtils:isSquareInGutterMap(square, self.gutterMap) then
+        -- Updated square is part of the gutter system
+        self:reloadInfo()
+    end
+end
+
 function FG_UI_GutterInfoPanel:reloadInfo()
     -- TODO should this info be passed in/managed by parent panel?
     self.square = self.gutter:getSquare()
+
+    -- TODO should crawl be done completely by the service layer and persisted on the square's mod data?
     self.gutterMap = isoUtils:crawlGutterSystem(self.square)
     self.coveredFloors = isoUtils:getGutterCoveredFloors(self.gutterMap)
     self.roofArea = utils:getModDataRoofArea(self.square)
@@ -324,6 +333,7 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutterDrain)
     o.disableBtnRoof = false;
 
     o.reloadInfo(o);
+
     o.pipeInfo = {
         [enums.pipeType.drain] = { tag = "Drain"..": ", value = "0", cache = 0 },
         [enums.pipeType.vertical] = { tag = "Vertical"..": ", value = "0", cache = 0 },

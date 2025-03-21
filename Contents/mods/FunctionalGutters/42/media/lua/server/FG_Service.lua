@@ -3,9 +3,13 @@ if isClient() then return end
 local enums = require("FG_Enums")
 local options = require("FG_Options")
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local serviceUtils = require("FG_Utils_Service")
 local FluidContainerService = require("collector/FG_Collector_FluidContainer")
 local TroughService = require("collector/FG_Collector_Trough")
+local DrainPipeService = require("pipe/FG_Pipe_Drain")
+local VerticalPipeService = require("pipe/FG_Pipe_Vertical")
+local GutterPipeService = require("pipe/FG_Pipe_Gutter")
 
 require("FG_Utils_MapObjects")
 
@@ -16,14 +20,12 @@ gutterService.collectorServiceMap = {
     [enums.collectorType.trough] = TroughService,
 }
 
--- TODO
 gutterService.pipeServiceMap = {
-    [enums.pipeType.drain] = nil,
-    [enums.pipeType.vertical] = nil,
+    [enums.pipeType.drain] = DrainPipeService,
+    [enums.pipeType.vertical] = VerticalPipeService,
+    [enums.pipeType.gutter] = GutterPipeService,
     [enums.pipeType.horizontal] = nil,
 }
-
--- TODO gutterService:getPipeService(pipeObject)
 
 function gutterService:getCollectorService(collectorObject)
     -- Filter out IsoWorldInventoryObjects for now
@@ -42,6 +44,27 @@ function gutterService:getCollectorService(collectorObject)
     return nil
 end
 
+function gutterService:getPipeService(pipeObject)
+    local objectSprite = pipeObject:getSpriteName()
+    if not objectSprite then
+        utils:modPrint("No sprite name found for object: "..tostring(pipeObject))
+        return nil
+    end
+
+    local pipeType = utils:getSpriteCategory(objectSprite)
+    if not pipeType then
+        utils:modPrint("No pipe type not found for object: "..tostring(pipeObject))
+        return nil
+    end
+
+    local pipeService = self.pipeServiceMap[pipeType]
+    if not pipeService then
+        utils:modPrint("No pipe service interface found for object: "..tostring(objectSprite).." with type: "..tostring(pipeType))
+        return nil
+    end
+
+    return pipeService
+end
 
 function gutterService:connectCollector(collectorObject)
     local containerService = self:getCollectorService(collectorObject)
@@ -58,7 +81,25 @@ function gutterService:connectCollector(collectorObject)
     local square = collectorObject:getSquare()
     local gutterSystemRainFactor = serviceUtils:calculateGutterSystemRainFactor(square)
 
-    containerService:connectCollector(collectorObject, gutterSystemRainFactor)
+    local success = containerService:connectCollector(collectorObject, gutterSystemRainFactor)
+    if success then
+        -- TODO trigger a re-crawl of the pipe system to upscale a connected collector's rain factor
+        local closeDrains = isoUtils:findAllPipesInRadius(square, 16, enums.pipeType.drain)
+        if closeDrains and #closeDrains > 0 then
+            for i=1, #closeDrains do
+                local drainSquare = closeDrains[i]:getSquare()
+                if drainSquare then
+                    utils:modPrint("Close drain found on square: "..tostring(drainSquare:getX())..","..tostring(drainSquare:getY())..","..tostring(drainSquare:getZ()))
+                end
+                -- local drainService = self:getPipeService(drain)
+                -- if drainService then
+                --     utils:modPrint("Close drain found on square: "..tostring(drain))
+                --     -- TODO recrawl and sync the pipes
+                --     -- drainService:recalculateRainFactor(drain)
+                -- end
+            end
+        end
+    end
 
     -- Temp patch
     utils:patchModData(collectorObject, false)

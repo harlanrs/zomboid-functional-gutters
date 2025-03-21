@@ -345,6 +345,11 @@ function FG_UI_GutterPanel:onGainJoypadFocus(joypadData)
     self:setISButtonForB(self.btnClose)
 end
 
+function FG_UI_GutterPanel:reloadGutterInfo()
+    self.gutterPanel.gutter = self.gutter;
+    self.gutterPanel:reloadInfo();
+end
+
 function FG_UI_GutterPanel:reloadCollectorInfo(full)
     if full then
         self.collectorPanel.collector = self.collector;
@@ -398,6 +403,11 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
             -- Potential collector data update so do partial refresh of panel
             self:reloadCollectorInfo(nil)
         end
+    else
+        -- Updated gutter tile wasn't primary drain square
+        -- Pass square to gutter panel to check against gutter map
+        -- TODO gutter map should really be handled in this panel and passed in as param
+        self.gutterPanel:onUpdateGutterTile(square)
     end
 end
 

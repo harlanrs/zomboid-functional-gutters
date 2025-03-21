@@ -280,10 +280,10 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
         if remainingArea >= estimatedGutterCount then
             -- Divide the remaining area among each estimated gutter
             local gutterCapacityOverflow = remainingArea / estimatedGutterCount
-            utils:modPrint("gutter Overflow Capacity: "..tostring(gutterCapacityOverflow))
+            utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
             local gutterOverflowEfficiency = 0.15
             local gutterOverflowTileCount = gutterCapacityOverflow * gutterOverflowEfficiency
-            utils:modPrint("gutter Overflow Tile Count: "..tostring(gutterOverflowTileCount))
+            utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
             gutterTileCount = gutterTileCount + gutterOverflowTileCount
         end
     end
@@ -322,7 +322,6 @@ function serviceUtils:calculateGutterSystemRainFactor(square)
 
     -- Rain intensity is already factored into base game systems so we need to balance the generated rain factor to be useful but not trivial or too powerful
     -- Realistically a roof gutter system would produce nearly an entire rain barrel's worth of water (600l) in just a few hours when considering the area of the roof
-
     local squareModData = self:syncSquareModData(square, true)
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     if not roofArea then
@@ -331,6 +330,7 @@ function serviceUtils:calculateGutterSystemRainFactor(square)
     end
 
     local averageGutterCapacity = self:getAverageGutterCapacity()
+
     local estimatedGutterCount, gutterTileCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
 
     -- The total factor for the specific pipe based on it's own gutter efficiency
