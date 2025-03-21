@@ -12,6 +12,12 @@ FG_BuildRecipeCode.pipe = {
     gutter = {},
 }
 
+function FG_BuildRecipeCode.pipe.drain.OnCreate(object)
+    -- TODO if anything needs to be done on creation
+    utils:modPrint("Drain pipe on create func: "..tostring(object))
+    return object
+end
+
 function FG_BuildRecipeCode.pipe.drain.OnIsValid(params)
     local square = params.square
     local z = square:getZ()
@@ -56,8 +62,28 @@ function FG_BuildRecipeCode.pipe.drain.OnIsValid(params)
         return false
     end
 
-    -- TODO requires no existing drain pipe within x tiles - Nope would be too much of a performance hit here
-    -- Will need to be handled elsewhere
+    -- Requires no existing drain pipe within x tiles 
+    -- NOTE: might be too much of a performance hit - will need to verify
+    -- TODO check if drain pipe in on a pre-made building
+    -- if so, also check if the found drainpipe is connected to the same building
+    -- Allows for placing drains closer together when they are part of different buildings
+    local radius = 6
+    local sx,sy,sz = square:getX(), square:getY(), square:getZ();
+    for x = sx-radius,sx+radius do
+        for y = sy-radius,sy+radius do
+            local sq = getCell():getGridSquare(x,y,sz);
+            if sq then
+                local squareObjects = sq:getObjects() 
+                for i=0,squareObjects:size()-1, 1 do
+                    local object = squareObjects:get(i)
+                    if object and utils:checkPropIsDrainPipe(squareObjects:get(i)) then
+                        -- Drain pipe found within radius
+                        return false
+                    end
+                end
+            end
+        end
+    end
 
 	return true
 end
@@ -149,6 +175,12 @@ function FG_BuildRecipeCode.pipe.vertical.OnIsValid(params)
     end
 
 	return true
+end
+
+function FG_BuildRecipeCode.pipe.gutter.OnCreate(object)
+    -- TODO if anything needs to be done on creation
+    utils:modPrint("Gutter pipe on create func: "..tostring(object))
+    return object
 end
 
 function FG_BuildRecipeCode.pipe.gutter.OnIsValid(params)

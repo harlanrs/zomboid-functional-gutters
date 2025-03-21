@@ -44,6 +44,7 @@ module Base
             needToBeAgainstWall = true,
             */
 
+            OnCreate = FG_BuildRecipeCode.pipe.drain.OnCreate,
             OnIsValid = FG_BuildRecipeCode.pipe.drain.OnIsValid,
 
             face E
@@ -165,6 +166,7 @@ module Base
 
         component SpriteConfig
         {
+            OnCreate = FG_BuildRecipeCode.pipe.gutter.OnCreate,
             OnIsValid = FG_BuildRecipeCode.pipe.gutter.OnIsValid,
 
             face N

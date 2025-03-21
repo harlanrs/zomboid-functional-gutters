@@ -219,15 +219,15 @@ end
 function serviceUtils:getAverageGutterCapacity()
     -- Meters of roof's perimeter covered effectively by a single gutter drain for a standard house
     -- Realistically this is between 6 and 9 meters
-    local averageGutterPerimeterCoverage = 6
+    local averageGutterPerimeterCoverage = 9
 
     -- Meters of roof's area covered effectively by a single gutter for a standard house
-    -- Don't want to simply take the square of the perimeter coverage as this wouldn't be very accurate for a real roof and would overload the influence of the gutter perimeter value
-    -- ex: 6 -> 36 vs 9 -> 81 - should be aiming for linear ratio not exponential
-    -- Instead aiming for a ratio that produces a reasonable rectangle of tiles covered relative to the perimeter coverage
-    local averageGutterCapacityRatio = 0.15 -- ratio of perimeter side length to max surface area covered by a single gutter
+    -- Don't want to simply take the square of the perimeter coverage as this wouldn't be very accurate for a real roof and would over-emphasize the gutter perimeter value
+    -- ex: 6 -> 36 vs 9 -> 81 - need linear ratio not exponential
+    -- Instead aiming for a ratio that produces a reasonable 'rectangle' of tiles covered relative to the perimeter coverage
+    local averageGutterCapacityRatio = 0.25 -- ratio of perimeter side length to max surface area covered by a single gutter
     local averageGutterCapacity = averageGutterPerimeterCoverage / averageGutterCapacityRatio -- meters
-    -- ex: 6 -> 40 vs 9 -> 60
+    -- ex: 6 -> 24 vs 9 -> 36
     return averageGutterCapacity
 end
 
@@ -241,8 +241,8 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
 
     -- Light representation of the gutter system as a whole
     -- Gutters are typically designed to work together as a unit to cover the entire roof (ex: one on each "side" of a roof slant direction or one on each corner)
-    -- Here we are estimating the number of gutter drain systems needed relative to the roof's area
-    -- Once a single gutter's coverage capacity is exceeded by 30% we add another expected gutter system 'slot'
+    -- Here we are estimating the number of gutter drain systems needed relative to the roof's surface area (flat)
+    -- Once a single gutter drain's coverage capacity is exceeded by 30% we add another expected gutter drain 'slot'
     -- Since these usually work in pairs we only really care about 1, 2, and 4.
     -- This allows us to set up a single gutter on a small building for full coverage but the same gutter on a larger building might not be 100% as effective
     -- ex: 1 gutter can cover all 40 tiles on a small house but when added to a 'medium' house of 60 tiles the one gutter will only cover 30 tiles since it is expected to have another gutter covering the other side
@@ -251,8 +251,7 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
     elseif estimatedGutterCount > 1.3 then
         estimatedGutterCount = 2
     else
-        -- roof area under gutter capacity covered by 1
-        -- means all roof area is covered by gutter
+        -- Roof area is below a single drain's capacity
         if estimatedGutterCount < 1 then
             gutterTileCount = roofArea
         end
@@ -261,6 +260,9 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
     end
 
     -- TODO get current existing gutter drain count
+    -- maybe enforce this on the build/placement side of things instead?
+    -- Would potentially also work well for really large buildings since the expected gutter count will always be 4 max for an enforced area
+    -- but this enforced area will move with the player allowing consecutive gutter drains to be placed as needed when properly spaced out
     -- ATM assume 1
     -- utils:modPrint("total gutter count: "..tostring(estimatedGutterCount))
     -- utils:modPrint("initial gutter tile count: "..tostring(gutterTileCount))

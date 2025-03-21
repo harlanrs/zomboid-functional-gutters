@@ -24,6 +24,7 @@ function FG_UI_CollectorInfoPanel:createChildren()
     self:getIsoObjectTextures();
 
     local y = UI_BORDER_SPACING+1;
+    -- local y = 0;
     if self.doTitle then
         y = y+FONT_HGT_SMALL+UI_BORDER_SPACING;
     end
@@ -46,7 +47,7 @@ function FG_UI_CollectorInfoPanel:createChildren()
     self.containerBox = {
         x = UI_BORDER_SPACING+1+64*2 + UI_BORDER_SPACING,
         y = y,
-        w = 64, self.width - fluidBarW - UI_BORDER_SPACING*1 - 2,
+        w = self.width - fluidBarW - UI_BORDER_SPACING*1 - 2,
         h = self.innerHeight,
     }
 end
@@ -71,14 +72,45 @@ function FG_UI_CollectorInfoPanel:prerender()
 
     if self.isInvalid then
         local c = self.invalidColor;
-        self.containerBox.w = 64;
-        self.containerBox.h = 64;
-        self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, c.a, c.r, c.g, c.b);
+        self.borderColor = {r=c.r, b=c.b, g=c.g, a=c.a};
+        local w = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
+        self.containerBox.w = w;
+        self.containerBox.h = 80;
+        self.containerBox.x = self:getWidth() - w - UI_BORDER_SPACING + 1;
+        self.containerBox.y = self.innerY;
+        self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, 0.75, 0, 0, 0);
 
-        local missingCollectorTexture = getTexture("carpentry_02_54");
-        -- drawTextureScaledStatic
-        self:drawTextureScaledStatic(missingCollectorTexture, self.containerBox.x, self.containerBox.y, 32, 32, 1, 0.25, 0.25, 0.25);
+        -- Center image in box
+        local imageW = 48;
+        local imageH = 64;
+        local imageX = self.containerBox.x + (self.containerBox.w - imageW) / 2;
+        local imageY = self.containerBox.y + (self.containerBox.h - imageH) / 2;
+        self:drawTextureScaledStatic(self.missingCollectorTexture, imageX, imageY, imageW, imageH, .5, 1, 1, 1);
+
+        -- Center question mark icon in box
+        local iconW = 24;
+        local iconH = 24;
+        local iconX = self.containerBox.x + (self.containerBox.w - iconW) / 2;
+        local iconY = self.containerBox.y + (self.containerBox.h - iconH) / 2;
+        self:drawTextureScaledStatic(self.missingIconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+
+        -- "0/1" text to bottom right of container
+        local countText = "0/1";
+        c = self.invalidColor;
+        local countTextW = getTextManager():MeasureStringX(UIFont.Small, countText);
+        local countTextX = self.containerBox.x + self.containerBox.w - countTextW - UI_BORDER_SPACING;
+        local countTextY = self.containerBox.y + self.containerBox.h - FONT_HGT_SMALL - UI_BORDER_SPACING;
+        self:renderText(countText, countTextX, countTextY, c.r,c.g,c.b,c.a, UIFont.Small);
+
+        -- Add "Missing Collector" text below 
+        local text = "Gutter Collector";
+        c = self.textColor;
+        local textW = getTextManager():MeasureStringX(UIFont.Small, text);
+        local textX = self.containerBox.x + (self.containerBox.w - textW) / 2;
+        local textY = self.containerBox.y + self.containerBox.h + UI_BORDER_SPACING;
+        self:renderText(text, textX, textY, c.r,c.g,c.b,c.a, UIFont.Small);
     else
+        self.borderColor = {r=0.6, g=0.6, b=0.6, a=1};
         self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, 1.0, 0, 0, 0);
     end
 
@@ -87,7 +119,6 @@ function FG_UI_CollectorInfoPanel:prerender()
     end
     local ownerOffsetY = self.owner:getRenderYOffset() * Core.getTileScale();
 
-    -- In case the container is IsoObject draw the square tiles, outline the owner object.
     if self.textureList and #self.textureList > 0 then
         local x = UI_BORDER_SPACING+1;
         local y = self:getHeight() - 128*2;
@@ -119,9 +150,36 @@ function FG_UI_CollectorInfoPanel:prerender()
                     end
                 end
             else
-                self:drawTextureIso(texture, x, y + offsetY, 0.5);
+                if utils:isDrainPipeSprite(texture:getName()) then
+                    self:drawTextureIso(texture, x, y + offsetY, 1);
+                else
+                    self:drawTextureIso(texture, x, y + offsetY, 0.5);
+                end
             end
         end
+    end
+
+    -- Draw after textures to ensure icon is on top
+    if self.container then
+        if self.isGutterConnected then
+            local iconW = 16;
+            local iconH = 16;
+            local iconX = self.x + 1;
+            local iconY = self.containerBox.y + UI_BORDER_SPACING;
+            -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
+            -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
+            self:drawTextureScaledStatic(self.gutterConnectedTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+        end
+
+        -- container overlay icon
+        -- local iconW = 24;
+        -- local iconH = 24;
+        -- local iconX = self.x + 1;
+        -- local iconY = self.containerBox.y + UI_BORDER_SPACING;
+        -- -- local iconX = (self.containerBox.x - UI_BORDER_SPACING - iconW) / 2;
+        -- -- local iconY = self.y - (self.height - iconH) / 2;
+        -- local iconTexture = self.isGutterConnected and self.gutterConnectedTexture2 or self.gutterDisconnectedTexture;
+        -- self:drawTextureScaledStatic(iconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
     end
 end
 
@@ -129,19 +187,19 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
     local baseRainFactor = self.baseRainFactor
     if self.containerInfo.baseRainFactor.cache~=baseRainFactor then
         self.containerInfo.baseRainFactor.cache = baseRainFactor;
-        self.containerInfo.baseRainFactor.value = baseRainFactor == 0.0 and "0.0" or tostring(round(baseRainFactor, 2));
+        self.containerInfo.baseRainFactor.value = (not baseRainFactor or baseRainFactor == 0.0) and "0.0" or tostring(round(baseRainFactor, 2));
     end
 
     local gutterRainFactor = self.gutterRainFactor;
     if self.containerInfo.gutterRainFactor.cache~=gutterRainFactor then
         self.containerInfo.gutterRainFactor.cache = gutterRainFactor;
-        self.containerInfo.gutterRainFactor.value = gutterRainFactor == 0.0 and "0.0" or tostring(round(gutterRainFactor, 2));
+        self.containerInfo.gutterRainFactor.value = (not gutterRainFactor or gutterRainFactor == 0.0) and "0.0" or tostring(round(gutterRainFactor, 2));
     end
 
     local totalRainFactor = self.totalRainFactor;
     if self.containerInfo.totalRainFactor.cache~=totalRainFactor then
         self.containerInfo.totalRainFactor.cache = totalRainFactor;
-        self.containerInfo.totalRainFactor.value = totalRainFactor == 0.0 and "0.0" or tostring(round(totalRainFactor, 2));
+        self.containerInfo.totalRainFactor.value = (not totalRainFactor or totalRainFactor == 0.0) and "0.0" or tostring(round(totalRainFactor, 2));
     end
 
     -- local tagWid = math.max(
@@ -160,17 +218,17 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
     c = self.textColor;
     self:renderText(self.containerInfo.baseRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
-    y = y + BUTTON_HGT;
-    c = self.tagColor;
-    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    c = self.isGutterConnected and self.goodColor or self.textColor;
-    self:renderText(self.containerInfo.totalRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
-
     -- y = y + BUTTON_HGT;
     -- c = self.tagColor;
     -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
     -- c = self.textColor;
     -- self:renderText(self.containerInfo.gutterRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
+
+    y = y + BUTTON_HGT;
+    c = self.tagColor;
+    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    c = self.isGutterConnected and self.goodColor or self.textColor;
+    self:renderText(self.containerInfo.totalRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 end
 
 function FG_UI_CollectorInfoPanel:render()
@@ -208,29 +266,30 @@ function FG_UI_CollectorInfoPanel:render()
         end
     end
 
-    if self:getContainer() then
-        local capacity = self:getContainer():getCapacity();
-        local stored = self:getContainer():getAmount();
+    local container = self:getContainer()
+    if container then
+        local capacity = container:getCapacity();
+        local stored = container:getAmount();
         local free = capacity-stored;
         if self.containerInfo then
             if self.containerInfo.capacity.cache~=capacity then
                 self.containerInfo.capacity.cache = capacity;
                 self.containerInfo.capacity.value = FluidUtil.getAmountFormatted(capacity);
-				if self:getContainer():isHiddenAmount() then
+				if container:isHiddenAmount() then
 					self.containerInfo.capacity.value = getText("Fluid_Unknown");
 				end
             end
             if self.containerInfo.stored.cache~=stored then
                 self.containerInfo.stored.cache = stored;
                 self.containerInfo.stored.value = FluidUtil.getAmountFormatted(stored);
-				if self:getContainer():isHiddenAmount() then
+				if container:isHiddenAmount() then
 					self.containerInfo.stored.value = getText("Fluid_Unknown");
 				end
             end
             if self.containerInfo.free.cache~=free then
                 self.containerInfo.free.cache = free;
                 self.containerInfo.free.value = FluidUtil.getAmountFormatted(free);
-				if self:getContainer():isHiddenAmount() then
+				if container:isHiddenAmount() then
 					self.containerInfo.free.value = getText("Fluid_Unknown");
 				end
             end
@@ -276,25 +335,7 @@ function FG_UI_CollectorInfoPanel:render()
         end
 
         self:renderCollectorInfo();
-	else
-        --  TODO setup "placeholder" missing required container box
-        -- add a placeholder box for missing container
-
-        -- local tagWid = math.max(
-        --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.capacity.tag),
-        --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.stored.tag),
-        --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.free.tag),
-        --     getTextManager():MeasureStringX(UIFont.Small, "599.9 L") -- prevent panel shifting when the amount includes a decimal point
-        -- )
-        -- local tagx = self.containerBox.x + UI_BORDER_SPACING + 1 + tagWid
-        -- local valx = tagx + UI_BORDER_SPACING;
-
-        -- local valRight = valx + getTextManager():MeasureStringX(UIFont.Small, FluidUtil.getAmountFormatted(0)) + UI_BORDER_SPACING + 1;
-        -- self.containerBox.w = math.max(valRight - self.containerBox.x, containerNameRight - self.containerBox.x)
-        -- self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING);
-
-        -- self:setWidth( math.max(self.containerBox.x + self.containerBox.w, self.fluidBar:getRight()) + UI_BORDER_SPACING+1 );
-    end
+	end
 
     c = self.borderOuterColor;
     self:drawRectBorder(0, 0, self.width, self.height, c.a, c.r, c.g, c.b);
@@ -445,7 +486,7 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
     end
 end
 
-function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector, _isoHeight)
+function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     local width = 300;
     local height = BUTTON_HGT*5+UI_BORDER_SPACING*5+FONT_HGT_SMALL;
     local o = ISPanel:new(x, y, width, height);
@@ -468,6 +509,12 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector, _isoHe
     o.anchorRight = false;
     o.anchorTop = false;
     o.anchorBottom = false;
+    o.missingCollectorTexture = getTexture("carpentry_02_124");
+    o.missingIconTexture = getTexture("media/ui/Entity/BTN_Missing_Icon_48x48.png");
+    o.gutterConnectedTexture = getTexture("media/ui/craftingMenus/BuildProperty_Drain.png")
+    -- o.gutterConnectedTexture2 = getTexture("media/ui/Entity/icon_transfer_fluids.png")
+    -- o.gutterDisconnectedTexture = getTexture("media/ui/Entity/icon_clear_fluids.png")
+    -- media/ui/Entity/fluid_drop_icon.png
 
     o.player = _player;
     o.gutter = _gutter;
@@ -483,9 +530,6 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector, _isoHe
         o.owner = o.gutter;
         o.containerCopy = nil;
     end
-
-    --if true draw this panel at IsoObject height even if its container is an item.
-    o.isoHeight = _isoHeight;
 
     -- if true add a title.
     o.doTitle = false; -- TODO 
@@ -510,9 +554,9 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector, _isoHe
         capacity = { tag = getText("Fluid_Capacity")..": ", value = "0", cache = 0 },
         stored = { tag = getText("Fluid_Stored")..": ", value = "0", cache = 0 },
         free = { tag = getText("Fluid_Free")..": ", value = "0", cache = 0 },
-        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 },
-        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0.0", cache = 0.0 },
-        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 },
+        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
+        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
+        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
     }
 
     return o

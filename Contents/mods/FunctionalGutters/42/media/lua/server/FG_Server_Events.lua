@@ -16,6 +16,8 @@ function GutterCommands.connectCollector(args)
     end
 
     gutterService:connectCollector(collectorObject)
+
+    triggerEvent(enums.modEvents.OnGutterTileUpdate, collectorObject:getSquare())
 end
 
 function GutterCommands.disconnectCollector(args)
@@ -25,6 +27,8 @@ function GutterCommands.disconnectCollector(args)
     end
 
     gutterService:disconnectCollector(collectorObject)
+
+    triggerEvent(enums.modEvents.OnGutterTileUpdate, collectorObject:getSquare())
 end
 
 function GutterServerManager.OnClientCommand(module, command, player, args)
@@ -46,7 +50,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     if squareModData then
         if utils:getModDataHasGutter(square, squareModData) then
             utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
-            triggerEvent("OnGutterTileUpdate", square)
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
     end
 end
@@ -57,7 +61,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
-        triggerEvent("OnGutterTileUpdate", square) -- TODO is this too early to trigger?
+        triggerEvent(enums.modEvents.OnGutterTileUpdate, square) -- TODO is this too early to trigger?
     end
 
     -- Check if the placed object is a trough and convert it to a global object if necessary
@@ -85,7 +89,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
 
         if utils:checkPropIsDrainPipe(square) then
             utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
-            triggerEvent("OnGutterTileUpdate", square)
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
     end
 end

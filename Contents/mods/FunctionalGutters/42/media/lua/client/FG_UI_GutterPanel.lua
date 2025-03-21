@@ -20,9 +20,7 @@ local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GOOD_COLOR = getCore():getGoodHighlitedColor()
 
 function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _collector, _source)
-   -- _collector = ISFluidContainer:new(_collector);
-
-    -- TODO gutter object not container
+    -- TODO validate objects
     -- if _collector and not ISFluidUtil.validateContainer(_collector) then
     --     print("GutterPanelUI not a valid (ISFluidContainer) container?")
     --     return;
@@ -37,7 +35,7 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _collector, _source)
         print("GutterPanelUI no valid player.")
         return;
     end
-    --print("Opening Fluid Transfer UI");
+
     local playerNum = _player:getPlayerNum();
 
     local x = getMouseX() + 10;
@@ -66,7 +64,7 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _collector, _source)
     FG_UI_GutterPanel.players[playerNum].instance = ui;
 
     --first time open panel and isoobject then middle of screen.
-    if getJoypadData(playerNum) or (adjustPos and ui.isIsoPanel) then
+    if getJoypadData(playerNum) or (adjustPos) then
         ui:centerOnScreen(playerNum)
         FG_UI_GutterPanel.players[playerNum].x = ui.x;
         FG_UI_GutterPanel.players[playerNum].y = ui.y;
@@ -85,11 +83,8 @@ end
 function FG_UI_GutterPanel:addCollectorPanel()
     local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING;
 
-    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutter, self.collector, self.isIsoPanel);
-    -- self.collectorPanel.customTitle = "";
-    -- self.collectorPanel.title = "";
+    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutter, self.collector);
     self.collectorPanel:initialise();
-    self.collectorPanel:instantiate();
     self.collectorPanel:noBackground();
     self.collectorPanel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0};
     self:addChild(self.collectorPanel);
@@ -106,7 +101,6 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1;
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
-    -- local w = self:getWidth() - (UI_BORDER_SPACING * 2);
     self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter);
     self:addChild(self.gutterPanel);
 end
@@ -117,63 +111,72 @@ function FG_UI_GutterPanel:createChildren()
     self:addGutterInfoPanel();
     self:addCollectorPanel();
 
+    -- Ensure gutter plane is above the collector panel to cover tile texture overlap
     self.gutterPanel:bringToTop();
 
-    local btnText = "X";
-    local closeX = self:getRight() - 20;
-    local closeY = UI_BORDER_SPACING+1;
     local closeW = 20;
     local closeH = 20;
-    self.btnClose = ISButton:new(closeX, closeY, closeW, closeH, btnText, self, FG_UI_GutterPanel.onButton);
+    local closeX = self:getRight() - closeW;
+    local closeY = UI_BORDER_SPACING+1;
+    self.btnClose = ISButton:new(closeX, closeY, closeW, closeH, "X", self, FG_UI_GutterPanel.onButton);
     self.btnClose.internal = "CLOSE";
     self.btnClose:initialise();
-    self.btnClose:instantiate();
     self.btnClose:enableCancelColor()
     self:addChild(self.btnClose);
+
+    local infoW = 20;
+    local infoH = 20;
+    local infoX = self:getRight() - closeX - UI_BORDER_SPACING - infoW;
+    local infoY = UI_BORDER_SPACING+1;
+    self.btnInfo = ISButton:new(infoX, infoY, infoW, infoH, "", self, FG_UI_GutterPanel.onButton);
+    self.btnInfo.internal = "INFO";
+    self.btnInfo.borderColor.a = 0.0;
+	self.btnInfo.backgroundColor.a = 0;
+	self.btnInfo.backgroundColorMouseOver.a = 0;
+    self.btnInfo:setImage(self.btnInfoTexture);
+    self.btnInfo:initialise();
+    self:addChild(self.btnInfo);
 
     local toggleX = UI_BORDER_SPACING+1;
     local toggleY = self.collectorPanel:getBottom() + UI_BORDER_SPACING;
     local toggleW = self.collectorPanel:getWidth();
-    self.toggleConnectBtn = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton);
-    self.toggleConnectBtn.internal = "TOGGLE_CONNECT";
-    self.toggleConnectBtn:initialise();
-    self.toggleConnectBtn:instantiate();
-
+    self.btnToggleConnect = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton);
+    self.btnToggleConnect.internal = "TOGGLE_CONNECT";
+    self.btnToggleConnect:initialise();
     if self.collector then
         if not utils:getModDataIsGutterConnected(self.collector, nil) then
-            self.toggleConnectBtn.title = "Connect";
-            self.toggleConnectBtn:enableAcceptColor();
+            self.btnToggleConnect.title = "Connect";
+            self.btnToggleConnect:enableAcceptColor();
         else
-            self.toggleConnectBtn.title = "Disconnect";
+            self.btnToggleConnect.title = "Disconnect";
             local bgC = self.btnDefault.backgroundColor;
             local bgCMO = self.btnDefault.backgroundColorMouseOver;
             local bC = self.btnDefault.borderColor;
-            self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a);
-            self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a);
-            self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a);
+            self.btnToggleConnect:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a);
+            self.btnToggleConnect:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a);
+            self.btnToggleConnect:setBorderRGBA(bC.r, bC.g, bC.b, bC.a);
         end
     else
-        self.toggleConnectBtn.title = "No Collector";
-        self.toggleConnectBtn:setEnable(false);
+        self.btnToggleConnect.title = "Requires Collector";
+        self.btnToggleConnect:setEnable(false);
         self.disableConnect = true;
     end
-
-    self:addChild(self.toggleConnectBtn);
+    self:addChild(self.btnToggleConnect);
 
     self:setWidth(self.collectorPanel:getRight() + UI_BORDER_SPACING + 1);
-    self:setHeight(self.toggleConnectBtn:getBottom() + UI_BORDER_SPACING+1);
+    self:setHeight(self.btnToggleConnect:getBottom() + UI_BORDER_SPACING+1);
 end
 
 function FG_UI_GutterPanel:prerender()
     ISPanelJoypad.prerender(self);
 
     --draws a background for button that marks action progress if action exists.
-    if self.toggleConnectBtn then
-        local x = self.toggleConnectBtn:getX();
-        local y = self.toggleConnectBtn:getY();
-        local w = self.toggleConnectBtn:getWidth();
-        local h = self.toggleConnectBtn:getHeight();
-        local borderColor = self.toggleConnectBtn.borderColor
+    if self.btnToggleConnect then
+        local x = self.btnToggleConnect:getX();
+        local y = self.btnToggleConnect:getY();
+        local w = self.btnToggleConnect:getWidth();
+        local h = self.btnToggleConnect:getHeight();
+        local borderColor = self.btnToggleConnect.borderColor
         self:drawRect(x, y, w, h, 1.0, 0, 0, 0);
         if self.action and self.action.action then
             -- local c = self.transferColor;
@@ -192,9 +195,6 @@ end
 
 function FG_UI_GutterPanel:validatePanel()
     if not self.collector then
-        -- self.disableConnect = true;
-        -- self.toggleConnectBtn.title = "No Collector";
-        -- self.toggleConnectBtn:setEnable(false);
         return;
     end
 
@@ -212,21 +212,21 @@ function FG_UI_GutterPanel:validatePanel()
         if not self.disableConnect then
             -- TODO isValid check for container
             if not utils:getModDataIsGutterConnected(self.collector, nil) then
-                self.toggleConnectBtn.title = "Connect";
-                self.toggleConnectBtn:enableAcceptColor();
+                self.btnToggleConnect.title = "Connect";
+                self.btnToggleConnect:enableAcceptColor();
             else
-                self.toggleConnectBtn.title = "Disconnect";
+                self.btnToggleConnect.title = "Disconnect";
                 local bgC = self.btnDefault.backgroundColor
                 local bgCMO = self.btnDefault.backgroundColorMouseOver
                 local bC = self.btnDefault.borderColor
-                self.toggleConnectBtn:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a)
-                self.toggleConnectBtn:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
-                self.toggleConnectBtn:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
+                self.btnToggleConnect:setBackgroundRGBA(bgC.r, bgC.g, bgC.b, bgC.a)
+                self.btnToggleConnect:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
+                self.btnToggleConnect:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
             end
         end
     end
 
-    self.toggleConnectBtn.enabled = not self.disableConnect;
+    self.btnToggleConnect.enabled = not self.disableConnect;
 end
 
 function FG_UI_GutterPanel:alignElements()
@@ -244,8 +244,10 @@ function FG_UI_GutterPanel:alignElements()
         self.collectorPanel.width = childPanelW;
     end
 
-    self.toggleConnectBtn:setWidth(childPanelW);
-    self.btnClose:setX(childPanelW - UI_BORDER_SPACING - 1);
+    self.btnToggleConnect:setWidth(childPanelW);
+    local closeX = childPanelW - UI_BORDER_SPACING - 1;
+    self.btnClose:setX(closeX);
+    self.btnInfo:setX(closeX - UI_BORDER_SPACING - 20);
 end
 
 function FG_UI_GutterPanel:update()
@@ -279,7 +281,7 @@ function FG_UI_GutterPanel:close()
 
     -- Cleanup panels
     self.gutterPanel:close()
-    self.collectorPanel:onClose() -- TODO sync terms
+    self.collectorPanel:onClose() -- TODO sync terms onClose vs close
 
     self:setVisible(false);
     self:removeFromUIManager();
@@ -288,6 +290,9 @@ end
 function FG_UI_GutterPanel:onButton(_btn)
     if _btn.internal=="CLOSE" then
         self:close()
+    elseif _btn.internal=="INFO" then
+        -- TODO
+        utils:modPrint("Info button clicked")
     elseif _btn.internal=="TOGGLE_CONNECT" and self.collector then
         if utils:getModDataIsGutterConnected(self.collector, nil) then
             self:DoDisconnectCollector()
@@ -299,7 +304,7 @@ end
 
 function FG_UI_GutterPanel:DoConnectCollector()
     if not self.collector then return end
-    self.toggleConnectBtn.title = "Connecting...";
+    self.btnToggleConnect.title = "Connecting...";
 
     if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
@@ -318,7 +323,7 @@ end
 
 function FG_UI_GutterPanel:DoDisconnectCollector()
     if not self.collector then return end
-    self.toggleConnectBtn.title = "Disconnecting...";
+    self.btnToggleConnect.title = "Disconnecting...";
 
     if luautils.walkAdj(self.player, self.collector:getSquare(), true) then
         if options:getRequireWrench() then
@@ -378,17 +383,20 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
             -- Collector removed from square - refresh the panel
             self.collector = nil
             self.disableConnect = true
-            self.toggleConnectBtn.title = "No Collector";
-            self.toggleConnectBtn:setEnable(false);
+            self.btnToggleConnect.title = "No Collector";
+            self.btnToggleConnect:setEnable(false);
             self:reloadCollectorInfo(true)
         elseif squareCollector and not self.collector then
             -- Collector added to square - refresh the panel
             self.collector = squareCollector
             self.disableConnect = false;
-            self.toggleConnectBtn.title = "Connect";
-            self.toggleConnectBtn:setEnable(true);
-            self.toggleConnectBtn:enableAcceptColor();
+            self.btnToggleConnect.title = "Connect";
+            self.btnToggleConnect:setEnable(true);
+            self.btnToggleConnect:enableAcceptColor();
             self:reloadCollectorInfo(true)
+        else
+            -- Potential collector data update so do partial refresh of panel
+            self:reloadCollectorInfo(nil)
         end
     end
 end
@@ -410,6 +418,8 @@ function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _collector
     o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
     o.goodColor = {r=GOOD_COLOR:getR(), g=GOOD_COLOR:getG(), b=GOOD_COLOR:getB(), a=1}
     o.transferColor = {r=0.0, g=1.0, b=0.0, a=0.5};
+
+    o.btnInfoTexture = getTexture("media/ui/Entity/blueprint_info.png")
 
     o.zOffsetSmallFont = 25;
     o.moveWithMouse = true;

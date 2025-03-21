@@ -183,7 +183,11 @@ TODO
 - Explore using tile props instead of having to properly sync modData on object add/remove
     - Would require setting props on non-managed tiles
 - scrap definition?
-- recognize player floors
+- follow gutter bends/corners when crawling
+- fix placing above windows
+- fix placing above player-built drain pipes
+- group facings when placing
+    - Noffset, Soffset etc.
 - post add script that triggers resync of entire gutter system
     - need to catch gaps in pipes and 'pause' any connected collectors
 - take roof angle into consideration?
