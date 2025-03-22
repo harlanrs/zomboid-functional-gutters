@@ -79,27 +79,9 @@ function gutterService:connectCollector(collectorObject)
 
     -- Calculate the rain factor for the gutter system routed from the collector's tile
     local square = collectorObject:getSquare()
-    local gutterSystemRainFactor = serviceUtils:calculateGutterSystemRainFactor(square)
+    local gutterSegment = serviceUtils:calculateGutterSegment(square)
 
-    local success = containerService:connectCollector(collectorObject, gutterSystemRainFactor)
-    if success then
-        -- TODO trigger a re-crawl of the pipe system to upscale a connected collector's rain factor
-        local closeDrains = isoUtils:findAllPipesInRadius(square, 16, enums.pipeType.drain)
-        if closeDrains and #closeDrains > 0 then
-            for i=1, #closeDrains do
-                local drainSquare = closeDrains[i]:getSquare()
-                if drainSquare then
-                    utils:modPrint("Close drain found on square: "..tostring(drainSquare:getX())..","..tostring(drainSquare:getY())..","..tostring(drainSquare:getZ()))
-                end
-                -- local drainService = self:getPipeService(drain)
-                -- if drainService then
-                --     utils:modPrint("Close drain found on square: "..tostring(drain))
-                --     -- TODO recrawl and sync the pipes
-                --     -- drainService:recalculateRainFactor(drain)
-                -- end
-            end
-        end
-    end
+    containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
 
     -- Temp patch
     utils:patchModData(collectorObject, false)

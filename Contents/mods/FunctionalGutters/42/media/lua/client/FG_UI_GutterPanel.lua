@@ -4,6 +4,7 @@ require "FG_UI_GutterInfoPanel"
 require "FG_UI_CollectorInfoPanel"
 
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local options = require("FG_Options")
 local enums = require("FG_Enums")
 local serviceUtils = require("FG_Utils_Service")
@@ -75,7 +76,6 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _collector, _source)
     end
 end
 
--- INIT --
 function FG_UI_GutterPanel:initialise()
     ISPanelJoypad.initialise(self);
 end
@@ -101,7 +101,7 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1;
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
-    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter);
+    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter, self.gutterSegment, self.gutterMap);
     self:addChild(self.gutterPanel);
 end
 
@@ -364,6 +364,11 @@ function FG_UI_GutterPanel:reloadCollectorInfo(full)
     end
 end
 
+function FG_UI_GutterPanel:reloadInfo()
+    self.gutterSegment = serviceUtils:calculateGutterSegment(self.gutterSquare);
+    self.gutterMap = isoUtils:crawlGutterSystem(self.gutterSquare)
+end
+
 function FG_UI_GutterPanel:onUpdateGutterTile(square)
     if self.gutterSquare:getID() == square:getID() then
         if not utils:checkPropIsDrainPipe(square) then
@@ -406,8 +411,14 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
     else
         -- Updated gutter tile wasn't primary drain square
         -- Pass square to gutter panel to check against gutter map
-        -- TODO gutter map should really be handled in this panel and passed in as param
-        self.gutterPanel:onUpdateGutterTile(square)
+        if isoUtils:isSquareInGutterMap(square, self.gutterMap) then
+            -- Updated square is part of the gutter system
+            self:reloadInfo()
+            self.gutterPanel.gutter = self.gutter
+            self.gutterPanel.gutterSegment = self.gutterSegment
+            self.gutterPanel.gutterMap = self.gutterMap
+            self.gutterPanel:reloadInfo()
+        end
     end
 end
 
@@ -444,6 +455,9 @@ function FG_UI_GutterPanel:new(x, y, width, height, _player, _gutter, _collector
     o.action = nil;
     o.disableConnect = false;
     o.isGutterConnected = false;
+
+    -- TODO move to init?
+    o.reloadInfo(o)
 
     o.eventWrapper = function(square)
         o:onUpdateGutterTile(square)

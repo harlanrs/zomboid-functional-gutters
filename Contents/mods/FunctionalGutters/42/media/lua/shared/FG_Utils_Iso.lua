@@ -421,14 +421,19 @@ function isoUtils:findGutterTopLevel(square)
 end
 
 function isoUtils:getAttachedBuilding(square)
-    -- TODO check the 'cost' of this as it is only used in debug mode chunk panel
-    -- NOTE: this method includes outside wall squares
-    -- isoMetaCell:getMetaGridFromTile(x, y)
+    -- Check square directly
+    local squareBuilding = square:getBuilding()
+    if squareBuilding then
+        return squareBuilding:getDef()
+    end
+
+    -- Check square's meta grid (includes the outside perimeter squares unlike base square:getBuilding() method)
     local buildingDef = getWorld():getMetaGrid():getAssociatedBuildingAt(square:getX(), square:getY())
     if buildingDef then
         return buildingDef
     end
 
+    -- Check adjacent squares
     return self:getAdjacentBuilding(square)
 end
 
@@ -499,15 +504,16 @@ function isoUtils:findPipeInRadius(square, radius, pipeType)
     return nil
 end
 
-function isoUtils:findAllPipesInRadius(square, radius, pipeType)
+function isoUtils:findAllDrainsInRadius(square, radius)
     local pipeObjects = table.newarray()
     local sx,sy,sz = square:getX(), square:getY(), square:getZ();
     for x = sx-radius,sx+radius do
         for y = sy-radius,sy+radius do
             local sq = getCell():getGridSquare(x,y,sz);
-            if sq then
-                local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, pipeType)
+            if sq and utils:checkPropIsDrainPipe(sq) then
+                local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, enums.pipeType.drain)
                 if pipeObject then
+                    utils:modPrint("Found drain pipe: "..tostring(pipeObject:getX())..","..tostring(pipeObject:getY())..","..tostring(pipeObject:getZ()))
                     table.insert(pipeObjects, pipeObject)
                 end
             end

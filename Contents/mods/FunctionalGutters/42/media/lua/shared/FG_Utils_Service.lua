@@ -160,6 +160,8 @@ function serviceUtils:cleanupGutterPipeModData(square, squareModData)
     -- TODO gutterWest, gutterEast, gutterNorth, gutterSouth
 end
 
+
+
 -- TODO try to replace all mod data with props checks when possible
 function serviceUtils:syncSquareModData(square, full)
     local objects = square:getObjects()
@@ -231,14 +233,55 @@ function serviceUtils:getAverageGutterCapacity()
     return averageGutterCapacity
 end
 
-function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
-    if not averageGutterCapacity then
-        averageGutterCapacity = self:getAverageGutterCapacity()
+function serviceUtils:getLocalDrainPipes(square)
+    -- Grab all nearby squares with a drain pipe object
+    local drainPipes = isoUtils:findAllDrainsInRadius(square, 16)
+    if not drainPipes or #drainPipes == 0 then
+        return nil
     end
 
-    local estimatedGutterCount = roofArea / averageGutterCapacity
-    local gutterTileCount = averageGutterCapacity
+    -- Determine if square has a pre-built building or is a player-built structure
+    local buildingDef = isoUtils:getAttachedBuilding(square)
+    utils:modPrint("Building def: "..tostring(buildingDef))
+    if not buildingDef then
+       -- No building found - assume player-built structure and return all drain pipes
+       return drainPipes
+    end
 
+    -- Reduce the list of drain pipes to only those also attached to the same building
+    local buildingDrainPipes = table.newarray()
+    for i=1, #drainPipes do
+        local drainPipe = drainPipes[i]
+        local attachedBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
+        if attachedBuildingDef and attachedBuildingDef:getID() == buildingDef:getID() then
+            table.insert(buildingDrainPipes, drainPipe)
+        end
+    end
+
+    return buildingDrainPipes
+end
+
+function serviceUtils:getActualGutterDrainCount(square)
+    local drainPipes = self:getLocalDrainPipes(square)
+    if not drainPipes then
+        return 0
+    end
+
+    -- Check 1 z above if ground floor or below if above ground floor as well
+    local z =  square:getZ()
+    local nextZ = z > 0 and z - 1 or z + 1
+    local nextSquare = square:getCell():getGridSquare(square:getX(), square:getY(), nextZ)
+    local additionalDrainPipes = self:getLocalDrainPipes(nextSquare)
+    if additionalDrainPipes then
+        for i=1, #additionalDrainPipes do
+            table.insert(drainPipes, additionalDrainPipes[i])
+        end
+    end
+
+    return #drainPipes
+end
+
+function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
     -- Light representation of the gutter system as a whole
     -- Gutters are typically designed to work together as a unit to cover the entire roof (ex: one on each "side" of a roof slant direction or one on each corner)
     -- Here we are estimating the number of gutter drain systems needed relative to the roof's surface area (flat)
@@ -246,64 +289,73 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
     -- Since these usually work in pairs we only really care about 1, 2, and 4.
     -- This allows us to set up a single gutter on a small building for full coverage but the same gutter on a larger building might not be 100% as effective
     -- ex: 1 gutter can cover all 40 tiles on a small house but when added to a 'medium' house of 60 tiles the one gutter will only cover 30 tiles since it is expected to have another gutter covering the other side
+    if not averageGutterCapacity then
+        averageGutterCapacity = self:getAverageGutterCapacity()
+    end
+
+    local estimatedGutterCount = roofArea / averageGutterCapacity
+
     if estimatedGutterCount > 2.6 then
         estimatedGutterCount = 4
     elseif estimatedGutterCount > 1.3 then
         estimatedGutterCount = 2
     else
-        -- Roof area is below a single drain's capacity
-        if estimatedGutterCount < 1 then
-            gutterTileCount = roofArea
-        end
-
         estimatedGutterCount = 1
     end
 
-    -- TODO get current existing gutter drain count
-    -- maybe enforce this on the build/placement side of things instead?
-    -- Would potentially also work well for really large buildings since the expected gutter count will always be 4 max for an enforced area
-    -- but this enforced area will move with the player allowing consecutive gutter drains to be placed as needed when properly spaced out
-    -- ATM assume 1
-    -- utils:modPrint("total gutter count: "..tostring(estimatedGutterCount))
-    -- utils:modPrint("initial gutter tile count: "..tostring(gutterTileCount))
+    return estimatedGutterCount
+end
 
+function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCount, actualDrainCount, averageGutterCapacity)
     -- Divides up the area of the roof into segments for each estimated gutter and calculates the effective tiles covered by each gutter
     -- Ex: 70 tile roof with 2 gutter capacity would have 35 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
     -- Ex: 110 tile roof with 4 estimated gutters would have 27.5 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
     -- Additionally since we stop at 4 gutter capacity, any leftover area is divided up among the estimated gutter capacity but at a highly reduced efficiency
-    -- Ex: 180 tile roof with 4 estimated gutters would have 40 tiles covered by each gutter and 5 "overflow" tiles covered by each gutter at 15% efficiency
-    if estimatedGutterCount > 1 then
-        local roofSegment = roofArea / estimatedGutterCount
-        local remainingArea = roofSegment - averageGutterCapacity
-        gutterTileCount = roofSegment
-        utils:modPrint("Remaining area: "..tostring(remainingArea))
-        if remainingArea >= estimatedGutterCount then
-            -- Divide the remaining area among each estimated gutter
-            local gutterCapacityOverflow = remainingArea / estimatedGutterCount
-            utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
-            local gutterOverflowEfficiency = 0.15
-            local gutterOverflowTileCount = gutterCapacityOverflow * gutterOverflowEfficiency
-            utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
-            gutterTileCount = gutterTileCount + gutterOverflowTileCount
-        end
+    -- Ex: 180 tile roof with 4 estimated gutters would have 40 tiles covered by each gutter and 5 "overflow" tiles covered by each gutter at 25% efficiency
+    if not averageGutterCapacity then
+        averageGutterCapacity = self:getAverageGutterCapacity()
     end
 
-    return estimatedGutterCount, gutterTileCount
+    local gutterTileCount = roofArea / optimalDrainCount
+    local remainingArea = gutterTileCount - averageGutterCapacity
+    if remainingArea >= optimalDrainCount then
+        -- Divide the remaining area among each estimated gutter
+        local gutterCapacityOverflow = remainingArea / optimalDrainCount
+        local maxOverflowArea = averageGutterCapacity / 2
+        if gutterCapacityOverflow > maxOverflowArea then
+            -- Prevent the overflow capacity from exceeding half of the average gutter capacity
+            gutterCapacityOverflow = maxOverflowArea
+        end
+        utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
+        -- Overflow 'tile' is only 25% as effective since the system is overloaded
+        local gutterOverflowEfficiency = 0.25
+        local gutterOverflowTileCount = gutterCapacityOverflow * gutterOverflowEfficiency
+        utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
+        gutterTileCount = gutterTileCount + gutterOverflowTileCount
+    end
+
+    if actualDrainCount > optimalDrainCount then
+        -- Reduce the tile count for each gutter based on the actual number of drain pipes
+        local overdraftTileCount = gutterTileCount / actualDrainCount
+        gutterTileCount = gutterTileCount - overdraftTileCount
+    end
+
+    return gutterTileCount
 end
 
-function serviceUtils:getGutterRainFactor(roofArea)
+function serviceUtils:calculateGutterSegmentRainFactor(gutterTileCount)
     -- Aim for this value to be 1.0 with mod options between 0.0 and 2.0
     local roofTileRainFactor = options:getGutterRainFactor() -- TODO rename to "gutterTileRainFactor"
-    local gutterEfficiencyFactor = 1 -- TODO each gutter pipe can has its own factor based on 'quality' up to 95% efficiency
+    local gutterEfficiencyFactor = 1
+    -- TODO each gutter pipe can has its own factor based on 'quality' up to 95% efficiency
     -- TODO should take an average of quality across all connected gutter pipes but maybe save that for later
 
-    local _, gutterTileCount = self:getEstimatedGutterDrainCount(roofArea)
     -- The total factor for the specific pipe based on it's own gutter efficiency
     local gutterSegmentRainFactor = gutterTileCount * gutterEfficiencyFactor / 10 * roofTileRainFactor
     return gutterSegmentRainFactor
 end
 
-function serviceUtils:calculateGutterSystemRainFactor(square)
+function serviceUtils:calculateGutterSegment(square)
     -- TEMP playground to test stuff
     -- 1 tile is 1 meter squared
     -- 
@@ -322,28 +374,35 @@ function serviceUtils:calculateGutterSystemRainFactor(square)
 
     -- Rain intensity is already factored into base game systems so we need to balance the generated rain factor to be useful but not trivial or too powerful
     -- Realistically a roof gutter system would produce nearly an entire rain barrel's worth of water (600l) in just a few hours when considering the area of the roof
+    local gutterSegment = {
+        roofArea = 0,
+        tileCount = 0,
+        optimalDrainCount = 1,
+        drainCount = 1,
+        rainFactor = 0.0
+    }
+
     local squareModData = self:syncSquareModData(square, true)
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))
-        return 0.0
+        return gutterSegment
     end
 
+    gutterSegment.roofArea = roofArea
+
     local averageGutterCapacity = self:getAverageGutterCapacity()
+    gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
+    gutterSegment.drainCount = self:getActualGutterDrainCount(square)
+    gutterSegment.tileCount = self:calculateGutterSegmentTileCount(roofArea, gutterSegment.optimalDrainCount, gutterSegment.drainCount, averageGutterCapacity)
+    gutterSegment.rainFactor = self:calculateGutterSegmentRainFactor(gutterSegment.tileCount)
 
-    local estimatedGutterCount, gutterTileCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
-
-    -- The total factor for the specific pipe based on it's own gutter efficiency
-    local gutterSegmentRainFactor = self:getGutterRainFactor(roofArea)
-
-    -- The total factor for the entire gutter system including the base container
-    -- utils:modPrint("Gutter tile rain factor: "..tostring(roofTileRainFactor))
     utils:modPrint("Roof area: "..tostring(roofArea))
-    -- utils:modPrint("Gutter efficiency factor: "..tostring(gutterEfficiencyFactor))
-    utils:modPrint("Estimated gutter count: "..tostring(estimatedGutterCount))
-    utils:modPrint("Gutter segment tile count: "..tostring(gutterTileCount))
-    utils:modPrint("Gutter segment rain factor: "..tostring(gutterSegmentRainFactor))
-    return gutterSegmentRainFactor
+    utils:modPrint("Optimal drain count: "..tostring(gutterSegment.optimalDrainCount))
+    utils:modPrint("Actual drain count: "..tostring(gutterSegment.drainCount))
+    utils:modPrint("Segment tile count: "..tostring(gutterSegment.tileCount))
+    utils:modPrint("Segment rain factor: "..tostring(gutterSegment.rainFactor))
+    return gutterSegment
 end
 
 -- TODO used?

@@ -91,25 +91,25 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     local c = self.textColor;
     self:renderText("Roof", x, y, c.r, c.g, c.b, c.a, UIFont.Small);
 
-    local roofArea = self.roofArea
+    local roofArea = self.gutterSegment.roofArea
     if self.roofInfo.area.cache~=roofArea then
         self.roofInfo.area.cache = roofArea;
         self.roofInfo.area.value = tostring(roofArea);
     end
 
-    local maxGutterCapacity = self.maxGutterTileCount;
-    if self.roofInfo.maxGutterTileCount.cache~=maxGutterCapacity then
-        self.roofInfo.maxGutterTileCount.cache = maxGutterCapacity;
-        self.roofInfo.maxGutterTileCount.value = tostring(maxGutterCapacity);
+    local systemDrainCount = self.gutterSegment.drainCount;
+    if self.roofInfo.drainCount.cache~=systemDrainCount then
+        self.roofInfo.drainCount.cache = systemDrainCount;
+        self.roofInfo.drainCount.value = tostring(systemDrainCount);
     end
 
-    local estimatedGutterCount = self.estimatedDrainCount;
-    if self.roofInfo.estimatedDrainCount.cache~=estimatedGutterCount then
-        self.roofInfo.estimatedDrainCount.cache = estimatedGutterCount;
-        self.roofInfo.estimatedDrainCount.value = tostring(estimatedGutterCount);
+    local optimalDrainCount = self.gutterSegment.optimalDrainCount;
+    if self.roofInfo.optimalDrainCount.cache~=optimalDrainCount then
+        self.roofInfo.optimalDrainCount.cache = optimalDrainCount;
+        self.roofInfo.optimalDrainCount.value = tostring(optimalDrainCount);
     end
 
-    local gutterTileCount = self.gutterTileCount;
+    local gutterTileCount = self.gutterSegment.tileCount;
     if self.roofInfo.gutterTileCount.cache~=gutterTileCount then
         self.roofInfo.gutterTileCount.cache = gutterTileCount;
         self.roofInfo.gutterTileCount.value = (not gutterTileCount or gutterTileCount == 0) and "0" or tostring(round(gutterTileCount, 2));
@@ -117,9 +117,8 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
 
     local tagWid = math.max(
         getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.area.tag),
-        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.maxGutterTileCount.tag),
-        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.estimatedDrainCount.tag),
-        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.gutterTileCount.tag)
+        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.gutterTileCount.tag),
+        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.drainCount.tag)
     )
     local tagx = x + tagWid
     local valx = tagx + UI_BORDER_SPACING;
@@ -130,17 +129,12 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     c = self.textColor;
     self:renderText(self.roofInfo.area.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
-    -- y = y + BUTTON_HGT;
-    -- c = self.tagColor;
-    -- self:renderText(self.roofInfo.maxGutterTileCount.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    -- c = self.textColor;
-    -- self:renderText(self.roofInfo.maxGutterTileCount.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
-
     y = y + BUTTON_HGT;
     c = self.tagColor;
-    self:renderText(self.roofInfo.estimatedDrainCount.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    c = self.textColor;
-    self:renderText(self.roofInfo.estimatedDrainCount.value, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
+    self:renderText(self.roofInfo.drainCount.tag, tagx, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
+    c = systemDrainCount > optimalDrainCount and self.invalidColor or self.textColor;
+    local drainCountText = self.roofInfo.drainCount.value.."/"..self.roofInfo.optimalDrainCount.value
+    self:renderText(drainCountText, valx, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
     y = y + BUTTON_HGT;
     c = self.tagColor;
@@ -158,7 +152,7 @@ function FG_UI_GutterInfoPanel:onPipes()
     local highlight = not self.gutterHighlight
     self:highlightGutterObjects(highlight)
     if highlight then
-        self.btnPipes:enableAcceptColor()   
+        self.btnPipes:enableAcceptColor()
     else
         local bgC = self.btnDefault.backgroundColor
         local bgCMO = self.btnDefault.backgroundColorMouseOver
@@ -289,26 +283,13 @@ function FG_UI_GutterInfoPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _fu
     end
 end
 
-function FG_UI_GutterInfoPanel:onUpdateGutterTile(square)
-    if isoUtils:isSquareInGutterMap(square, self.gutterMap) then
-        -- Updated square is part of the gutter system
-        self:reloadInfo()
-    end
-end
-
 function FG_UI_GutterInfoPanel:reloadInfo()
-    -- TODO should this info be passed in/managed by parent panel?
     self.square = self.gutter:getSquare()
-
-    -- TODO should crawl be done completely by the service layer and persisted on the square's mod data?
-    self.gutterMap = isoUtils:crawlGutterSystem(self.square)
     self.coveredFloors = isoUtils:getGutterCoveredFloors(self.gutterMap)
     self.roofArea = utils:getModDataRoofArea(self.square)
-    self.maxGutterTileCount = serviceUtils:getAverageGutterCapacity()
-    self.estimatedDrainCount, self.gutterTileCount = serviceUtils:getEstimatedGutterDrainCount(self.roofArea, self.maxGutterTileCount)
 end
 
-function FG_UI_GutterInfoPanel:new(x, y, width, height, gutterDrain)
+function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment, gutterMap)
     local o = {};
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self);
@@ -323,7 +304,9 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutterDrain)
     o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
     o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
 
-    o.gutter = gutterDrain;
+    o.gutter = gutter;
+    o.gutterSegment = gutterSegment;
+    o.gutterMap = gutterMap;
 
     o.gutterHighlight = false;
     o.roofAreaHighlight = false;
@@ -341,8 +324,8 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutterDrain)
     }
     o.roofInfo = {
         area = { tag = "Total Area"..": ", value = "0", cache = 0 },
-        estimatedDrainCount = { tag = "Drain Sections"..": ", value = "0", cache = 0 },
-        maxGutterTileCount = { tag = "Max Area"..": ", value = "0", cache = 0 },
+        drainCount = { tag = "Drain Sections"..": ", value = "0", cache = 0 },
+        optimalDrainCount = { tag = "Optimal Drain Sections"..": ", value = "0", cache = 0 },
         gutterTileCount = { tag = "Drain Area"..": ", value = "0", cache = 0 },
     }
 

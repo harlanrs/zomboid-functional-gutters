@@ -166,16 +166,8 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 
 ### 1.2 Notes
-- look into zone:getRoofAreasConnected():size() for roof calcs
-    - animal zones have some cool features for roofs but specific to that zone implementation
-- look into building = square:getRoofHideBuilding()
-    - still not sure what this is yet or how to get a value
 - isoCell: associatedBuilding.getRoofRoomID
     - able to get roof room id for pre-built but does match any rooms in the building or in the cell. Do I need to check a larger area?
-- isosquare getRoofHideBuilding seems like the best bet
-    - isosquare -> isobuilding -> 
-    - isosquare:getBuilding
-- building -> getDef():getRoofRoomID(var4.z)
 - building -> isEntirelyEmptyOutside
 - buildingDef -> CalculateBounds
 
@@ -186,15 +178,18 @@ TODO
 - follow gutter bends/corners when crawling
 - fix placing above windows
 - fix placing above player-built drain pipes
+- fix building horizontal pipes on player buildings
 - group facings when placing
     - Noffset, Soffset etc.
 - post add script that triggers resync of entire gutter system
     - need to catch gaps in pipes and 'pause' any connected collectors
 - take roof angle into consideration?
 
-
-entity options
-- config script
-    - OnCreate
-    - OnIsValid
-    - BreakSound -> metal
+- Use max roof area or floor area for calc of drain pipes associated with a building
+    - currently a drain connected to floor 0 might calculate a much smaller area than floor 1 but that shouldn't effect the total drain count which should be the same across the entire building
+- include multiple z levels in rain actual gutter count check
+    - maybe just 1 extra which allows progressively shifting window
+- use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.
+    - ex: 
+    - some garages are still tagged as the the same building even when physically separate.
+    - this would allow players to easily use them without impacting things like drain limit on the main building

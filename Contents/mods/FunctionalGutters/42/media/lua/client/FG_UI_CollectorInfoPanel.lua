@@ -190,12 +190,6 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
         self.containerInfo.baseRainFactor.value = (not baseRainFactor or baseRainFactor == 0.0) and "0.0" or tostring(round(baseRainFactor, 2));
     end
 
-    local gutterRainFactor = self.gutterRainFactor;
-    if self.containerInfo.gutterRainFactor.cache~=gutterRainFactor then
-        self.containerInfo.gutterRainFactor.cache = gutterRainFactor;
-        self.containerInfo.gutterRainFactor.value = (not gutterRainFactor or gutterRainFactor == 0.0) and "0.0" or tostring(round(gutterRainFactor, 2));
-    end
-
     local totalRainFactor = self.totalRainFactor;
     if self.containerInfo.totalRainFactor.cache~=totalRainFactor then
         self.containerInfo.totalRainFactor.cache = totalRainFactor;
@@ -204,7 +198,6 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
 
     -- local tagWid = math.max(
     --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag),
-    --     -- getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.gutterRainFactor.tag),
     --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
     -- )
 
@@ -217,12 +210,6 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
     self:renderText(self.containerInfo.baseRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
     c = self.textColor;
     self:renderText(self.containerInfo.baseRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
-
-    -- y = y + BUTTON_HGT;
-    -- c = self.tagColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight);
-    -- c = self.textColor;
-    -- self:renderText(self.containerInfo.gutterRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small);
 
     y = y + BUTTON_HGT;
     c = self.tagColor;
@@ -452,7 +439,6 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
     if self.collector then
         self.baseRainFactor = utils:getModDataBaseRainFactor(self.collector);
 
-        self.gutterRainFactor = serviceUtils:calculateGutterSystemRainFactor(self.gutter:getSquare());
         local fluidContainer = self.collector:getFluidContainer();
         if fluidContainer then
             self.totalRainFactor = fluidContainer:getRainCatcher();
@@ -466,7 +452,6 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
         end
     else
         self.baseRainFactor = 0.0;
-        self.gutterRainFactor = 0.0;
         self.totalRainFactor = 0.0;
         self.isGutterConnected = false;
         self:setInvalid(true);
@@ -525,7 +510,6 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     if o.container then
         o.owner = o.container:getOwner();
         o.containerCopy = o.container:getFluidContainer():copy(); -- TODO remove container copy
-        utils:modPrint("container texture name: "..tostring(o.collector:getTextureName()))
     else
         o.owner = o.gutter;
         o.containerCopy = nil;
@@ -555,7 +539,6 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
         stored = { tag = getText("Fluid_Stored")..": ", value = "0", cache = 0 },
         free = { tag = getText("Fluid_Free")..": ", value = "0", cache = 0 },
         baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
-        gutterRainFactor = { tag = "Gutter Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
         totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
     }
 
