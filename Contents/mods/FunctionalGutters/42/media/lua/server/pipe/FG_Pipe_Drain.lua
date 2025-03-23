@@ -16,6 +16,12 @@ end
 
 function DrainPipeService:onCreate(object)
     utils:modPrint("Drain pipe on create func: "..tostring(object))
+    -- Bug in vanilla atm where tools that are 'drained' when building an iso thumpable object are added to the object's mod data
+    -- The issue is that the consumed build inputs added to the object's mod data are also used to determine what items can be returned on scrap
+    -- This leads to a weird bug in vanilla where scrapping a metal iso object can return a full blowtorch and/or welding rods
+    local modData = object:getModData()
+    modData["need:Base.BlowTorch"] = nil
+    modData["need:Base.WeldingRods"] = nil
 end
 
 function DrainPipeService:onIsValid(buildParams)

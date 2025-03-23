@@ -174,11 +174,14 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 TODO
 - Explore using tile props instead of having to properly sync modData on object add/remove
     - Would require setting props on non-managed tiles
+- Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)
+- Look into spriteconfig corner option (ex: corner = constructedobjects_01_76,)
+    - might be specifically related to the sprite logic class
 - scrap definition?
 - follow gutter bends/corners when crawling
 - fix placing above windows
 - fix placing above player-built drain pipes
-- fix building horizontal pipes on player buildings
+- fix horizontal pipes on player buildings
 - group facings when placing
     - Noffset, Soffset etc.
 - post add script that triggers resync of entire gutter system

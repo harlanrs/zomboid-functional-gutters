@@ -75,6 +75,7 @@ module Base
             ToolTip       = UI_craft_FunctionalGutters_MetalDrainPipe_tooltip,
             inputs
             {
+                item 1 tags[WeldingMask] mode:keep,
                 item 4 [Base.BlowTorch] flags[Prop1],
                 item 4 [Base.SheetMetal],
                 item 4 [Base.IronBandSmall],
@@ -147,6 +148,7 @@ module Base
             ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
             inputs
             {
+                item 1 tags[WeldingMask] mode:keep,
                 item 3 [Base.BlowTorch] flags[Prop1],
                 item 3 [Base.SheetMetal],
                 item 3 [Base.IronBandSmall],
@@ -196,6 +198,7 @@ module Base
             ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
             inputs
             {
+                item 1 tags[WeldingMask] mode:keep,
                 item 2 [Base.BlowTorch] flags[Prop1],
                 item 2 [Base.SmallSheetMetal],
                 item 2 [Base.WeldingRods],
@@ -243,6 +246,7 @@ module Base
             ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
             inputs
             {
+                item 1 tags[WeldingMask] mode:keep,
                 item 2 [Base.BlowTorch] flags[Prop1],
                 item 2 [Base.SmallSheetMetal],
                 item 2 [Base.WeldingRods],

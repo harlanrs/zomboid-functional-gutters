@@ -31,6 +31,21 @@ function GutterCommands.disconnectCollector(args)
     triggerEvent(enums.modEvents.OnGutterTileUpdate, collectorObject:getSquare())
 end
 
+function GutterCommands.scrapPipe(player, args)
+    local scrappedObject = utils:parseObjectCommandArgs(args)
+    if not scrappedObject then
+        return
+    end
+
+    if utils:isAnyPipe(scrappedObject) then
+        utils:modPrint("Scrapping pipe object: "..tostring(scrappedObject))
+        -- NOTE: we rely on the OnIsoObjectRemoved event to handle other specifics like mod data cleanup
+        -- Here we are only interested in adding the pipe components to the ground
+        -- TODO get the entity script recipe and parse out the components
+        -- scrappedObject:getSquare():AddWorldInventoryItem(scrappedObject:getX(), scrappedObject:getY(), scrappedObject:getZ(), scrappedObject)
+    end
+end
+
 function GutterServerManager.OnClientCommand(module, command, player, args)
     if module == enums.modName and GutterCommands[command] then
         local argStr = ''
@@ -40,6 +55,12 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
         end
         utils:modPrint('Server received '..module..' '..command..' '..tostring(player)..argStr)
         GutterCommands[command](args)
+    -- elseif module == "object" and command == "OnDestroyIsoThumpable" then
+    --     -- Handle scrap event for IsoThumpable if it is used to remove gutter objects
+    --     -- So we can directly place materials on the ground instead of relying on base scrap logic
+    --     -- This is a workaround for default moveable behavior not satisfying our needs
+    --     -- So we force players to scrap the object and rebuild instead
+    --     -- sendClientCommand(_character, 'object', 'OnDestroyIsoThumpable', args)
     end
 end
 
@@ -109,3 +130,7 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
+
+-- TODO handle scrap event for IsoThumpable if it is used to remove pipes
+-- So we can directly place materials on the ground instead of relying on base scrap logic
+-- sendClientCommand(_character, 'object', 'OnDestroyIsoThumpable', args)

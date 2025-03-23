@@ -44,33 +44,20 @@ tileset
     tile
     {
         xy = 5,0
-        CustomName = Gutter
-        Facing = E
+        CanScrap = 
         IsGutterPipe = 
-        IsMoveAble = 
-        MaterialType = Metal
-        MoveType = WallObject
-        PickUpTool = Wrench
-        PickUpWeight = 50
-        PlaceTool = Wrench
-        WallObjectAllowDoorframe = 
-        attachedW = 
+        Material = SmallMetalPlates
+        MaterialType = Metal_Light
+        ScrapUseSkill = 
     }
     // gutter_01_6
     tile
     {
         xy = 6,0
-        CustomName = Gutter
-        Facing = S
+        CanScrap = 
         IsGutterPipe = 
-        IsMoveAble = 
-        MaterialType = Metal
-        MoveType = WallObject
-        PickUpTool = Wrench
-        PickUpWeight = 50
-        PlaceTool = Wrench
-        WallObjectAllowDoorframe = 
-        attachedN = 
+        Material = SmallMetalPlates
+        MaterialType = Metal_Light
     }
     // gutter_01_7
     tile
@@ -88,7 +75,6 @@ tileset
         PickUpTool = Wrench
         PickUpWeight = 50
         PlaceTool = Wrench
-        attachedW = 
     }
     // gutter_01_9
     tile
@@ -107,55 +93,55 @@ tileset
     {
         xy = 6,29
         IsVerticalPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_239
     tile
     {
         xy = 7,29
         IsVerticalPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_243
     tile
     {
         xy = 3,30
         IsVerticalPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_247
     tile
     {
         xy = 7,30
         IsVerticalPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_260
     tile
     {
         xy = 4,32
         IsDrainPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_261
     tile
     {
         xy = 5,32
         IsDrainPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_262
     tile
     {
         xy = 6,32
         IsDrainPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
     // industry_02_263
     tile
     {
         xy = 7,32
         IsDrainPipe = 
-        MaterialType = Metal
+        MaterialType = Metal_Light
     }
 }

@@ -15,6 +15,12 @@ end
 
 function GutterPipeService:onCreate(object)
     utils:modPrint("Gutter pipe on create func: "..tostring(object))
+    -- Bug in vanilla atm where tools that are 'drained' when creating an iso object are added to the object's mod data
+    -- The issue is that the consumed build inputs that are added to the object's mod data are also used to determine what items can be returned on scrap
+    -- This leads to the weird bug in vanilla where scrapping a metal iso object returns a full blowtorch and welding rods
+    local modData = object:getModData()
+    modData["need:Base.BlowTorch"] = nil
+    modData["need:Base.WeldingRods"] = nil
 end
 
 function GutterPipeService:onIsValid(buildParams)
