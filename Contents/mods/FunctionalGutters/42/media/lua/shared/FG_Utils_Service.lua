@@ -4,6 +4,8 @@ local options = require("FG_Options")
 local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 
+local table_insert = table.insert
+
 local serviceUtils = {}
 
 function serviceUtils:isFluidContainerObject(containerObject)
@@ -178,7 +180,7 @@ function serviceUtils:syncSquareModData(square, full)
         local spriteName = object:getSpriteName()
         local spriteCategory = utils:getSpriteCategory(spriteName)
         if spriteCategory then
-            table.insert(pipeObjects, object)
+            table_insert(pipeObjects, object)
             if squareModData == nil then
                 squareModData = square:getModData()
             end
@@ -233,8 +235,11 @@ function serviceUtils:getAverageGutterCapacity()
     return averageGutterCapacity
 end
 
-function serviceUtils:getLocalDrainPipes(square)
+function serviceUtils:getLocalDrainPipes(square, radius)
     -- Grab all nearby squares with a drain pipe object
+    if not radius then
+        radius = 16
+    end
     local drainPipes = isoUtils:findAllDrainsInRadius(square, 16)
     if not drainPipes or #drainPipes == 0 then
         return nil
@@ -242,7 +247,6 @@ function serviceUtils:getLocalDrainPipes(square)
 
     -- Determine if square has a pre-built building or is a player-built structure
     local buildingDef = isoUtils:getAttachedBuilding(square)
-    utils:modPrint("Building def: "..tostring(buildingDef))
     if not buildingDef then
        -- No building found - assume player-built structure and return all drain pipes
        return drainPipes
@@ -254,28 +258,68 @@ function serviceUtils:getLocalDrainPipes(square)
         local drainPipe = drainPipes[i]
         local attachedBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
         if attachedBuildingDef and attachedBuildingDef:getID() == buildingDef:getID() then
-            table.insert(buildingDrainPipes, drainPipe)
+            table_insert(buildingDrainPipes, drainPipe)
         end
     end
 
     return buildingDrainPipes
 end
 
-function serviceUtils:getActualGutterDrainCount(square)
+function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
+    if not radius then
+        radius = 16
+    end
+    if not zRadius then
+        zRadius = 1
+    end
     local drainPipes = self:getLocalDrainPipes(square)
     if not drainPipes then
         return 0
     end
 
-    -- Check 1 z above if ground floor or below if above ground floor as well
+    local x = square:getX()
+    local y = square:getY()
     local z =  square:getZ()
-    local nextZ = z > 0 and z - 1 or z + 1
-    local nextSquare = square:getCell():getGridSquare(square:getX(), square:getY(), nextZ)
-    local additionalDrainPipes = self:getLocalDrainPipes(nextSquare)
-    if additionalDrainPipes then
-        for i=1, #additionalDrainPipes do
-            table.insert(drainPipes, additionalDrainPipes[i])
+    for i=1, zRadius + 1 do
+        -- Check up zRadius levels
+        local upZ = z + i
+        local upSquare = square:getCell():getGridSquare(x, y, upZ)
+        if upSquare then
+            local zDrainPipes = self:getLocalDrainPipes(upSquare)
+            if zDrainPipes then
+                for iter=1, #zDrainPipes do
+                    table_insert(drainPipes, zDrainPipes[iter])
+                end
+            end
         end
+    end
+
+    if z > 0 then
+        -- Check down zRadius levels
+        for i=1, zRadius do
+            local downZ = z - i
+            if downZ < 0 then
+                break
+            end
+            local downSquare = square:getCell():getGridSquare(x, y, downZ)
+            if downSquare then
+                local zDrainPipes = self:getLocalDrainPipes(downSquare)
+                if zDrainPipes then
+                    for iter=1, #zDrainPipes do
+                        table_insert(drainPipes, zDrainPipes[iter])
+                    end
+                end
+            end
+        end
+    end
+
+    return drainPipes
+end
+
+function serviceUtils:getActualGutterDrainCount(square)
+    local drainPipes = self:getLocalDrainPipes3D(square, 16, 1)
+    if not drainPipes then
+        return 0
     end
 
     return #drainPipes
@@ -382,6 +426,7 @@ function serviceUtils:calculateGutterSegment(square)
         rainFactor = 0.0
     }
 
+    -- TODO don't call sync here?
     local squareModData = self:syncSquareModData(square, true)
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     if not roofArea then
@@ -403,22 +448,6 @@ function serviceUtils:calculateGutterSegment(square)
     utils:modPrint("Segment tile count: "..tostring(gutterSegment.tileCount))
     utils:modPrint("Segment rain factor: "..tostring(gutterSegment.rainFactor))
     return gutterSegment
-end
-
--- TODO used?
-local function wrapSyncSquareModData(square, full)
-    local squareModData = serviceUtils:syncSquareModData(square, full)
-    if squareModData == nil then
-        return false -- breaks
-    end
-
-    return nil -- continues
-end
-
--- TODO used?
-function serviceUtils:syncSquareStackModData(square, full)
-    local z = isoUtils:applyToSquareStack(square, function(sq) return wrapSyncSquareModData(sq, full) end)
-    utils:modPrint("Called syncSquareModData up to level: "..tostring(z))
 end
 
 return serviceUtils

@@ -270,6 +270,17 @@ function utils:getSpecificIsoObjectFromSquare(square, spriteName)
     return nil
 end
 
+function utils:getConnectedCollectorFromSquare(square)
+    local objects = square:getObjects()
+    for i = 0, objects:size() - 1 do
+        local object = objects:get(i)
+        if utils:getModDataIsGutterConnected(object) then
+            return object
+        end
+    end
+    return nil
+end
+
 function utils:getClassFieldIndex(classObject, fieldName)
     local i = 0
     while true do

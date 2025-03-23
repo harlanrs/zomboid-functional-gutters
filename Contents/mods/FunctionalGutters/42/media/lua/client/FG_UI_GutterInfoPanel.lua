@@ -190,7 +190,6 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     self.btnPipes:initialise();
     -- self.btnPipes:instantiate();
     self:addChild(self.btnPipes);
-    utils:modPrint("button pipes: "..tostring(self.btnPipes))
 
     local roofBtnText = "View Roof"; -- TODO translate
     btnX = btnX + btnW + UI_BORDER_SPACING + 1
@@ -218,7 +217,6 @@ function FG_UI_GutterInfoPanel:highlightGutterObject(square, highlight)
                 object:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
                 object:setBlink(true);
             end
-            self.gutterHighlight = highlight;
         end
     end
 end
@@ -233,7 +231,6 @@ function FG_UI_GutterInfoPanel:highlightCoveredFloor(square, highlight)
             floor:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
             floor:setBlink(true);
         end
-        self.roofAreaHighlight = highlight;
     end
 end
 
@@ -244,12 +241,14 @@ function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
             self:highlightGutterObject(square, highlight)
         end
     end
+    self.gutterHighlight = highlight;
 end
 
 function FG_UI_GutterInfoPanel:highlightRoofArea(highlight)
     for _, square in pairs(self.coveredFloors) do
         self:highlightCoveredFloor(square, highlight)
     end
+    self.roofAreaHighlight = highlight;
 end
 
 function FG_UI_GutterInfoPanel:close()

@@ -1,15 +1,11 @@
-local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local options = require("FG_Options")
-local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 local serviceUtils = require("FG_Utils_Service")
 
 require "FG_TA_ConnectContainer"
 require "FG_TA_DisconnectContainer"
 require "FG_TA_OpenGutterPanel"
-
-local debugMode = false
 
 local function DoConnectContainer(playerObject, collectorObject)
     if luautils.walkAdj(playerObject, collectorObject:getSquare(), true) then
@@ -122,67 +118,6 @@ local function AddGutterSystemContext(player, context, square, drainObject)
     local openGutterPanelOption = gutterSubMenu:addOption("Show Info", playerObject, DoOpenGutterPanel, drainObject, primaryContainer, linkedSquare);
 end
 
-local function AddDebugContainerContext(player, context, square, containerObject, fluidContainer)
-    -- Conditionally build debug container context menu
-    if debugMode then
-        local playerObject = getSpecificPlayer(player)
-        local containerName = utils:getObjectDisplayName(containerObject)
-        local containerSubMenuOption = context:addOption("["..enums.modName.."] "..containerName, playerObject, nil);
-        local containerSubMenu = context:getNew(context)
-        context:addSubMenu(containerSubMenuOption, containerSubMenu)
-
-        local rainFactor = fluidContainer:getRainCatcher()
-        containerSubMenu:addOption("Current Rain Factor: " .. tostring(rainFactor), playerObject, nil)
-
-        local baseRainFactor = serviceUtils:getObjectBaseRainFactor(containerObject)
-        containerSubMenu:addOption("Base Rain Factor: " .. tostring(baseRainFactor), playerObject, nil)
-
-        local tileHasGutter = utils:getModDataHasGutter(square, nil)
-        containerSubMenu:addOption("Tile Gutter: " .. tostring(tileHasGutter), playerObject, nil)
-
-        local isGutterConnected = utils:getModDataIsGutterConnected(containerObject, nil)
-        containerSubMenu:addOption("Gutter Connected: " .. tostring(isGutterConnected), playerObject, nil)
-
-
-        -- if tileHasGutter then
-        --     local gutterRoofArea = utils:getModDataRoofArea(square, nil)
-        --     if not gutterRoofArea then
-        --         gutterRoofArea = isoUtils:getGutterRoofArea(square)
-        --     end
-
-        --     local topGutterFloor = isoUtils:findGutterTopLevel(square)
-        --     containerSubMenu:addOption("Top Gutter Floor: " .. tostring(topGutterFloor), playerObject, nil)
-
-        --     containerSubMenu:addOption("Gutter Roof Area: " .. tostring(gutterRoofArea), playerObject, nil)
-        -- else
-        --     local building = square:getBuilding()
-        --     utils:modPrint("Tile in building: "..tostring(building))
-
-        --     local roofBuilding = square:getRoofHideBuilding()
-        --     if roofBuilding then
-        --         utils:modPrint("Roof Building: "..tostring(roofBuilding))
-        --     end
-
-        --     local buildingSquare = square
-        --     if not building then
-        --         building, buildingSquare = isoUtils:getAdjacentBuilding(square)
-        --         utils:modPrint("Adjacent Building: "..tostring(building))
-        --         if buildingSquare then
-        --             roofBuilding = buildingSquare:getRoofHideBuilding()
-        --             utils:modPrint("Adjacent Roof Building: "..tostring(roofBuilding))
-        --         end
-        --     end
-
-        --     if building then
-        --         -- Calculate area of top-floor assuming it's 1-1 square -> roof
-        --         local area = isoUtils:getBuildingFloorArea(building, nil)
-        --         containerSubMenu:addOption("Building Roof Size: " .. tostring(area), playerObject, nil)
-        --     else
-        --         containerSubMenu:addOption("No Connected Building", playerObject, nil)
-        --     end
-        -- end
-    end
-end
 
 local function AddWaterContainerContext(player, context, worldobjects, test)
     for _,worldObject in ipairs(worldobjects) do
@@ -191,26 +126,9 @@ local function AddWaterContainerContext(player, context, worldobjects, test)
                 local square = worldObject:getSquare()
                 AddGutterSystemContext(player, context, square, worldObject)
                 break
-
-                -- local fluidContainer = worldObject:getFluidContainer()
-                -- if fluidContainer then
-                --     local square = worldObject:getSquare()
-                --     if fluidContainer and square and serviceUtils:isValidContainerObject(worldObject) then
-                --         AddGutterContainerContext(player, context, square, worldObject, fluidContainer)
-
-                --         -- AddDebugContainerContext(player, context, square, worldObject, fluidContainer)
-                --         break
-                --     end
-                -- end
             end
         end
     end
 end
-
-local function checkDebugMode()
-    debugMode = options:getDebug()
-end
-
-Events.OnLoad.Add(checkDebugMode)
 
 Events.OnFillWorldObjectContextMenu.Add(AddWaterContainerContext)

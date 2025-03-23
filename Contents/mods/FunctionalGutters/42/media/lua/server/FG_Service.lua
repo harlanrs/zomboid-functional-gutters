@@ -72,8 +72,6 @@ function gutterService:connectCollector(collectorObject)
         return
     end
 
-    -- TODO make distinction between containerService and pipeService with gutterService as orchestrator
-    -- TODO consolidate into pipe service
     -- TODO Need to get the connected tile if the object is a multi-tile trough
     -- TODO do full pipe system check and generate the gutterSystemRainFactor to pass into the connect method (the collector shouldn't know or care about gutter system details)
 

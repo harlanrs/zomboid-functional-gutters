@@ -5,6 +5,7 @@ local isoUtils = {}
 
 local localIsoDirections = IsoDirections
 local localIsoFlagType = IsoFlagType
+local table_insert = table.insert
 
 function isoUtils:getSquare2Pos(square, north)
     local x = square:getX()
@@ -147,10 +148,10 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
 
     if hasDrainPipe or hasVerticalPipe then
         if hasDrainPipe then
-            table.insert(gutterSystemMap[enums.pipeType.drain], square)
+            table_insert(gutterSystemMap[enums.pipeType.drain], square)
         end
         if hasVerticalPipe then
-            table.insert(gutterSystemMap[enums.pipeType.vertical], square)
+            table_insert(gutterSystemMap[enums.pipeType.vertical], square)
         end
         -- Prioritize following vertical pipes up z levels
         local nextSquare = getCell():getGridSquare(square:getX(), square:getY(), square:getZ() + 1)
@@ -165,7 +166,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
         -- Try following gutter pipes north, south, east, west
         local i, squareGutter, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
         if squareGutter then
-            table.insert(gutterSystemMap[enums.pipeType.gutter], square)
+            table_insert(gutterSystemMap[enums.pipeType.gutter], square)
 
             local spriteDef = enums.pipes[spriteName]
             if spriteDef.position == localIsoDirections.N then
@@ -249,7 +250,7 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
         roofMap[square:getID()] = square
     end
 
-    utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+    -- utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
     -- TODO setup a max roof crawl enum
     if crawlSteps > 5 then
         utils:modPrint("Crawl steps hit max")
@@ -268,7 +269,7 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     -- local nextSquare = dir == IsoDirections.N and square:getN() or square:getW()
     local crawlNext = self:crawlPlayerBuildingRoofSquare(nextSquare, roofMap, dir, crawlSteps) -- TODO up dir?
     if crawlNext then
-        utils:modPrint("Crawled to square: "..tostring(crawlNext:getX())..","..tostring(crawlNext:getY())..","..tostring(crawlNext:getZ()))
+        -- utils:modPrint("Crawled to square: "..tostring(crawlNext:getX())..","..tostring(crawlNext:getY())..","..tostring(crawlNext:getZ()))
         return crawlNext
     end
 
@@ -282,14 +283,15 @@ function isoUtils:crawlGutterSystem(square)
         [enums.pipeType.gutter] = table.newarray()
     }
     local crawlSteps = 0
-    local lastSquare = self:crawlGutterSquare(square, gutterSystemMap, nil, crawlSteps)
-    utils:modPrint("Gutter system map - drains count: "..tostring(#gutterSystemMap[enums.pipeType.drain]))
-    utils:modPrint("Gutter system map - verticals count: "..tostring(#gutterSystemMap[enums.pipeType.vertical]))
-    utils:modPrint("Gutter system map - gutters count: "..tostring(#gutterSystemMap[enums.pipeType.gutter]))
-    utils:modPrint("Total crawl steps: "..tostring(crawlSteps))
-    if lastSquare then
-        utils:modPrint("Last square: "..tostring(lastSquare:getX())..","..tostring(lastSquare:getY())..","..tostring(lastSquare:getZ()))
-    end
+    self:crawlGutterSquare(square, gutterSystemMap, nil, crawlSteps)
+    -- local lastSquare = self:crawlGutterSquare(square, gutterSystemMap, nil, crawlSteps)
+    -- utils:modPrint("Gutter system map - drains count: "..tostring(#gutterSystemMap[enums.pipeType.drain]))
+    -- utils:modPrint("Gutter system map - verticals count: "..tostring(#gutterSystemMap[enums.pipeType.vertical]))
+    -- utils:modPrint("Gutter system map - gutters count: "..tostring(#gutterSystemMap[enums.pipeType.gutter]))
+    -- utils:modPrint("Total crawl steps: "..tostring(crawlSteps))
+    -- if lastSquare then
+    --     utils:modPrint("Last square: "..tostring(lastSquare:getX())..","..tostring(lastSquare:getY())..","..tostring(lastSquare:getZ()))
+    -- end
 
     return gutterSystemMap
 end
@@ -298,7 +300,7 @@ function isoUtils:isSquareInGutterMap(square, gutterSystemMap)
     for _, pipeSquares in pairs(gutterSystemMap) do
         for i=1, #pipeSquares do
             local gutterSquare = pipeSquares[i]
-            if square:getId() == gutterSquare:getSquare() then
+            if square:getID() == gutterSquare:getID() then
                 return true
             end
         end
@@ -328,10 +330,6 @@ function isoUtils:getGutterCoveredFloors(gutterSystemMap)
 end
 
 function isoUtils:getPlayerBuildingFloorArea(square, gutterSystemMap)
-    -- TODO instead of trying to walk every all directions
-    -- lets use the gutter pipes to determine a length
-    -- and walk 'in' from each segment of gutter pipes
-    -- ex: 6 gutter pipes long, walk 4 in from each for a total area of 24
     if not gutterSystemMap then
         gutterSystemMap = self:crawlGutterSystem(square)
     end
@@ -343,59 +341,7 @@ function isoUtils:getPlayerBuildingFloorArea(square, gutterSystemMap)
         totalArea = totalArea + 1
     end
 
-    utils:modPrint("Total roof area: "..tostring(totalArea))
-
     return totalArea
-
-    -- if not square:getPlayerBuiltFloor() then
-    --     return 0
-    -- end
-    -- local maxWalk = 10
-    -- local area = 1
-    -- local z = square:getZ()
-    -- local x = square:getX()
-    -- local y = square:getY()
-    -- local finalXSquare = square
-    -- local finalYSquare = square
-    -- local walkYLength = 0 -- TODO base on gutter length?
-    -- local walkXLength = 0 -- TODO base on gutter length?
-
-    -- for i=1, maxWalk do
-    --     local nextX = x - i
-    --     local nextSquare = square:getCell():getGridSquare(nextX, y, z)
-    --     if not nextSquare or not nextSquare:getPlayerBuiltFloor() then
-    --         break
-    --     end
-
-    --     finalXSquare = nextSquare
-    --     walkXLength = walkXLength + 1
-    -- end
-
-    -- for i=1, maxWalk do
-    --     local nextY = y - i
-    --     local nextSquare = square:getCell():getGridSquare(x, nextY, z)
-    --     if not nextSquare or not nextSquare:getPlayerBuiltFloor() then
-    --         break
-    --     end
-
-    --     finalYSquare = nextSquare
-    --     walkYLength = walkYLength + 1
-    -- end
-
-    -- utils:modPrint("Walk X: "..tostring(walkXLength))
-    -- utils:modPrint("Walk Y: "..tostring(walkYLength))
-    -- utils:modPrint("final X square: "..tostring(finalXSquare:getX())..","..tostring(finalXSquare:getY())..","..tostring(finalXSquare:getZ()))
-    -- utils:modPrint("final Y square: "..tostring(finalYSquare:getX())..","..tostring(finalYSquare:getY())..","..tostring(finalYSquare:getZ()))
-
-    -- square:hasRainBlockingTile
-    -- square:haveRoofFull
-    -- square:hasFloor
-    -- square:getPlayerBuiltFloor
-    -- square:AddTileObject or AddSpecialTileObject
-    -- transmitAddObjectToSquare
-
-    -- local squareHasRoof = square:haveRoof()
-    -- (var10.isFloor() || var4.haveRoof || var4.HasSlopedRoof()
 end
 
 function isoUtils:findGutterTopLevel(square)
@@ -408,7 +354,7 @@ function isoUtils:findGutterTopLevel(square)
         local nextFloor = z + 1
         local nextSquare = cell:getGridSquare(x, y, nextFloor)
         if not nextSquare then
-            utils:modPrint("next square level not found: "..tostring(nextFloor))
+            utils:modPrint("Next square level not found: "..tostring(nextFloor))
             break
         elseif not utils:hasVerticalPipeOnTile(nextSquare) then
             break
@@ -442,7 +388,6 @@ function isoUtils:getGutterRoofArea(square)
     if buildingDef then
         -- Calculate area of top-floor assuming it's 1-1 square -> roof
         local topGutterFloor = isoUtils:findGutterTopLevel(square)
-        utils:modPrint("Top gutter floor: "..tostring(topGutterFloor))
 
         local floorArea = self:getBuildingFloorArea(buildingDef, topGutterFloor)
         local maxZ = buildingDef:getMaxLevel()
@@ -451,12 +396,10 @@ function isoUtils:getGutterRoofArea(square)
             local nextFloorZ = topGutterFloor + 1
             local nextFloorArea = self:getBuildingFloorArea(buildingDef, nextFloorZ)
             if nextFloorArea then
-                utils:modPrint("Removing upstairs floor "..tostring(nextFloorZ).." area: "..tostring(nextFloorArea))
                 floorArea = floorArea - nextFloorArea
             end
         end
 
-        utils:modPrint("Total gutter roof area: "..tostring(floorArea))
         return floorArea
     end
 
@@ -514,7 +457,7 @@ function isoUtils:findAllDrainsInRadius(square, radius)
                 local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, enums.pipeType.drain)
                 if pipeObject then
                     utils:modPrint("Found drain pipe: "..tostring(pipeObject:getX())..","..tostring(pipeObject:getY())..","..tostring(pipeObject:getZ()))
-                    table.insert(pipeObjects, pipeObject)
+                    table_insert(pipeObjects, pipeObject)
                 end
             end
         end

@@ -179,14 +179,12 @@ TODO
     - might be specifically related to the sprite logic class
 - scrap definition?
 - follow gutter bends/corners when crawling
-- fix placing above windows
-- fix placing above player-built drain pipes
 - fix horizontal pipes on player buildings
-- group facings when placing
-    - Noffset, Soffset etc.
 - post add script that triggers resync of entire gutter system
     - need to catch gaps in pipes and 'pause' any connected collectors
 - take roof angle into consideration?
+- check renderYOffset for ensuring overlay order
+    - https://discord.com/channels/908422782554107904/908460685615308820/1322682836876001300
 
 - Use max roof area or floor area for calc of drain pipes associated with a building
     - currently a drain connected to floor 0 might calculate a much smaller area than floor 1 but that shouldn't effect the total drain count which should be the same across the entire building

@@ -11,6 +11,7 @@ local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GOOD_COLOR = getCore():getGoodHighlitedColor()
+local table_insert = table.insert
 
 function FG_UI_CollectorInfoPanel:initialise()
     ISPanel.initialise(self)
@@ -391,14 +392,14 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
     if square then
         if square:getFloor() and square:getFloor():getTextureName() and getTexture(square:getFloor():getTextureName()) then
             local t = { texture = getTexture(square:getFloor():getTextureName()), offsetY = 0 }
-            table.insert( self.textureList, t );
+            table_insert(self.textureList, t );
         end
 
         for i = 1, square:getObjects():size()-1 do
             local obj = square:getObjects():get(i);
             if obj and obj:getTextureName() and getTexture(obj:getTextureName()) then
                 local t = { texture = getTexture(obj:getTextureName()), offsetY = obj:getRenderYOffset() * Core.getTileScale() }
-                table.insert(self.textureList, t);
+                table_insert(self.textureList, t);
 
                 local sprList = obj:getChildSprites();
                 if sprList and (not instanceof(obj,"IsoBarbecue")) then
@@ -409,7 +410,7 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
                             local sprite = sprList:get(l):getParentSprite();
                             if sprite:getName() and getTexture(sprite:getName()) then
                                 local child = { texture = getTexture(sprite:getName()), offsetY = obj:getRenderYOffset() * Core.getTileScale() }
-                                table.insert(t.children, child);
+                                table_insert(t.children, child);
                             end
                         end
                     end

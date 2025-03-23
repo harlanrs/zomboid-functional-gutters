@@ -260,6 +260,11 @@ function FG_UI_GutterPanel:update()
         end
     end
 
+    if not self.gutter or not self.gutterSquare then
+        self:close();
+        return;
+    end
+
     self:validatePanel();
     self:alignElements();
 end
@@ -346,8 +351,28 @@ function FG_UI_GutterPanel:onGainJoypadFocus(joypadData)
 end
 
 function FG_UI_GutterPanel:reloadGutterInfo()
-    self.gutterPanel.gutter = self.gutter;
-    self.gutterPanel:reloadInfo();
+    local refreshGutterHighlight = self.gutterPanel.gutterHighlight
+    if refreshGutterHighlight then
+        self.gutterPanel:highlightGutterObjects(false)
+    end
+
+    local refreshRoofHighlight = self.gutterPanel.roofAreaHighlight
+    if refreshRoofHighlight then
+        self.gutterPanel:highlightRoofArea(false)
+    end
+
+    self.gutterPanel.gutter = self.gutter -- TODO rename gutter -> drainPipe
+    self.gutterPanel.gutterSegment = self.gutterSegment
+    self.gutterPanel.gutterMap = self.gutterMap
+    self.gutterPanel:reloadInfo()
+
+    if refreshGutterHighlight then
+        self.gutterPanel:highlightGutterObjects(true)
+    end
+
+    if refreshRoofHighlight then
+        self.gutterPanel:highlightRoofArea(true)
+    end
 end
 
 function FG_UI_GutterPanel:reloadCollectorInfo(full)
@@ -365,6 +390,11 @@ function FG_UI_GutterPanel:reloadCollectorInfo(full)
 end
 
 function FG_UI_GutterPanel:reloadInfo()
+    _, self.gutter, _, _ = utils:getSpriteCategoryMemberOnTile(self.gutterSquare, enums.pipeType.drain);
+    if not self.gutter then
+        self:close();
+        return;
+    end
     self.gutterSegment = serviceUtils:calculateGutterSegment(self.gutterSquare);
     self.gutterMap = isoUtils:crawlGutterSystem(self.gutterSquare)
 end
@@ -406,19 +436,15 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
             self:reloadCollectorInfo(true)
         else
             -- Potential collector data update so do partial refresh of panel
+            self:reloadInfo()
+            self:reloadGutterInfo()
             self:reloadCollectorInfo(nil)
         end
     else
         -- Updated gutter tile wasn't primary drain square
-        -- Pass square to gutter panel to check against gutter map
-        if isoUtils:isSquareInGutterMap(square, self.gutterMap) then
-            -- Updated square is part of the gutter system
-            self:reloadInfo()
-            self.gutterPanel.gutter = self.gutter
-            self.gutterPanel.gutterSegment = self.gutterSegment
-            self.gutterPanel.gutterMap = self.gutterMap
-            self.gutterPanel:reloadInfo()
-        end
+        self:reloadInfo()
+        self:reloadGutterInfo()
+        self:reloadCollectorInfo(nil)
     end
 end
 

@@ -31,21 +31,6 @@ function GutterCommands.disconnectCollector(args)
     triggerEvent(enums.modEvents.OnGutterTileUpdate, collectorObject:getSquare())
 end
 
-function GutterCommands.scrapPipe(player, args)
-    local scrappedObject = utils:parseObjectCommandArgs(args)
-    if not scrappedObject then
-        return
-    end
-
-    if utils:isAnyPipe(scrappedObject) then
-        utils:modPrint("Scrapping pipe object: "..tostring(scrappedObject))
-        -- NOTE: we rely on the OnIsoObjectRemoved event to handle other specifics like mod data cleanup
-        -- Here we are only interested in adding the pipe components to the ground
-        -- TODO get the entity script recipe and parse out the components
-        -- scrappedObject:getSquare():AddWorldInventoryItem(scrappedObject:getX(), scrappedObject:getY(), scrappedObject:getZ(), scrappedObject)
-    end
-end
-
 function GutterServerManager.OnClientCommand(module, command, player, args)
     if module == enums.modName and GutterCommands[command] then
         local argStr = ''
@@ -67,19 +52,43 @@ end
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     -- NOTE: param is square not the object itself
-    local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
-    if squareModData then
-        if utils:getModDataHasGutter(square, squareModData) then
-            utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
+    serviceUtils:syncSquareModData(square, nil)
+    local squareProps = square:getProperties()
+    if utils:checkPropIsAnyPipe(square, squareProps) then
+        if utils:isAnyPipeSprite(sprite) then
+            -- A pipe was built 
+            if utils:checkPropIsDrainPipe(square, squareProps) then
+                -- Get the connected collector (if any) from the drain pipe square
+                local connectedCollector = utils:getConnectedCollectorFromSquare(square)
+                if connectedCollector then
+                    -- Re-evaluate the rain factor for the connected collector
+                    gutterService:connectCollector(connectedCollector)
+                end
+            else
+                -- Non-drain pipe square but still a part of a gutter segment. 
+                -- Seek all nearby drain pipes to update the rain factor
+                local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+                if drainPipes then
+                    for i=1, #drainPipes do
+                        local drainPipe = drainPipes[i]
+                        local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                        if connectedCollector then
+                            gutterService:connectCollector(connectedCollector)
+                        end
+                    end
+                end
+            end
         end
+
+        utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
+        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
     end
 end
 
 function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
     local square = placedObject:getSquare()
-    local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil 
+    local squareModData = serviceUtils:syncSquareModData(square, nil)
     if squareModData and utils:getModDataHasGutter(square, squareModData) then
         utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
         triggerEvent(enums.modEvents.OnGutterTileUpdate, square) -- TODO is this too early to trigger?
@@ -99,16 +108,42 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
     -- React to the removal of an existing iso object on a tile
     local square = removedObject:getSquare()
     if square then
-        -- TODO verify if the upgrade of IsoObject -> IsoThumpable when a pipe placed will trigger this event
         if utils:isAnyPipe(removedObject) then
             -- Cleanup square's mod data when any pipes are removed
             utils:modPrint("Pipe object removed from square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
-            local squareModData = serviceUtils:syncSquareModData(square, true) -- TODO maybe set full to nil
-            -- TODO need to trigger a re-crawl of the pipe system to downscale a connected collector's rain factor 
-            -- in case the removed pipe affects how much roof is connected to the gutter system
-        end
 
-        if utils:checkPropIsDrainPipe(square) then
+            -- Check if there is a connected collector on the tile
+            local connectedCollector = utils:getConnectedCollectorFromSquare(square)
+            if connectedCollector then
+                if utils:isDrainPipe(removedObject) then
+                    -- A drain pipe was removed so disconnect the collector
+                    utils:modPrint("Disconnecting collector after drain pipe was removed: "..tostring(connectedCollector:getName()))
+                    gutterService:disconnectCollector(connectedCollector)
+                    serviceUtils:syncSquareModData(square, true)
+                else
+                    -- A non-drain pipe was removed update the connected collector's rain factor
+                    -- NOTE: connect collector will re-crawl the gutter system and update the rain factor
+                    utils:modPrint("Re-evaluating collector rain factor after pipe was removed: "..tostring(connectedCollector:getName()))
+                    gutterService:connectCollector(connectedCollector)
+                end
+            else
+                -- A pipe was removed but not directly on the tile with a collector
+                -- Trigger a recalc of the rain factor for any connected collectors to nearby drain pipes
+                local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+                if drainPipes then
+                    for i=1, #drainPipes do
+                        local drainPipe = drainPipes[i]
+                        connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                        if connectedCollector then
+                            utils:modPrint("Re-evaluating collector rain factor after pipe was removed: "..tostring(connectedCollector:getName()))
+                            gutterService:connectCollector(connectedCollector)
+                        end
+                    end
+                end
+            end
+
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
+        elseif utils:checkPropIsDrainPipe(square) then
             utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
             triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
@@ -130,7 +165,3 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
-
--- TODO handle scrap event for IsoThumpable if it is used to remove pipes
--- So we can directly place materials on the ground instead of relying on base scrap logic
--- sendClientCommand(_character, 'object', 'OnDestroyIsoThumpable', args)
