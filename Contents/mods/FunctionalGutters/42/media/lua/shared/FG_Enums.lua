@@ -238,14 +238,15 @@ enums.customProps = {
 -- Adding prefix to avoid potential namespace conflicts
 -- and make it easier to find in blanket search
 enums.modDataKey = {
-    hasGutter = "FG_hasGutter",
-    hasVerticalPipe = "FG_hasVerticalPipe",
-    hasHorizontalPipe = "FG_hasHorizontalPipe",
-    hasGutterPipe = "FG_hasGutterPipe",
+    hasGutter = "FG_hasGutter", -- TODO remove now that props are used
+    hasVerticalPipe = "FG_hasVerticalPipe", -- TODO remove now that props are used
+    hasHorizontalPipe = "FG_hasHorizontalPipe", -- TODO remove now that props are used
+    hasGutterPipe = "FG_hasGutterPipe", -- TODO remove now that props are used
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
-    isPipeConnected = "FG_isPipeConnected",
+    isPipeConnected = "FG_isPipeConnected", -- TODO verify unused
     roofArea = "FG_roofArea",
+    isRoofSquare = "FG_roofSquare",
 
     -- pipeConnectedUp
     -- pipeConnectedDown

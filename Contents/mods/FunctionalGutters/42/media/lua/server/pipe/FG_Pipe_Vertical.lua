@@ -2,6 +2,7 @@ if isClient() then return end
 
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
+local isoUtils = require("FG_Utils_Iso")
 local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 
 local VerticalPipeService = BasePipeServiceInterface:derive("VerticalPipeService")
@@ -46,23 +47,21 @@ function VerticalPipeService:onIsValid(buildParams)
 	end
 
     -- Requires a wall (to attach on)
-    if not square:isWallSquareNW() then
+    if not isoUtils:hasWallNW(square) then
         -- Check if the square to the north has a wall on the west
         local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
         if not adjacentSquareN then
             return false
         end
 
-        local northProps = adjacentSquareN:getProperties()
-        if not northProps:Is(localIsoFlagType.WallW) then
+        if not isoUtils:hasWallW(adjacentSquareN) then
             -- Check if the square to the west has a wall on the north
             local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
             if not adjacentSquareW then
                 return false
             end
 
-            local westProps = adjacentSquareN:getProperties()
-            if not westProps:Is(localIsoFlagType.WallN) then
+            if not isoUtils:hasWallN(adjacentSquareW) then
                 return false
             end
         end

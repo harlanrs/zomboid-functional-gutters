@@ -110,27 +110,25 @@ function utils:isGutterPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.gutter)
 end
 
+-- TODO replace with props check?
 function utils:hasVerticalPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.vertical)
 end
 
+-- TODO replace with props check?
 function utils:hasHorizontalPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.horizontal)
 end
 
+-- TODO replace with props check?
 function utils:hasDrainPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
 end
 
+-- TODO replace with props check?
 function utils:hasGutterPipeOnTile(square)
     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
 end
-
--- TODO
--- function utils:hasAnyPipeOnTile(square)
-
---     return self:hasSpriteCategoryMemberOnTile(square, enums.pipeSprites)
--- end
 
 function utils:getModDataKeyValue(object, loadedModData, key)
     if not loadedModData and not object:hasModData() then
@@ -147,24 +145,31 @@ function utils:getModDataIsGutterConnected(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.isGutterConnected)
 end
 
-function utils:getModDataHasGutter(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasGutter)
-end
-
-function utils:getModDataHasVerticalPipe(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasVerticalPipe)
-end
-
-function utils:getModDataHasGutterPipe(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.hasGutterPipe)
-end
-
 function utils:getModDataBaseRainFactor(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
 end
 
-function utils:getModDataRoofArea(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.roofArea)
+-- TODO remove this?
+function utils:getModDataHasGutter(square, loadedModData)
+    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasGutter)
+end
+
+-- TODO remove this?
+function utils:getModDataHasVerticalPipe(square, loadedModData)
+    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasVerticalPipe)
+end
+
+-- TODO remove this?
+function utils:getModDataHasGutterPipe(square, loadedModData)
+    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasGutterPipe)
+end
+
+function utils:getModDataRoofArea(square, loadedModData)
+    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.roofArea)
+end
+
+function utils:getModDataIsRoofSquare(square, loadedModData)
+    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.isRoofSquare)
 end
 
 -- TODO prop value for other things?

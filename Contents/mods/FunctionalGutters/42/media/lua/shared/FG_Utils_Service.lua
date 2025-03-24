@@ -68,13 +68,6 @@ function serviceUtils:setDrainPipeModData(square, squareModData, pipeObject, ful
     -- The square has a drain pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasGutter] = true
 
-    -- TODO
-    -- Test setting object property
-    -- local pipeSpriteProps = pipeObject:getSprite():getProperties()
-    -- -- if not pipeObjectProps:Is("IsDrainPipe") then
-    -- pipeSpriteProps:Set("IsDrainPipe", "", true)
-    -- -- end
-
     -- -- Calculate the number of 'roof' tiles above the drain pipe
     if full or not utils:getModDataRoofArea(square, squareModData) then
         squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
@@ -155,17 +148,25 @@ function serviceUtils:cleanupGutterPipeModData(square, squareModData)
     utils:modPrint("Clearing gutter pipe mod data for square: "..tostring(square))
     -- The square no longer has a gutter pipe - ensure the square's mod data reflects this
     squareModData[enums.modDataKey.hasGutterPipe] = nil
-
-    local hasGutterPipeProp = square:getProperties():Is("IsGutterPipe")
-    utils:modPrint("Has gutter pipe prop: "..tostring(hasGutterPipeProp))
-
-    -- TODO gutterWest, gutterEast, gutterNorth, gutterSouth
 end
 
+function serviceUtils:syncRoofSquareModData(square, squareModData)
+    -- utils:modPrint("Setting roof square mod data for square: "..tostring(square))
+    -- Re-evaluate if the square is still valid as a roof tile
+    if not squareModData then
+        squareModData = square:getModData()
+    end
 
+    local isRoofSquare = utils:getModDataIsRoofSquare(square, squareModData)
+    if isRoofSquare and not isoUtils:isValidPlayerBuiltFloor(square) then
+        squareModData[enums.modDataKey.isRoofSquare] = nil
+    end
+
+    return squareModData
+end
 
 -- TODO try to replace all mod data with props checks when possible
-function serviceUtils:syncSquareModData(square, full)
+function serviceUtils:syncPipeSquareModData(square, full)
     local objects = square:getObjects()
     local pipeObjects = table.newarray()
     local squareModData = nil
@@ -274,7 +275,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     end
     local drainPipes = self:getLocalDrainPipes(square)
     if not drainPipes then
-        return 0
+        drainPipes = table.newarray()
     end
 
     local x = square:getX()
@@ -427,7 +428,7 @@ function serviceUtils:calculateGutterSegment(square)
     }
 
     -- TODO don't call sync here?
-    local squareModData = self:syncSquareModData(square, true)
+    local squareModData = self:syncPipeSquareModData(square, true)
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))

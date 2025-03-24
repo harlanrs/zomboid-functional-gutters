@@ -1,0 +1,37 @@
+tileGeometry
+{
+	VERSION = 2,
+
+	tileset
+	{
+		name = gutter_01,
+
+		/* gutter_01_5 */
+		tile
+		{
+			xy = 5x0,
+
+			box
+			{
+				translate = -5468x21888x-2048,
+				rotate = 0x0x0,
+				min = -395x0x-5244,
+				max = 395x190x5244,
+			}
+		}
+
+		/* gutter_01_6 */
+		tile
+		{
+			xy = 6x0,
+
+			box
+			{
+				translate = -2533x21289x-6449,
+				rotate = 1800000x893317x1800000,
+				min = -450x0x-5244,
+				max = 450x190x5244,
+			}
+		}
+	}
+}

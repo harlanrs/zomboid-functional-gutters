@@ -179,11 +179,10 @@ TODO
     - might be specifically related to the sprite logic class
 - scrap definition?
 - follow gutter bends/corners when crawling
-- fix horizontal pipes on player buildings
-- post add script that triggers resync of entire gutter system
-    - need to catch gaps in pipes and 'pause' any connected collectors
+- follow gutters even when there is a vertical pipe as well
+
 - take roof angle into consideration?
-- check renderYOffset for ensuring overlay order
+- check renderYOffset or depthmaps for ensuring overlay order
     - https://discord.com/channels/908422782554107904/908460685615308820/1322682836876001300
 
 - Use max roof area or floor area for calc of drain pipes associated with a building
