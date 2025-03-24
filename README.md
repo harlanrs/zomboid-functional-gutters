@@ -166,30 +166,28 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 
 ### 1.2 Notes
-- isoCell: associatedBuilding.getRoofRoomID
-    - able to get roof room id for pre-built but does match any rooms in the building or in the cell. Do I need to check a larger area?
-- building -> isEntirelyEmptyOutside
-- buildingDef -> CalculateBounds
 
-TODO
-- Explore using tile props instead of having to properly sync modData on object add/remove
-    - Would require setting props on non-managed tiles
-- Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)
-- Look into spriteconfig corner option (ex: corner = constructedobjects_01_76,)
-    - might be specifically related to the sprite logic class
-- scrap definition?
-- follow gutter bends/corners when crawling
-- follow gutters even when there is a vertical pipe as well
+TODO High Priority
+- Convert all square pipe mod data checks over to use props
+- Set scrap definition for all pipes
+- Follow gutter bends/corners when crawling gutter
+- Add tile props to all pipes
+- Build full mod info panel 
+- Add all build icons
+- Add all text translations
 
-- take roof angle into consideration?
-- check renderYOffset or depthmaps for ensuring overlay order
-    - https://discord.com/channels/908422782554107904/908460685615308820/1322682836876001300
-
-- Use max roof area or floor area for calc of drain pipes associated with a building
-    - currently a drain connected to floor 0 might calculate a much smaller area than floor 1 but that shouldn't effect the total drain count which should be the same across the entire building
-- include multiple z levels in rain actual gutter count check
-    - maybe just 1 extra which allows progressively shifting window
-- use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.
+TODO Low Priority
+- Persist 'mode' on drain pipe object as mod data
+- Use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.
     - ex: 
     - some garages are still tagged as the the same building even when physically separate.
     - this would allow players to easily use them without impacting things like drain limit on the main building
+- Take roof angle into consideration?
+- Feedback in build menu when placing pipes?
+- Add additional gutter material types
+    - clay
+
+Notes:
+- Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)
+- Look into spriteconfig corner option (ex: corner = constructedobjects_01_76,)
+    - might be specifically related to the sprite logic class

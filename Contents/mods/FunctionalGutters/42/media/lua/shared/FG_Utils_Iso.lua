@@ -82,11 +82,10 @@ function isoUtils:hasWallW(square, props)
         props = square:getProperties()
     end
 
-    if props:Is(localIsoFlagType.WallW) or props:Is(localIsoFlagType.WallNW) then
+    if props:Is(localIsoFlagType.WallW) or props:Is(localIsoFlagType.WallNW) or props:Is(localIsoFlagType.WallWTrans) then
         return true
     end
 
-    -- Check doors/windows
     if self:hasDoorWindowW(square, props) then
         return true
     end
@@ -99,11 +98,10 @@ function isoUtils:hasWallN(square, props)
         props = square:getProperties()
     end
 
-    if props:Is(localIsoFlagType.WallN) or props:Is(localIsoFlagType.WallNW) then
+    if props:Is(localIsoFlagType.WallN) or props:Is(localIsoFlagType.WallNW) or props:Is(localIsoFlagType.WallNTrans) then
         return true
     end
 
-    -- Check doors/windows
     if self:hasDoorWindowN(square, props) then
         return true
     end
@@ -119,12 +117,8 @@ function isoUtils:hasDoorWindowNW(square, props)
 end
 
 function isoUtils:hasWallNW(square)
-    if square:isWallSquareNW() then
-        return true
-    end
-
-    -- Check doors/windows nw
-    if self:hasDoorWindowNW(square) then
+    local props = square:getProperties()
+    if self:hasWallN(square, props) or self:hasWallW(square, props) then
         return true
     end
 

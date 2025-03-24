@@ -139,21 +139,25 @@ enums.pipes = {
         type = enums.pipeType.gutter,
         position = IsoDirections.W,
         facing = nil,
+        roofDirection = IsoDirections.W,
     },
     gutter_01_6 = {
         type = enums.pipeType.gutter,
         position = IsoDirections.N,
         facing = nil,
+        roofDirection = IsoDirections.N,
     },
     gutter_01_4 = {
         type = enums.pipeType.gutter,
         position = IsoDirections.NW,
         facing = nil,
+        roofDirection = nil,
     },
     gutter_01_8 = {
         type = enums.pipeType.gutter,
         position = IsoDirections.NW,
         facing = nil,
+        roofDirection = IsoDirections.NW,
     },
 }
 
@@ -221,6 +225,8 @@ enums.smallTroughSprites = table.newarray(
     "location_farm_accesories_01_14", -- Wood Single West
     "location_farm_accesories_01_15" -- Wood Single North
 )
+
+enums.woodenPoleSprite = "walls_exterior_wooden_01_27"
 
 enums.options = {
     debug = "Debug",

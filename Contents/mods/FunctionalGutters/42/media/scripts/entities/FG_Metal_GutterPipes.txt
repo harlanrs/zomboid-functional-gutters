@@ -39,11 +39,6 @@ module Base
 
         component SpriteConfig
         {
-            /*
-            OnCreate = 
-            needToBeAgainstWall = true,
-            */
-
             OnCreate = FG_BuildRecipeCode.pipe.drain.OnCreate,
             OnIsValid = FG_BuildRecipeCode.pipe.drain.OnIsValid,
 

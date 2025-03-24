@@ -48,7 +48,6 @@ tileset
         IsGutterPipe = 
         Material = SmallMetalPlates
         MaterialType = Metal_Light
-        ScrapUseSkill = 
     }
     // gutter_01_6
     tile

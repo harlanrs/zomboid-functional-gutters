@@ -32,13 +32,10 @@ tileset
     tile
     {
         xy = 4,0
-        IsMoveAble = 
-        MaterialType = Metal
-        MoveType = WallObject
-        PickUpTool = Wrench
-        PickUpWeight = 50
-        PlaceTool = Wrench
-        attachedW = 
+        CanScrap = 
+        IsGutterPipe = 
+        Material = SmallMetalPlates
+        MaterialType = Metal_Light
     }
     // gutter_01_5
     tile
@@ -68,12 +65,10 @@ tileset
     tile
     {
         xy = 0,1
-        IsMoveAble = 
-        MaterialType = Metal
-        MoveType = WallObject
-        PickUpTool = Wrench
-        PickUpWeight = 50
-        PlaceTool = Wrench
+        CanScrap = 
+        IsGutterPipe = 
+        Material = SmallMetalPlates
+        MaterialType = Metal_Light
     }
     // gutter_01_9
     tile

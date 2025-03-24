@@ -32,8 +32,8 @@ function GutterPipeService:onIsValid(buildParams)
         return false
     end
 
-    -- Requires a wall (to attach on)
-    if not isoUtils:hasWallNW(square) then
+    -- Requires a wall/pole (to attach on)
+    if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
         -- Check if the square to the north has a wall on the west
         local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
         if not adjacentSquareN then
