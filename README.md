@@ -168,13 +168,20 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 ### 1.2 Notes
 
 TODO High Priority
-- Convert all square pipe mod data checks over to use props
 - Set scrap definition for all pipes
 - Follow gutter bends/corners when crawling gutter
+- Fix: check vertical pipe exists on square first when dir is nil (coming from different z level)
+    - need to ensure a vertical pipe exists to 'connect' the pipes below with the pipes above
 - Add tile props to all pipes
 - Build full mod info panel 
+- Invert building def check in drain pipes when source drain is on a player built structure
+    - instead of reducing drain pipes to those that share the same building, reduce the pipes to those not attached to a building
 - Add all build icons
 - Add all text translations
+- Update README
+
+TODO Medium Priority
+- Add ui feedback for specific needs when building pipes
 
 TODO Low Priority
 - Persist 'mode' on drain pipe object as mod data
@@ -185,7 +192,10 @@ TODO Low Priority
 - Take roof angle into consideration?
 - Feedback in build menu when placing pipes?
 - Add additional gutter material types
-    - clay
+    - clay using inverted clay tiles and clay pipes
+- Drain sound effect during storms? 
+    - https://theindiestone.com/forums/index.php?/topic/70279-help-with-adding-sound-to-function/
+    - https://www.youtube.com/watch?v=FNWgHP9O9tw
 
 Notes:
 - Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)

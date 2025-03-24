@@ -79,9 +79,6 @@ function gutterService:connectCollector(collectorObject)
     local gutterSegment = serviceUtils:calculateGutterSegment(square)
 
     containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
-
-    -- Temp patch
-    utils:patchModData(collectorObject, false)
 end
 
 function gutterService:disconnectCollector(collectorObject)
@@ -91,9 +88,6 @@ function gutterService:disconnectCollector(collectorObject)
     end
 
     containerService:disconnectCollector(collectorObject)
-
-    -- Temp patch
-    utils:patchModData(collectorObject, false)
 end
 
 return gutterService

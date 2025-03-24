@@ -44,6 +44,7 @@ function utils:isSpriteCategoryObject(object, spriteCategory)
     return self:isSpriteCategoryMember(spriteName, spriteCategory)
 end
 
+-- Unused atm since pipes are all handled by tile properties
 function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -57,8 +58,10 @@ function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     return false
 end
 
--- TODO will need to rethink once multiple sprites can be on the same tile (ex: vertical and horizontal pipes)
 function utils:getSpriteCategoryMemberOnTile(square, spriteCategory)
+    -- NOTE: This function returns the first object found on the tile
+    -- We do allow multiple pipe objects on a single tile but only one of each type
+    -- TODO return table instead?
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
@@ -110,26 +113,6 @@ function utils:isGutterPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.gutter)
 end
 
--- TODO replace with props check?
-function utils:hasVerticalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.vertical)
-end
-
--- TODO replace with props check?
-function utils:hasHorizontalPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.horizontal)
-end
-
--- TODO replace with props check?
-function utils:hasDrainPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
-end
-
--- TODO replace with props check?
-function utils:hasGutterPipeOnTile(square)
-    return self:hasSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
-end
-
 function utils:getModDataKeyValue(object, loadedModData, key)
     if not loadedModData and not object:hasModData() then
         -- Ignore if object has no existing mod data to avoid unwanted initialization
@@ -149,21 +132,6 @@ function utils:getModDataBaseRainFactor(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
 end
 
--- TODO remove this?
-function utils:getModDataHasGutter(square, loadedModData)
-    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasGutter)
-end
-
--- TODO remove this?
-function utils:getModDataHasVerticalPipe(square, loadedModData)
-    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasVerticalPipe)
-end
-
--- TODO remove this?
-function utils:getModDataHasGutterPipe(square, loadedModData)
-    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.hasGutterPipe)
-end
-
 function utils:getModDataRoofArea(square, loadedModData)
     return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.roofArea)
 end
@@ -172,7 +140,6 @@ function utils:getModDataIsRoofSquare(square, loadedModData)
     return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.isRoofSquare)
 end
 
--- TODO prop value for other things?
 function utils:checkProp(square, props, propName)
     if not props then
         props = square:getProperties()
@@ -180,23 +147,23 @@ function utils:checkProp(square, props, propName)
     return props:Is(propName)
 end
 
-function utils:checkPropIsDrainPipe(square, props)
+function utils:isDrainPipeSquare(square, props)
     return self:checkProp(square, props, enums.customProps.IsDrainPipe)
 end
 
-function utils:checkPropIsVerticalPipe(square, props)
+function utils:isVerticalPipeSquare(square, props)
     return self:checkProp(square, props, enums.customProps.IsVerticalPipe)
 end
 
-function utils:checkPropIsGutterPipe(square, props)
+function utils:isGutterPipeSquare(square, props)
     return self:checkProp(square, props, enums.customProps.IsGutterPipe)
 end
 
-function utils:checkPropIsAnyPipe(square, props)
+function utils:isAnyPipeSquare(square, props)
     if not props then
         props = square:getProperties()
     end
-    return self:checkPropIsDrainPipe(square, props) or self:checkPropIsVerticalPipe(square, props) or self:checkPropIsGutterPipe(square, props)
+    return self:isDrainPipeSquare(square, props) or self:isVerticalPipeSquare(square, props) or self:isGutterPipeSquare(square, props)
 end
 
 function utils:getObjectEntityScript(object)
@@ -346,7 +313,7 @@ end
 
 local function checkDebugMode()
     debugMode = options:getDebug()
-    for k,v in ipairs(enums.pipeAtlas.position) do
+    for k,v in pairs(enums.pipeAtlas.position) do
         utils:modPrint("Pipe atlas position: "..tostring(k).." -> "..tostring(v))
     end
 end

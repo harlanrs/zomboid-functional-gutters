@@ -15,6 +15,11 @@ enums.collectorType = {
     trough = "trough",
 }
 
+enums.buildingType = {
+    vanilla = "vanilla",
+    custom = "custom",
+}
+
 enums.pipes = {
     -- Drain pipes
     -- Mostly used in water towers
@@ -40,7 +45,7 @@ enums.pipes = {
     }, -- drain facing west
 
     -- Vertical pipes with curve bottom
-    -- industry_02_236 = {}, -- vertical pipes with curve bottom
+    -- industry_02_236 = {},
     -- industry_02_237 = {},
     -- industry_02_240 = {},
     -- industry_02_241 = {},
@@ -185,22 +190,18 @@ local function mapPipesByPosition(position)
     return positionPipes
 end
 
-enums.drainPipeSprites = mapPipesByType(enums.pipeType.drain)
-
-enums.verticalPipeSprites = mapPipesByType(enums.pipeType.vertical)
-
-enums.horizontalPipeSprites = mapPipesByType(enums.pipeType.horizontal)
-
-enums.gutterPipeSprites = mapPipesByType(enums.pipeType.gutter)
-
 enums.pipeAtlas = {}
 enums.pipeAtlas.type = {}
-enums.pipeAtlas.type[enums.pipeType.drain] = enums.drainPipeSprites
-enums.pipeAtlas.type[enums.pipeType.vertical] = enums.verticalPipeSprites
-enums.pipeAtlas.type[enums.pipeType.horizontal] = enums.horizontalPipeSprites
-enums.pipeAtlas.type[enums.pipeType.gutter] = enums.gutterPipeSprites
+enums.pipeAtlas.type[enums.pipeType.drain] = mapPipesByType(enums.pipeType.drain)
+enums.pipeAtlas.type[enums.pipeType.vertical] = mapPipesByType(enums.pipeType.vertical)
+enums.pipeAtlas.type[enums.pipeType.horizontal] = mapPipesByType(enums.pipeType.horizontal)
+enums.pipeAtlas.type[enums.pipeType.gutter] = mapPipesByType(enums.pipeType.gutter)
 
 enums.pipeAtlas.position = {}
+enums.pipeAtlas.position[IsoDirections.N] = mapPipesByPosition(IsoDirections.NW)
+enums.pipeAtlas.position[IsoDirections.S] = mapPipesByPosition(IsoDirections.SE)
+enums.pipeAtlas.position[IsoDirections.E] = mapPipesByPosition(IsoDirections.NE)
+enums.pipeAtlas.position[IsoDirections.W] = mapPipesByPosition(IsoDirections.SW)
 enums.pipeAtlas.position[IsoDirections.NW] = mapPipesByPosition(IsoDirections.NW)
 enums.pipeAtlas.position[IsoDirections.NE] = mapPipesByPosition(IsoDirections.NE)
 enums.pipeAtlas.position[IsoDirections.SW] = mapPipesByPosition(IsoDirections.SW)
@@ -244,13 +245,8 @@ enums.customProps = {
 -- Adding prefix to avoid potential namespace conflicts
 -- and make it easier to find in blanket search
 enums.modDataKey = {
-    hasGutter = "FG_hasGutter", -- TODO remove now that props are used
-    hasVerticalPipe = "FG_hasVerticalPipe", -- TODO remove now that props are used
-    hasHorizontalPipe = "FG_hasHorizontalPipe", -- TODO remove now that props are used
-    hasGutterPipe = "FG_hasGutterPipe", -- TODO remove now that props are used
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
-    isPipeConnected = "FG_isPipeConnected", -- TODO verify unused
     roofArea = "FG_roofArea",
     isRoofSquare = "FG_roofSquare",
 
@@ -264,12 +260,8 @@ enums.modDataKey = {
     -- hasSlopedRoofWest
 }
 
--- Keep for a bit to phase out
-enums.oldModDataKey = {
-    hasGutter = "hasGutter",
-    baseRainFactor = "baseRainFactor",
-    isGutterConnected = "isGutterConnected",
-}
+-- Use to map old mod data keys to new keys (if needed during update)
+enums.oldModDataKey = {}
 
 enums.troughBaseRainFactor = 0.55
 
@@ -281,5 +273,10 @@ enums.modCommands = {
 enums.modEvents = {
     OnGutterTileUpdate ="OnGutterTileUpdate"
 }
+
+enums.maxRoofCrawlSteps = 4
+enums.maxGutterCrawlSteps = 25
+enums.defaultDrainPipeSearchRadius = 16
+enums.defaultDrainPipeSearchHeight = 1
 
 return enums

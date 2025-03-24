@@ -1,6 +1,7 @@
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local isoUtils = require("FG_Utils_Iso")
+
 local troughUtils = {}
 
 local troughNorthFieldIndex = nil
@@ -51,7 +52,7 @@ function troughUtils:isPrimaryTrough(isoObject)
 end
 
 function troughUtils:isPrimaryTroughSprite(troughSpriteName)
-    for i,def in pairs(localFeedingTroughDef) do
+    for _, def in pairs(localFeedingTroughDef) do
 		if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
 			return true
 		end
@@ -63,7 +64,7 @@ end
 function troughUtils:getPrimaryTroughFromDef(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
-    for i,def in pairs(localFeedingTroughDef) do
+    for _, def in pairs(localFeedingTroughDef) do
         if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
             -- Provided troughObject is the primary trough
             return troughObject
@@ -90,7 +91,7 @@ end
 function troughUtils:getSecondaryTroughFromDef(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
-    for i,def in pairs(localFeedingTroughDef) do
+    for _, def in pairs(localFeedingTroughDef) do
         if def.sprite2 == troughSpriteName or def.spriteNorth2 == troughSpriteName then
             -- Provided troughObject is the secondary trough
             return troughObject

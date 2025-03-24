@@ -54,7 +54,7 @@ function GutterPipeService:onIsValid(buildParams)
     end
 
     -- Requires no existing gutter pipe on tile
-    if utils:hasGutterPipeOnTile(square) then
+    if utils:isGutterPipeSquare(square) then
         return false
     end
 

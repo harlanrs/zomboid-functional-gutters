@@ -401,7 +401,7 @@ end
 
 function FG_UI_GutterPanel:onUpdateGutterTile(square)
     if self.gutterSquare:getID() == square:getID() then
-        if not utils:checkPropIsDrainPipe(square) then
+        if not utils:isDrainPipeSquare(square) then
             -- Gutter no longer exists on square so close the panel
             self:close();
             return;

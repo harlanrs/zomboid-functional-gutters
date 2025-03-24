@@ -8,7 +8,6 @@ local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 local VerticalPipeService = BasePipeServiceInterface:derive("VerticalPipeService")
 
 local localIsoDirections = IsoDirections
-local localIsoFlagType = IsoFlagType
 
 function VerticalPipeService:isObjectType(object)
     return utils:isVerticalPipe(object)
@@ -34,7 +33,6 @@ function VerticalPipeService:onIsValid(buildParams)
     end
 
     -- Requires not being on or below the ground floor
-    -- TODO maybe revisit to support basements
     if z <= 0 then
         return false
     end
@@ -68,7 +66,7 @@ function VerticalPipeService:onIsValid(buildParams)
     end
 
     -- Requires no existing drain pipe
-    if utils:hasVerticalPipeOnTile(square) then
+    if utils:isVerticalPipeSquare(square) then
         return false
     end
 
@@ -78,9 +76,9 @@ function VerticalPipeService:onIsValid(buildParams)
         return false
     end
 
-    local i, belowPipe, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(below, enums.pipeType.vertical)
+    local _, belowPipe, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(below, enums.pipeType.vertical)
     if not belowPipe or foundSpriteCategory ~= enums.pipeType.vertical then
-        i, belowPipe, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(below, enums.pipeType.drain)
+        _, belowPipe, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(below, enums.pipeType.drain)
         if not belowPipe or foundSpriteCategory ~= enums.pipeType.drain then
             return false
         end

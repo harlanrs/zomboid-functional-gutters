@@ -46,8 +46,8 @@ end
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     local checkDrainPipes = false
-    local squareModData = serviceUtils:syncSquarePipeModData(square, nil)
-    if utils:checkPropIsAnyPipe(square) and utils:isAnyPipeSprite(sprite) then
+    local squareModData = serviceUtils:syncSquarePipeModData(square)
+    if utils:isAnyPipeSprite(sprite) then
         -- A pipe was built 
         checkDrainPipes = true
     end
@@ -87,7 +87,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
     local checkDrainPipes = false
     local square = placedObject:getSquare()
-    local squareModData = serviceUtils:syncSquarePipeModData(square, nil)
+    local squareModData = serviceUtils:syncSquarePipeModData(square)
     if squareModData then
         if utils:getModDataIsRoofSquare(square, squareModData) then
             -- Check if the square roof tile is still 'valid'
@@ -100,7 +100,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         end
     end
 
-    if utils:checkPropIsAnyPipe(square) then
+    if utils:isAnyPipeSquare(square) then
         -- Object placed on a tile with a pipe
         checkDrainPipes = true
     end
@@ -158,7 +158,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
             end
 
             checkDrainPipes = true
-        elseif utils:checkPropIsDrainPipe(square) then
+        elseif utils:isDrainPipeSquare(square) then
             utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
             checkDrainPipes = true
         end

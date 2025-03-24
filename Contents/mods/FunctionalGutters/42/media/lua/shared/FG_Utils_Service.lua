@@ -22,29 +22,6 @@ function serviceUtils:getObjectBaseRainFactor(object)
         return enums.troughBaseRainFactor
     end
 
-    -- Check object's modData
-    local baseRainFactor = utils:getModDataBaseRainFactor(object, nil)
-    if baseRainFactor then
-        return baseRainFactor
-    end
-
-    -- Check object's GameEntityScript
-    baseRainFactor = utils:getObjectScriptRainFactor(object)
-    if baseRainFactor then
-        return baseRainFactor
-    end
-
-    -- Fallback to 0.0 if no base rain factor found
-    utils:modPrint("Base rain factor not found for object: "..tostring(object))
-    return 0.0
-end
-
-function serviceUtils:getObjectBaseRainFactorHeavy(object)
-    -- Swap the order of checks to prioritize the GameEntityScript over the modData
-    if troughUtils:isTrough(object) then
-        return enums.troughBaseRainFactor
-    end
-
     -- Check object's GameEntityScript
     local baseRainFactor = utils:getObjectScriptRainFactor(object)
     if baseRainFactor then
@@ -62,96 +39,23 @@ function serviceUtils:getObjectBaseRainFactorHeavy(object)
     return 0.0
 end
 
-
-function serviceUtils:setDrainPipeModData(square, squareModData, pipeObject, full)
+function serviceUtils:setDrainPipeModData(square, squareModData)
+    -- Calculate the number of 'roof' tiles above the drain pipe
     utils:modPrint("Setting drain pipe mod data for square: "..tostring(square))
-    -- The square has a drain pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasGutter] = true
-
-    -- -- Calculate the number of 'roof' tiles above the drain pipe
-    if full or not utils:getModDataRoofArea(square, squareModData) then
-        squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
-    end
+    squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
 end
 
 function serviceUtils:cleanupDrainPipeModData(square, squareModData)
-    -- TODO check cases where squareModData is nil
     if squareModData == nil then
         squareModData = square:getModData()
     end
 
     utils:modPrint("Clearing drain pipe mod data for square: "..tostring(square))
     -- The square no longer has a drain pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasGutter] = nil
     squareModData[enums.modDataKey.roofArea] = nil
 end
 
-function serviceUtils:setVerticalPipeModData(square, squareModData, pipeObject, full)
-    utils:modPrint("Setting vertical pipe mod data for square: "..tostring(square))
-    -- The square has a vertical pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasVerticalPipe] = true
-
-    -- local pipeSpriteProps = pipeObject:getSprite():getProperties()
-    -- if not pipeObjectProps:Is("IsVerticalPipe") then
-    -- pipeSpriteProps:Set("IsVerticalPipe", "", true)
-    -- end
-end
-
-function serviceUtils:cleanupVerticalPipeModData(square, squareModData)
-    -- TODO check cases where squareModData is nil
-    if squareModData == nil then
-        squareModData = square:getModData()
-    end
-
-    utils:modPrint("Clearing vertical pipe mod data for square: "..tostring(square))
-    -- The square no longer has a vertical pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasVerticalPipe] = nil
-end
-
-function serviceUtils:setGutterPipeModData(square, squareModData, pipeObject, full)
-    utils:modPrint("Setting gutter pipe mod data for square: "..tostring(square))
-    -- The square has a gutter pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasGutterPipe] = true
-
-    -- TODO gutterWest, gutterEast, gutterNorth, gutterSouth
-    local spriteName = pipeObject:getSpriteName()
-    local pipeDef = enums.pipes[spriteName]
-    if not pipeDef then
-        utils:modPrint("Pipe definition not found for sprite: "..tostring(spriteName))
-        return
-    end
-
-    -- TODO move to dedicated section
-    -- if pipeDef.position == localIsoDirections.N then
-    --     -- TODO check for sloped roof north
-    --     local upNorthSquare = square:getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ() + 1)
-    --     utils:modPrint('Up north square: '..tostring(upNorthSquare:getX())..','..tostring(upNorthSquare:getY())..','..tostring(upNorthSquare:getZ()))
-    --     local hasSlopedRoofNorth = square:Has(IsoObjectType.WestRoofB) or square:Has(IsoObjectType.WestRoofM) or square:Has(IsoObjectType.WestRoofT)
-    --     local hasSlopedRoofNorth2 = square:HasSlopedRoofNorth()
-    --     utils:modPrint("Has sloped roof north: "..tostring(hasSlopedRoofNorth))
-    -- elseif pipeDef.position == localIsoDirections.W then
-    --     -- TODO check for sloped roof west
-    --     local upWestSquare = square:getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ() + 1)
-    --     utils:modPrint('Up west square: '..tostring(upWestSquare:getX())..','..tostring(upWestSquare:getY())..','..tostring(upWestSquare:getZ()))
-    --     local hasSlopedRoofWest = square:Has(IsoObjectType.WestRoofB) or square:Has(IsoObjectType.WestRoofM) or square:Has(IsoObjectType.WestRoofT)
-    --     local hasSlopedRoofWest2 = square:HasSlopedRoofWest()
-    --     utils:modPrint("Has sloped roof west: "..tostring(hasSlopedRoofWest))
-    -- end
-end
-
-function serviceUtils:cleanupGutterPipeModData(square, squareModData)
-    -- TODO check cases where squareModData is nil
-    if squareModData == nil then
-        squareModData = square:getModData()
-    end
-
-    utils:modPrint("Clearing gutter pipe mod data for square: "..tostring(square))
-    -- The square no longer has a gutter pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.hasGutterPipe] = nil
-end
-
 function serviceUtils:syncSquareRoofModData(square, squareModData)
-    -- utils:modPrint("Setting roof square mod data for square: "..tostring(square))
     -- Re-evaluate if the square is still valid as a roof tile
     if not squareModData then
         squareModData = square:getModData()
@@ -165,53 +69,18 @@ function serviceUtils:syncSquareRoofModData(square, squareModData)
     return squareModData
 end
 
--- TODO try to replace all pipe mod data with props checks when possible
 function serviceUtils:syncSquarePipeModData(square, full)
-    local objects = square:getObjects()
-    local pipeObjects = table.newarray()
     local squareModData = square:getModData()
-
-    local hasDrainPipe
-    local hasVerticalPipe
-    local hasGutterPipe
-
-    for i = 0, objects:size() - 1 do
-        -- Check object for pipe sprite category
-        local object = objects:get(i)
-        local spriteName = object:getSpriteName()
-        local spriteCategory = utils:getSpriteCategory(spriteName)
-        if spriteCategory then
-            table_insert(pipeObjects, object)
-            if spriteCategory == enums.pipeType.drain then
-                hasDrainPipe = true
-                self:setDrainPipeModData(square, squareModData, object, full)
-            end
-
-            if spriteCategory == enums.pipeType.vertical then
-                hasVerticalPipe = true
-                self:setVerticalPipeModData(square, squareModData, object, full)
-            end
-
-            if spriteCategory == enums.pipeType.gutter then
-                hasGutterPipe = true
-                self:setGutterPipeModData(square, squareModData, object,  full)
-            end
-
-            -- local hasHorizontalPipe = spriteCategory == enums.pipeType.horizontal
-        end
+    local roofArea = utils:getModDataRoofArea(square, squareModData)
+    local hasDrainPipe = utils:isDrainPipeSquare(square)
+    if hasDrainPipe and (full or not roofArea) then
+        self:setDrainPipeModData(square, squareModData)
     end
 
     -- Cleanup square mod data if pipes were removed
-    if utils:getModDataHasGutter(square, squareModData) and not hasDrainPipe then
+    -- TODO should this be explicitly called from the event handler instead?
+    if not hasDrainPipe and roofArea then
         self:cleanupDrainPipeModData(square, squareModData)
-    end
-
-    if utils:getModDataHasVerticalPipe(square, squareModData) and not hasVerticalPipe then
-        self:cleanupVerticalPipeModData(square, squareModData)
-    end
-
-    if utils:getModDataHasGutterPipe(square, squareModData) and not hasGutterPipe then
-        self:cleanupGutterPipeModData(square, squareModData)
     end
 
     return squareModData
@@ -235,9 +104,9 @@ end
 function serviceUtils:getLocalDrainPipes(square, radius)
     -- Grab all nearby squares with a drain pipe object
     if not radius then
-        radius = 16
+        radius = enums.defaultDrainPipeSearchRadius
     end
-    local drainPipes = isoUtils:findAllDrainsInRadius(square, 16)
+    local drainPipes = isoUtils:findAllDrainsInRadius(square, radius)
     if not drainPipes or #drainPipes == 0 then
         return nil
     end
@@ -264,12 +133,12 @@ end
 
 function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     if not radius then
-        radius = 16
+        radius = enums.defaultDrainPipeSearchRadius
     end
     if not zRadius then
-        zRadius = 1
+        zRadius = enums.defaultDrainPipeSearchHeight
     end
-    local drainPipes = self:getLocalDrainPipes(square)
+    local drainPipes = self:getLocalDrainPipes(square, radius)
     if not drainPipes then
         drainPipes = table.newarray()
     end
@@ -277,12 +146,12 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     local x = square:getX()
     local y = square:getY()
     local z =  square:getZ()
-    for i=1, zRadius + 1 do
+    for i=1, zRadius + 1 do -- TODO can't remember why +1?
         -- Check up zRadius levels
         local upZ = z + i
         local upSquare = square:getCell():getGridSquare(x, y, upZ)
         if upSquare then
-            local zDrainPipes = self:getLocalDrainPipes(upSquare)
+            local zDrainPipes = self:getLocalDrainPipes(upSquare, radius)
             if zDrainPipes then
                 for iter=1, #zDrainPipes do
                     table_insert(drainPipes, zDrainPipes[iter])
@@ -300,7 +169,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
             end
             local downSquare = square:getCell():getGridSquare(x, y, downZ)
             if downSquare then
-                local zDrainPipes = self:getLocalDrainPipes(downSquare)
+                local zDrainPipes = self:getLocalDrainPipes(downSquare, radius)
                 if zDrainPipes then
                     for iter=1, #zDrainPipes do
                         table_insert(drainPipes, zDrainPipes[iter])
@@ -314,7 +183,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
 end
 
 function serviceUtils:getActualGutterDrainCount(square)
-    local drainPipes = self:getLocalDrainPipes3D(square, 16, 1)
+    local drainPipes = self:getLocalDrainPipes3D(square, enums.defaultDrainPipeSearchRadius, enums.defaultDrainPipeSearchHeight)
     if not drainPipes then
         return 0
     end
@@ -327,7 +196,6 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
     -- Gutters are typically designed to work together as a unit to cover the entire roof (ex: one on each "side" of a roof slant direction or one on each corner)
     -- Here we are estimating the number of gutter drain systems needed relative to the roof's surface area (flat)
     -- Once a single gutter drain's coverage capacity is exceeded by 30% we add another expected gutter drain 'slot'
-    -- Since these usually work in pairs we only really care about 1, 2, and 4.
     -- This allows us to set up a single gutter on a small building for full coverage but the same gutter on a larger building might not be 100% as effective
     -- ex: 1 gutter can cover all 40 tiles on a small house but when added to a 'medium' house of 60 tiles the one gutter will only cover 30 tiles since it is expected to have another gutter covering the other side
     if not averageGutterCapacity then
@@ -336,8 +204,10 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
 
     local estimatedGutterCount = roofArea / averageGutterCapacity
 
-    if estimatedGutterCount > 2.6 then
+    if estimatedGutterCount > 3.9 then
         estimatedGutterCount = 4
+    elseif estimatedGutterCount > 2.6 then
+        estimatedGutterCount = 3
     elseif estimatedGutterCount > 1.3 then
         estimatedGutterCount = 2
     else

@@ -18,7 +18,7 @@ function FluidContainerService:connectCollector(object, gutterRainFactor)
         return false
     end
 
-    local baseCollectorRainFactor = serviceUtils:getObjectBaseRainFactorHeavy(object)
+    local baseCollectorRainFactor = serviceUtils:getObjectBaseRainFactor(object)
     local connectedCollectorRainFactor = baseCollectorRainFactor + gutterRainFactor
     utils:modPrint("Base collector rain factor: "..tostring(baseCollectorRainFactor))
     utils:modPrint("Upgraded collector rain factor: "..tostring(connectedCollectorRainFactor))
@@ -39,7 +39,7 @@ function FluidContainerService:disconnectCollector(object)
         return false
     end
 
-    local baseRainFactor = serviceUtils:getObjectBaseRainFactorHeavy(object)
+    local baseRainFactor = serviceUtils:getObjectBaseRainFactor(object)
     utils:modPrint("Resetting rain factor from "..tostring(fluidContainer:getRainCatcher()).." to "..tostring(baseRainFactor))
     fluidContainer:setRainCatcher(baseRainFactor)
 

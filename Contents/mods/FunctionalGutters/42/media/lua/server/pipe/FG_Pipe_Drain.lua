@@ -8,7 +8,6 @@ local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 local DrainPipeService = BasePipeServiceInterface:derive("DrainPipeService")
 
 local localIsoDirections = IsoDirections
-local localIsoFlagType = IsoFlagType
 
 function DrainPipeService:isObjectType(object)
     return utils:isDrainPipe(object)
@@ -62,7 +61,7 @@ function DrainPipeService:onIsValid(buildParams)
     end
 
     -- Requires no existing drain pipe
-    if utils:hasDrainPipeOnTile(square) then
+    if utils:isDrainPipeSquare(square) then
         return false
     end
 
@@ -87,7 +86,7 @@ function DrainPipeService:onIsValid(buildParams)
         end
 
         -- ELSE
-        -- One is pre-built and the other is player-built
+        -- One is vanilla and the other is custom
         -- Allow for closer placement
     end
 
