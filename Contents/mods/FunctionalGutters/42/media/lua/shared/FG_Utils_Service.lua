@@ -150,7 +150,7 @@ function serviceUtils:cleanupGutterPipeModData(square, squareModData)
     squareModData[enums.modDataKey.hasGutterPipe] = nil
 end
 
-function serviceUtils:syncRoofSquareModData(square, squareModData)
+function serviceUtils:syncSquareRoofModData(square, squareModData)
     -- utils:modPrint("Setting roof square mod data for square: "..tostring(square))
     -- Re-evaluate if the square is still valid as a roof tile
     if not squareModData then
@@ -165,11 +165,11 @@ function serviceUtils:syncRoofSquareModData(square, squareModData)
     return squareModData
 end
 
--- TODO try to replace all mod data with props checks when possible
-function serviceUtils:syncPipeSquareModData(square, full)
+-- TODO try to replace all pipe mod data with props checks when possible
+function serviceUtils:syncSquarePipeModData(square, full)
     local objects = square:getObjects()
     local pipeObjects = table.newarray()
-    local squareModData = nil
+    local squareModData = square:getModData()
 
     local hasDrainPipe
     local hasVerticalPipe
@@ -182,10 +182,6 @@ function serviceUtils:syncPipeSquareModData(square, full)
         local spriteCategory = utils:getSpriteCategory(spriteName)
         if spriteCategory then
             table_insert(pipeObjects, object)
-            if squareModData == nil then
-                squareModData = square:getModData()
-            end
-
             if spriteCategory == enums.pipeType.drain then
                 hasDrainPipe = true
                 self:setDrainPipeModData(square, squareModData, object, full)
@@ -428,7 +424,7 @@ function serviceUtils:calculateGutterSegment(square)
     }
 
     -- TODO don't call sync here?
-    local squareModData = self:syncPipeSquareModData(square, true)
+    local squareModData = self:syncSquarePipeModData(square, true)
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))

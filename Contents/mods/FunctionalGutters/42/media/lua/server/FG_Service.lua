@@ -73,7 +73,6 @@ function gutterService:connectCollector(collectorObject)
     end
 
     -- TODO Need to get the connected tile if the object is a multi-tile trough
-    -- TODO do full pipe system check and generate the gutterSystemRainFactor to pass into the connect method (the collector shouldn't know or care about gutter system details)
 
     -- Calculate the rain factor for the gutter system routed from the collector's tile
     local square = collectorObject:getSquare()

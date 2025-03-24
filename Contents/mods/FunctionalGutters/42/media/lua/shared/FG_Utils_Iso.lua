@@ -193,13 +193,13 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
 
     local hasGutterPipe = utils:checkPropIsGutterPipe(square, squareProps)
     if not hasGutterPipe then
-        utils:modPrint("No horizontal pipes found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+        -- utils:modPrint("No horizontal pipes found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return nil
     end
 
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
-    utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+    -- utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
     if crawlSteps > 25 then
         -- Shouldn't hit unless player builds a system with 25+ gutter objects
         -- adding as safeguard against runaway recursion
@@ -208,7 +208,7 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
     end
 
     -- Try following gutter pipes north, south, east, west
-    local i, squareGutter, spriteName, foundSpriteCategory = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
+    local _, squareGutter, spriteName, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
     if squareGutter then
         table_insert(gutterSystemMap[enums.pipeType.gutter], square)
 
@@ -265,13 +265,13 @@ function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevD
     local hasDrainPipe = utils:checkPropIsDrainPipe(square, squareProps)
     local hasVerticalPipe = utils:checkPropIsVerticalPipe(square, squareProps)
     if not hasVerticalPipe and not hasDrainPipe then
-        utils:modPrint("No vertical pipes found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+        -- utils:modPrint("No vertical pipes found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return nil
     end
 
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
-    utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+    -- utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
     if crawlSteps > 25 then
         -- Shouldn't hit unless player builds a system with 25+ gutter objects
         -- adding as safeguard against runaway recursion
@@ -290,7 +290,7 @@ function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevD
     local nextSquare = getCell():getGridSquare(square:getX(), square:getY(), square:getZ() + 1)
     local crawlUp = self:crawlGutterSquare(nextSquare, gutterSystemMap, nil, crawlSteps) -- TODO up dir?
     if crawlUp then
-        utils:modPrint("Crawled up to square: "..tostring(crawlUp:getX())..","..tostring(crawlUp:getY())..","..tostring(crawlUp:getZ()))
+        -- utils:modPrint("Crawled up to square: "..tostring(crawlUp:getX())..","..tostring(crawlUp:getY())..","..tostring(crawlUp:getZ()))
         return crawlUp
     end
 
@@ -302,13 +302,13 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
 
     local squareProps = square:getProperties()
     if not utils:checkPropIsAnyPipe(square, squareProps) then
-        utils:modPrint("No gutter item found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+        -- utils:modPrint("No gutter item found on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return nil
     end
 
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
-    utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+    -- utils:modPrint("Crawl step "..tostring(crawlSteps).." on square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
     if crawlSteps > 25 then
         -- Shouldn't hit unless player builds a system with 25+ gutter objects
         -- adding as safeguard against runaway recursion
@@ -350,7 +350,7 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
     if crawlSteps >= crawlLimit then
-        utils:modPrint("Hit crawl step limit of "..tostring(crawlLimit))
+        -- utils:modPrint("Hit crawl step limit of "..tostring(crawlLimit))
         return square
     end
 

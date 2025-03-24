@@ -45,89 +45,95 @@ end
 
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
-    -- NOTE: param is square not the object itself
-    local squareModData = serviceUtils:syncPipeSquareModData(square, nil)
-    local triggerGutterTileUpdateEvent = false
-    local squareProps = square:getProperties()
-    if utils:checkPropIsAnyPipe(square, squareProps) then
-        if utils:isAnyPipeSprite(sprite) then
-            -- A pipe was built 
-            if utils:checkPropIsDrainPipe(square, squareProps) then
-                -- Get the connected collector (if any) from the drain pipe square
-                local connectedCollector = utils:getConnectedCollectorFromSquare(square)
+    local checkDrainPipes = false
+    local squareModData = serviceUtils:syncSquarePipeModData(square, nil)
+    if utils:checkPropIsAnyPipe(square) and utils:isAnyPipeSprite(sprite) then
+        -- A pipe was built 
+        checkDrainPipes = true
+    end
+
+    if utils:getModDataIsRoofSquare(square, squareModData) then
+        -- Object was built on a square previously marked as a valid roof tile
+        serviceUtils:syncSquareRoofModData(square, squareModData)
+        if not utils:getModDataIsRoofSquare(square, squareModData) then
+            -- The square is no longer a roof tile so re-crawl the gutter system
+            checkDrainPipes = true
+        end
+    end
+
+    if checkDrainPipes then
+        utils:modPrint("Checking local drain pipes after object built: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+        -- Seek all nearby drain pipes to update the rain factor
+        local triggerGutterTileUpdateEvent = false
+        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+        if drainPipes then
+            for i=1, #drainPipes do
+                local drainPipe = drainPipes[i]
+                local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
-                    -- Re-evaluate the rain factor for the connected collector
                     gutterService:connectCollector(connectedCollector)
-                end
-            else
-                -- Non-drain pipe square but still a part of a gutter segment. 
-                -- Seek all nearby drain pipes to update the rain factor
-                local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
-                if drainPipes then
-                    for i=1, #drainPipes do
-                        local drainPipe = drainPipes[i]
-                        local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
-                        if connectedCollector then
-                            gutterService:connectCollector(connectedCollector)
-                        end
-                    end
+                    triggerGutterTileUpdateEvent = true
                 end
             end
         end
 
-        utils:modPrint("Tile marked as having a gutter after building object: "..tostring(square))
-        triggerGutterTileUpdateEvent = true
-    end
-
-    if utils:getModDataIsRoofSquare(square, squareModData) then
-        -- Something was built on a square previously marked as a roof tile
-        -- Check if the square roof tile is still 'valid'
-        serviceUtils:syncRoofSquareModData(square, squareModData)
-        if not utils:getModDataIsRoofSquare(square, squareModData) then
-            -- The square is no longer a roof tile so re-crawl the gutter system
-            utils:modPrint("Tile no long valid roof square after building object: "..tostring(square))
-            triggerGutterTileUpdateEvent = true
+        if triggerGutterTileUpdateEvent then
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
-    end
-
-    if triggerGutterTileUpdateEvent then
-        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
     end
 end
 
 function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
+    local checkDrainPipes = false
     local square = placedObject:getSquare()
-    local triggerGutterTileUpdateEvent = false
-    local squareModData = serviceUtils:syncPipeSquareModData(square, nil)
+    local squareModData = serviceUtils:syncSquarePipeModData(square, nil)
     if squareModData then
-        if utils:getModDataHasGutter(square, squareModData) then
-            utils:modPrint("Tile marked as having a gutter after placing object: "..tostring(square))
-            triggerGutterTileUpdateEvent = true
-        end
-
         if utils:getModDataIsRoofSquare(square, squareModData) then
             -- Check if the square roof tile is still 'valid'
-            serviceUtils:syncRoofSquareModData(square, squareModData)
+            serviceUtils:syncSquareRoofModData(square, squareModData)
             if not utils:getModDataIsRoofSquare(square, squareModData) then
                 -- The square is no longer a roof tile so re-crawl the gutter system
                 utils:modPrint("Tile no long valid roof square after placing object: "..tostring(square))
-                triggerGutterTileUpdateEvent = true
+                checkDrainPipes = true
             end
         end
     end
 
+    if utils:checkPropIsAnyPipe(square) then
+        -- Object placed on a tile with a pipe
+        checkDrainPipes = true
+    end
+
+    -- TODO cleanup trough logic
     -- Check if the placed object is a trough and convert it to a global object if necessary
     if globalObjectUtils:loadFullTrough(placedObject) then
         -- Trough was placed and converted to a global object
     elseif utils:getModDataIsGutterConnected(placedObject, nil) then
         -- Can't properly clean up all object types on pickup so have to check here for placement
-        utils:modPrint("Object marked as having a gutter after placing: "..tostring(placedObject))
+        utils:modPrint("Cleaning up existing object mod data after placing: "..tostring(placedObject))
         gutterService:disconnectCollector(placedObject)
     end
 
-    if triggerGutterTileUpdateEvent then
-        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
+    if checkDrainPipes then
+        utils:modPrint("Checking local drain pipes after object placed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+        -- Seek all nearby drain pipes to update the rain factor
+        local triggerGutterTileUpdateEvent = false
+        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+        if drainPipes then
+            for i=1, #drainPipes do
+                local drainPipe = drainPipes[i]
+                local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                if connectedCollector then
+                    gutterService:connectCollector(connectedCollector)
+                    triggerGutterTileUpdateEvent = true
+                end
+            end
+        end
+
+        if triggerGutterTileUpdateEvent then
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
+        end
     end
 end
 
@@ -135,60 +141,58 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
     -- React to the removal of an existing iso object on a tile
     local square = removedObject:getSquare()
     if square then
-        local triggerGutterTileUpdateEvent = false
-        local squareModData = square:hasModData() and square:getModData() or nil
+        local checkDrainPipes = false
         if utils:isAnyPipe(removedObject) then
             -- Cleanup square's mod data when any pipes are removed
             utils:modPrint("Pipe object removed from square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
 
-            -- Check if there is a connected collector on the tile
-            local connectedCollector = utils:getConnectedCollectorFromSquare(square)
-            if connectedCollector then
-                if utils:isDrainPipe(removedObject) then
+            -- Check if the drainpipe was the removed object
+            if utils:isDrainPipe(removedObject) then
+                local connectedCollector = utils:getConnectedCollectorFromSquare(square)
+                if connectedCollector then
                     -- A drain pipe was removed so disconnect the collector
                     utils:modPrint("Disconnecting collector after drain pipe was removed: "..tostring(connectedCollector:getName()))
                     gutterService:disconnectCollector(connectedCollector)
-                    serviceUtils:syncPipeSquareModData(square, true)
-                else
-                    -- A non-drain pipe was removed update the connected collector's rain factor
-                    -- NOTE: connect collector will re-crawl the gutter system and update the rain factor
-                    utils:modPrint("Re-evaluating collector rain factor after pipe was removed: "..tostring(connectedCollector:getName()))
-                    gutterService:connectCollector(connectedCollector)
+                    serviceUtils:syncSquarePipeModData(square, true)
                 end
-            else
-                -- A pipe was removed but not directly on the tile with a collector
-                -- Trigger a recalc of the rain factor for any connected collectors to nearby drain pipes
-                local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
-                if drainPipes then
-                    for i=1, #drainPipes do
-                        local drainPipe = drainPipes[i]
-                        connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
-                        if connectedCollector then
-                            utils:modPrint("Re-evaluating collector rain factor after pipe was removed: "..tostring(connectedCollector:getName()))
-                            gutterService:connectCollector(connectedCollector)
-                        end
+            end
+
+            checkDrainPipes = true
+        elseif utils:checkPropIsDrainPipe(square) then
+            utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
+            checkDrainPipes = true
+        end
+
+        local squareModData = square:hasModData() and square:getModData() or nil
+        if utils:getModDataIsRoofSquare(square, squareModData) then
+            -- Check if the square roof tile is still 'valid'
+            serviceUtils:syncSquareRoofModData(square, squareModData)
+            if not utils:getModDataIsRoofSquare(square, squareModData) then
+                -- The square is no longer a roof tile so re-crawl the gutter system
+                utils:modPrint("Tile no long valid roof square after removing object: "..tostring(square))
+                checkDrainPipes = true
+            end
+        end
+
+        if checkDrainPipes then
+            utils:modPrint("Checking local drain pipes after object removed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+            -- Seek all nearby drain pipes to update the rain factor
+            local triggerGutterTileUpdateEvent = false
+            local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+            if drainPipes then
+                for i=1, #drainPipes do
+                    local drainPipe = drainPipes[i]
+                    local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                    if connectedCollector then
+                        gutterService:connectCollector(connectedCollector)
+                        triggerGutterTileUpdateEvent = true
                     end
                 end
             end
 
-            triggerGutterTileUpdateEvent = true
-        elseif utils:checkPropIsDrainPipe(square) then
-            utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
-            triggerGutterTileUpdateEvent = true
-        end
-
-        if utils:getModDataIsRoofSquare(square, squareModData) then
-            -- Check if the square roof tile is still 'valid'
-            serviceUtils:syncRoofSquareModData(square, squareModData)
-            if not utils:getModDataIsRoofSquare(square, squareModData) then
-                -- The square is no longer a roof tile so re-crawl the gutter system
-                utils:modPrint("Tile no long valid roof square after removing object: "..tostring(square))
-                triggerGutterTileUpdateEvent = true
+            if triggerGutterTileUpdateEvent then
+                triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
             end
-        end
-
-        if triggerGutterTileUpdateEvent then
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
     end
 end
