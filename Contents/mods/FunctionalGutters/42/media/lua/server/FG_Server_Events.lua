@@ -46,10 +46,17 @@ end
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     local checkDrainPipes = false
+    local triggerGutterTileUpdateEvent = false
     local squareModData = serviceUtils:syncSquarePipeModData(square)
     if utils:isAnyPipeSprite(sprite) then
         -- A pipe was built 
         checkDrainPipes = true
+    end
+
+    if utils:isDrainPipeSquare(square) then
+        -- Object was built on a tile marked as having a gutter drain
+        checkDrainPipes = true
+        triggerGutterTileUpdateEvent = true
     end
 
     if utils:getModDataIsRoofSquare(square, squareModData) then
@@ -64,28 +71,29 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     if checkDrainPipes then
         utils:modPrint("Checking local drain pipes after object built: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         -- Seek all nearby drain pipes to update the rain factor
-        local triggerGutterTileUpdateEvent = false
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
             for i=1, #drainPipes do
                 local drainPipe = drainPipes[i]
                 local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
+                    -- Re-run connect logic to update the rain factor for already connected collectors
                     gutterService:connectCollector(connectedCollector)
                     triggerGutterTileUpdateEvent = true
                 end
             end
         end
+    end
 
-        if triggerGutterTileUpdateEvent then
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
-        end
+    if triggerGutterTileUpdateEvent then
+        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
     end
 end
 
 function GutterServerManager.OnIsoObjectPlaced(placedObject)
     -- React to the placement of an existing iso object on a tile
     local checkDrainPipes = false
+    local triggerGutterTileUpdateEvent = false
     local square = placedObject:getSquare()
     local squareModData = serviceUtils:syncSquarePipeModData(square)
     if squareModData then
@@ -100,9 +108,15 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         end
     end
 
-    if utils:isAnyPipeSquare(square) then
-        -- Object placed on a tile with a pipe
+    local squareProps = square:getProperties()
+    if utils:isAnyPipeSquare(square, squareProps) then
+        -- Object placed on a tile with atleast one pipe
         checkDrainPipes = true
+
+        if utils:isDrainPipeSquare(square, squareProps) then
+            -- Object placed on a tile with a drain pipe
+            triggerGutterTileUpdateEvent = true
+        end
     end
 
     -- TODO cleanup trough logic
@@ -118,7 +132,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     if checkDrainPipes then
         utils:modPrint("Checking local drain pipes after object placed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         -- Seek all nearby drain pipes to update the rain factor
-        local triggerGutterTileUpdateEvent = false
+
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
             for i=1, #drainPipes do
@@ -130,10 +144,10 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
                 end
             end
         end
+    end
 
-        if triggerGutterTileUpdateEvent then
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
-        end
+    if triggerGutterTileUpdateEvent then
+        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
     end
 end
 
@@ -142,6 +156,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
     local square = removedObject:getSquare()
     if square then
         local checkDrainPipes = false
+        local triggerGutterTileUpdateEvent = false
         if utils:isAnyPipe(removedObject) then
             -- Cleanup square's mod data when any pipes are removed
             utils:modPrint("Pipe object removed from square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
@@ -153,14 +168,16 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
                     -- A drain pipe was removed so disconnect the collector
                     utils:modPrint("Disconnecting collector after drain pipe was removed: "..tostring(connectedCollector:getName()))
                     gutterService:disconnectCollector(connectedCollector)
-                    serviceUtils:syncSquarePipeModData(square, true)
+                    serviceUtils:syncSquarePipeModData(square)
                 end
             end
 
             checkDrainPipes = true
         elseif utils:isDrainPipeSquare(square) then
+            -- Object removed from a tile with a drain pipe
             utils:modPrint("Tile marked as having a gutter drain after removing object: "..tostring(square))
             checkDrainPipes = true
+            triggerGutterTileUpdateEvent = true
         end
 
         local squareModData = square:hasModData() and square:getModData() or nil
@@ -177,7 +194,6 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
         if checkDrainPipes then
             utils:modPrint("Checking local drain pipes after object removed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
             -- Seek all nearby drain pipes to update the rain factor
-            local triggerGutterTileUpdateEvent = false
             local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
             if drainPipes then
                 for i=1, #drainPipes do
@@ -189,10 +205,10 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
                     end
                 end
             end
+        end
 
-            if triggerGutterTileUpdateEvent then
-                triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
-            end
+        if triggerGutterTileUpdateEvent then
+            triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
         end
     end
 end
