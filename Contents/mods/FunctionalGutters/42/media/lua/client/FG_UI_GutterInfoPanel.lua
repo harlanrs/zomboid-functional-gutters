@@ -2,24 +2,16 @@ require "ISUI/ISPanel"
 
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
-local isoUtils = require("FG_Utils_Iso")
-local serviceUtils = require("FG_Utils_Service")
 
 FG_UI_GutterInfoPanel = ISPanel:derive("FG_UI_GutterInfoPanel");
 
--- local eyeOn = getTexture("media/ui/foraging/eyeconOn.png")
--- local eyeOff = getTexture("media/ui/foraging/eyeconOff.png")
-
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(),1);
 
 function FG_UI_GutterInfoPanel:initialise()
     ISPanel.initialise(self);
-
-    -- self:reloadInfo()
 end
 
 function FG_UI_GutterInfoPanel:prerender() -- Call before render, it's for harder stuff that need init, ect
@@ -33,29 +25,28 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     local c = self.textColor;
     self:renderText("Pipes", x, y, c.r, c.g, c.b, c.a, UIFont.Small);
 
-    if self.gutterMap == nil then
+    if not self.gutterSegment or not self.gutterSegment.pipeMap == nil then
         return
     end
-
-    local drainCount = #self.gutterMap[enums.pipeType.drain]
+    local pipeMap = self.gutterSegment.pipeMap
+    local drainCount = #pipeMap[enums.pipeType.drain]
     if self.pipeInfo.drain.cache~=drainCount then
         self.pipeInfo.drain.cache = drainCount;
         self.pipeInfo.drain.value = tostring(drainCount);
     end
 
-    local verticalCount = #self.gutterMap[enums.pipeType.vertical]
+    local verticalCount = #pipeMap[enums.pipeType.vertical]
     if self.pipeInfo.vertical.cache~=verticalCount then
         self.pipeInfo.vertical.cache = verticalCount;
         self.pipeInfo.vertical.value = tostring(verticalCount);
     end
 
-    local gutterCount = #self.gutterMap[enums.pipeType.gutter]
+    local gutterCount = #pipeMap[enums.pipeType.gutter]
     if self.pipeInfo.gutter.cache~=gutterCount then
         self.pipeInfo.gutter.cache = gutterCount;
         self.pipeInfo.gutter.value = tostring(gutterCount);
     end
 
-    -- local pipeContainerW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
     local tagWid = math.max(
             getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.drain.tag),
             getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.vertical.tag),
@@ -188,7 +179,6 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     self.btnPipes = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, btnPipesText, self, self.onPipes);
     self.btnPipes.internal = "PIPES";
     self.btnPipes:initialise();
-    -- self.btnPipes:instantiate();
     self:addChild(self.btnPipes);
 
     local roofBtnText = "View Roof"; -- TODO translate
@@ -196,7 +186,6 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     self.btnRoof = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, roofBtnText, self, self.onRoof);
     self.btnRoof.internal = "ROOF";
     self.btnRoof:initialise();
-    -- self.btnRoof:instantiate();
     self:addChild(self.btnRoof);
 end
 
@@ -236,17 +225,21 @@ end
 
 
 function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
-    for _, gutterMapValue in pairs(self.gutterMap) do
-        for _, square in ipairs(gutterMapValue) do
-            self:highlightGutterObject(square, highlight)
+    if not self.gutterSegment.pipeMap then return end
+
+    for _, gutterPipeType in pairs(self.gutterSegment.pipeMap) do
+        for _, pipeSquare in ipairs(gutterPipeType) do
+            self:highlightGutterObject(pipeSquare, highlight)
         end
     end
     self.gutterHighlight = highlight;
 end
 
 function FG_UI_GutterInfoPanel:highlightRoofArea(highlight)
-    for _, square in pairs(self.coveredFloors) do
-        self:highlightCoveredFloor(square, highlight)
+    if not self.gutterSegment.roofMap then return end
+
+    for _, roofSquare in pairs(self.gutterSegment.roofMap) do
+        self:highlightCoveredFloor(roofSquare, highlight)
     end
     self.roofAreaHighlight = highlight;
 end
@@ -284,11 +277,9 @@ end
 
 function FG_UI_GutterInfoPanel:reloadInfo()
     self.square = self.gutter:getSquare()
-    self.coveredFloors = isoUtils:getGutterCoveredFloors(self.gutterMap)
-    self.roofArea = utils:getModDataRoofArea(self.square)
 end
 
-function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment, gutterMap)
+function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment)
     local o = {};
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self);
@@ -305,7 +296,6 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment, g
 
     o.gutter = gutter;
     o.gutterSegment = gutterSegment;
-    o.gutterMap = gutterMap;
 
     o.gutterHighlight = false;
     o.roofAreaHighlight = false;

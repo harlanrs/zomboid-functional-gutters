@@ -228,6 +228,8 @@ enums.smallTroughSprites = table.newarray(
 )
 
 enums.woodenPoleSprite = "walls_exterior_wooden_01_27"
+enums.logPoleSprite = "carpentry_02_61"
+enums.logPoleSprite2 = "carpentry_02_103" -- used in game yet?
 
 enums.options = {
     debug = "Debug",
@@ -278,5 +280,7 @@ enums.maxRoofCrawlSteps = 4
 enums.maxGutterCrawlSteps = 25
 enums.defaultDrainPipeSearchRadius = 16
 enums.defaultDrainPipeSearchHeight = 1
+enums.gutterSegmentPerimeterLength = 9
+enums.gutterSegmentCapacityRatio = 0.25
 
 return enums

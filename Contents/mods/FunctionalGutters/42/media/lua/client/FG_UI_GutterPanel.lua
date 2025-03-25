@@ -101,7 +101,7 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1;
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING;
-    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter, self.gutterSegment, self.gutterMap);
+    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter, self.gutterSegment);
     self:addChild(self.gutterPanel);
 end
 
@@ -363,7 +363,6 @@ function FG_UI_GutterPanel:reloadGutterInfo()
 
     self.gutterPanel.gutter = self.gutter -- TODO rename gutter -> drainPipe
     self.gutterPanel.gutterSegment = self.gutterSegment
-    self.gutterPanel.gutterMap = self.gutterMap
     self.gutterPanel:reloadInfo()
 
     if refreshGutterHighlight then
@@ -396,7 +395,6 @@ function FG_UI_GutterPanel:reloadInfo()
         return;
     end
     self.gutterSegment = serviceUtils:calculateGutterSegment(self.gutterSquare);
-    self.gutterMap = isoUtils:crawlGutterSystem(self.gutterSquare)
 end
 
 function FG_UI_GutterPanel:onUpdateGutterTile(square)

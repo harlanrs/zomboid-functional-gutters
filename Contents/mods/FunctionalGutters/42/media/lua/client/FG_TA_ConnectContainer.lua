@@ -37,14 +37,11 @@ end
 
 function FG_TA_ConnectContainer:start()
 	self.sound = self.character:playSound("RepairWithWrench")
-	-- send start event
 end
 
 function FG_TA_ConnectContainer:stop()
 	self.character:stopOrTriggerSound(self.sound)
 	ISBaseTimedAction.stop(self)
-
-	-- send stop event
 end
 
 function FG_TA_ConnectContainer:perform()
@@ -60,8 +57,6 @@ function FG_TA_ConnectContainer:complete()
 	else
 		utils:modPrint("Failed to connect collector: " .. tostring(self.containerObject))
 	end
-
-	-- send complete event
 
 	return true
 end

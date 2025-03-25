@@ -69,11 +69,11 @@ function serviceUtils:syncSquareRoofModData(square, squareModData)
     return squareModData
 end
 
-function serviceUtils:syncSquarePipeModData(square, full)
+function serviceUtils:syncSquarePipeModData(square, reload)
     local squareModData = square:getModData()
     local roofArea = utils:getModDataRoofArea(square, squareModData)
     local hasDrainPipe = utils:isDrainPipeSquare(square)
-    if hasDrainPipe and (full or not roofArea) then
+    if hasDrainPipe and (reload or not roofArea) then
         self:setDrainPipeModData(square, squareModData)
     end
 
@@ -89,16 +89,17 @@ end
 function serviceUtils:getAverageGutterCapacity()
     -- Meters of roof's perimeter covered effectively by a single gutter drain for a standard house
     -- Realistically this is between 6 and 9 meters
-    local averageGutterPerimeterCoverage = 9
+    local averageGutterPerimeterCoverage = enums.gutterSegmentPerimeterLength
+
+    -- Ratio of perimeter side length to max surface area covered by a single gutter
+    local averageGutterCapacityRatio = enums.gutterSegmentCapacityRatio
 
     -- Meters of roof's area covered effectively by a single gutter for a standard house
     -- Don't want to simply take the square of the perimeter coverage as this wouldn't be very accurate for a real roof and would over-emphasize the gutter perimeter value
-    -- ex: 6 -> 36 vs 9 -> 81 - need linear ratio not exponential
+    -- ex: 6 -> 36 vs 9 -> 81 (exponential)
     -- Instead aiming for a ratio that produces a reasonable 'rectangle' of tiles covered relative to the perimeter coverage
-    local averageGutterCapacityRatio = 0.25 -- ratio of perimeter side length to max surface area covered by a single gutter
-    local averageGutterCapacity = averageGutterPerimeterCoverage / averageGutterCapacityRatio -- meters
-    -- ex: 6 -> 24 vs 9 -> 36
-    return averageGutterCapacity
+    -- ex: 6 -> 24 vs 9 -> 36 (linear)
+    return averageGutterPerimeterCoverage / averageGutterCapacityRatio
 end
 
 function serviceUtils:getLocalDrainPipes(square, radius)
@@ -118,17 +119,28 @@ function serviceUtils:getLocalDrainPipes(square, radius)
        return drainPipes
     end
 
-    -- Reduce the list of drain pipes to only those also attached to the same building
-    local buildingDrainPipes = table.newarray()
+    -- Reduce the list of drain pipes to only those relevant to the building mode
+    -- TODO eventually check modData if we allow for players to 'convert' buildings to use manually placed gutters
+    local associatedDrainPipes = table.newarray()
     for i=1, #drainPipes do
         local drainPipe = drainPipes[i]
         local attachedBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
-        if attachedBuildingDef and attachedBuildingDef:getID() == buildingDef:getID() then
-            table_insert(buildingDrainPipes, drainPipe)
+        if buildingDef then
+            -- Vanilla building mode
+            -- Check if the drain pipe is attached to the same building
+            if attachedBuildingDef and attachedBuildingDef:getID() == buildingDef:getID() then
+                table_insert(associatedDrainPipes, drainPipe)
+            end
+        else
+            -- Custom building mode
+            -- Check if the drain is not attached to any building
+            if not attachedBuildingDef then
+                table_insert(associatedDrainPipes, drainPipe)
+            end
         end
     end
 
-    return buildingDrainPipes
+    return associatedDrainPipes
 end
 
 function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
@@ -229,19 +241,24 @@ function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCoun
 
     local gutterTileCount = roofArea / optimalDrainCount
     local remainingArea = gutterTileCount - averageGutterCapacity
-    if remainingArea >= optimalDrainCount then
-        -- Divide the remaining area among each estimated gutter
-        local gutterCapacityOverflow = remainingArea / optimalDrainCount
-        local maxOverflowArea = averageGutterCapacity / 2
-        if gutterCapacityOverflow > maxOverflowArea then
-            -- Prevent the overflow capacity from exceeding half of the average gutter capacity
-            gutterCapacityOverflow = maxOverflowArea
-        end
+    if remainingArea >= 1 then
+        -- Set the gutter tile count to the average (max) capacity and calculate remainder as overflow
+        gutterTileCount = averageGutterCapacity
+        local gutterCapacityOverflow = remainingArea
         utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
+
         -- Overflow 'tile' is only 25% as effective since the system is overloaded
         local gutterOverflowEfficiency = 0.25
         local gutterOverflowTileCount = gutterCapacityOverflow * gutterOverflowEfficiency
         utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
+
+        -- Prevent the overflow capacity from exceeding 25% of the average gutter capacity
+        local maxOverflowArea = averageGutterCapacity * gutterOverflowEfficiency
+        if gutterOverflowTileCount > maxOverflowArea then
+            utils:modPrint("Gutter overflow capacity exceeds max: "..tostring(maxOverflowArea))
+            gutterOverflowTileCount = maxOverflowArea
+        end
+
         gutterTileCount = gutterTileCount + gutterOverflowTileCount
     end
 
@@ -267,7 +284,7 @@ function serviceUtils:calculateGutterSegmentRainFactor(gutterTileCount)
 end
 
 function serviceUtils:calculateGutterSegment(square)
-    -- TEMP playground to test stuff
+    -- Notes:
     -- 1 tile is 1 meter squared
     -- 
     -- 1 millimeter (mm) of rain means 1 liter of water falling on every square meter of area
@@ -290,18 +307,29 @@ function serviceUtils:calculateGutterSegment(square)
         tileCount = 0,
         optimalDrainCount = 1,
         drainCount = 1,
-        rainFactor = 0.0
+        rainFactor = 0.0,
+        pipeMap = nil,
+        roofMap = nil
     }
 
-    -- TODO don't call sync here?
-    local squareModData = self:syncSquarePipeModData(square, true)
-    local roofArea = utils:getModDataRoofArea(square, squareModData)
+    if not utils:isDrainPipeSquare(square) then
+        -- Check most likely already occurred in external context but just in case
+        -- Drain pipes are essentially the main 'nodes' in a gutter system so have to start from their specific squares
+        utils:modPrint("Square is not a drain pipe: "..tostring(square))
+        return gutterSegment
+    end
+
+    gutterSegment.pipeMap = isoUtils:crawlGutterSystem(square)
+    local roofArea, roofMap = isoUtils:getGutterRoofArea(square, gutterSegment.pipeMap)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))
         return gutterSegment
     end
 
+    local squareModData = square:getModData()
+    squareModData[enums.modDataKey.roofArea] = roofArea
     gutterSegment.roofArea = roofArea
+    gutterSegment.roofMap = roofMap
 
     local averageGutterCapacity = self:getAverageGutterCapacity()
     gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)

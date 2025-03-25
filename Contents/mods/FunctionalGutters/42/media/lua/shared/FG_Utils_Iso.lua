@@ -240,8 +240,6 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
         end
     end
 
-    -- TODO include junctions in gutter map?
-
     return square
 end
 
@@ -257,9 +255,9 @@ function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevD
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
     if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a system with 25+ gutter objects
-        -- adding as safeguard against runaway recursion
-        utils:modPrint("Crawl steps exceeded 25")
+        -- Shouldn't hit unless player builds a system with more gutter objects
+        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
         return square
     end
 
@@ -286,7 +284,7 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
     local squareProps = square:getProperties()
     if not utils:isAnyPipeSquare(square, squareProps) then
         return nil
-    elseif not prevDir and not utils:isVerticalPipeSquare(square, squareProps) then
+    elseif not prevDir and not utils:isVerticalPipeSquare(square, squareProps) and not utils:isDrainPipeSquare(square, squareProps) then
         -- When no prevDir (coming up from below), ensure a vertical pipe exists before crawling
         -- This is to prevent horizontal/gutter pipes from being included when there is no vertical pipe to connect them
         -- TODO provide "up"/"down" prevDir if we want to reverse crawl and navigate top-down
@@ -362,8 +360,8 @@ function isoUtils:crawlGutterSystem(square)
     return gutterSystemMap
 end
 
-function isoUtils:isSquareInGutterMap(square, gutterSystemMap)
-    for _, pipeSquares in pairs(gutterSystemMap) do
+function isoUtils:isSquareInGutterPipeMap(square, gutterPipeMap)
+    for _, pipeSquares in pairs(gutterPipeMap) do
         for i=1, #pipeSquares do
             local gutterSquare = pipeSquares[i]
             if square:getID() == gutterSquare:getID() then
@@ -375,44 +373,54 @@ function isoUtils:isSquareInGutterMap(square, gutterSystemMap)
     return false
 end
 
-function isoUtils:getGutterCoveredFloors(gutterSystemMap)
+function isoUtils:getGutterCoveredFloors(gutterPipeMap)
     local validRoofTiles = {}
 
-    for i=1, #gutterSystemMap[enums.pipeType.gutter] do
-        local gutterSquare = gutterSystemMap[enums.pipeType.gutter][i]
+    for i=1, #gutterPipeMap[enums.pipeType.gutter] do
+        local gutterSquare = gutterPipeMap[enums.pipeType.gutter][i]
         local _, _, spriteName, _ = utils:getSpriteCategoryMemberOnTile(gutterSquare, enums.pipeType.gutter)
         if not spriteName then
             -- Shouldn't happen but check just in case
             utils:modPrint("No gutter sprite found on square: "..tostring(gutterSquare:getX())..","..tostring(gutterSquare:getY())..","..tostring(gutterSquare:getZ()))
             break
         end
-        -- TODO use facing props?
+
         local spriteDef = enums.pipes[spriteName]
         local squareCrawlSteps = 0
+        local fullCornerSprite = spriteDef.position == IsoDirections.NW and spriteDef.roofDirection == IsoDirections.NW
+        if spriteDef.position == IsoDirections.N or fullCornerSprite then
+            -- Crawl north roof squares
+            local attachedRoofX = gutterSquare:getX()
+            local attachedRoofY = gutterSquare:getY() - 1
+            local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
+            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, IsoDirections.N, squareCrawlSteps)
+        end
 
-        local attachedRoofX = spriteDef.position == IsoDirections.N and gutterSquare:getX() or gutterSquare:getX() - 1
-        local attachedRoofY = spriteDef.position == IsoDirections.N and gutterSquare:getY() - 1 or gutterSquare:getY()
-        local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
-        -- TODO include long corner pieces which 'cover' both north and west
-        self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, spriteDef.position, squareCrawlSteps)
+        if spriteDef.position == IsoDirections.W or fullCornerSprite then
+            -- Crawl west roof squares
+            local attachedRoofX = gutterSquare:getX() - 1
+            local attachedRoofY = gutterSquare:getY()
+            local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
+            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, IsoDirections.W, squareCrawlSteps)
+        end
     end
 
     return validRoofTiles
 end
 
-function isoUtils:getPlayerBuildingFloorArea(square, gutterSystemMap)
-    if not gutterSystemMap then
-        gutterSystemMap = self:crawlGutterSystem(square)
+function isoUtils:getPlayerBuildingFloorArea(square, gutterPipeMap)
+    if not gutterPipeMap then
+        gutterPipeMap = self:crawlGutterSystem(square)
     end
 
-    local validRoofTiles = self:getGutterCoveredFloors(gutterSystemMap)
+    local validRoofTiles = self:getGutterCoveredFloors(gutterPipeMap)
 
     local totalArea = 0
     for k, v in pairs(validRoofTiles) do
         totalArea = totalArea + 1
     end
 
-    return totalArea
+    return totalArea, validRoofTiles
 end
 
 function isoUtils:findGutterTopLevel(square)
@@ -454,9 +462,10 @@ function isoUtils:getAttachedBuilding(square)
     return self:getAdjacentBuilding(square)
 end
 
-function isoUtils:getGutterRoofArea(square)
+function isoUtils:getGutterRoofArea(square, gutterPipeMap)
     local buildingDef = self:getAttachedBuilding(square)
     if buildingDef then
+        -- Vanilla building mode
         -- Calculate area of top-floor assuming it's 1-1 square -> roof
         local topGutterFloor = isoUtils:findGutterTopLevel(square)
 
@@ -471,11 +480,13 @@ function isoUtils:getGutterRoofArea(square)
             end
         end
 
-        return floorArea
+        -- TODO map the roof squares to highlight?
+        return floorArea, nil
+    else
+        -- Custom building mode
+        -- Check for player built floors
+        return self:getPlayerBuildingFloorArea(square, gutterPipeMap)
     end
-
-    -- Check for player built floors
-    return self:getPlayerBuildingFloorArea(square, nil)
 end
 
 function isoUtils:applyToSquareStack(square, func)

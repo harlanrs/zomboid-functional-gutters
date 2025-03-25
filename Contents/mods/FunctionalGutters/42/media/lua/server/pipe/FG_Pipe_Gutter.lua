@@ -8,7 +8,6 @@ local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 local GutterPipeService = BasePipeServiceInterface:derive("GutterPipeService")
 
 local localIsoDirections = IsoDirections
-local localIsoFlagType = IsoFlagType
 
 function GutterPipeService:isObjectType(object)
     return utils:isGutterPipe(object)

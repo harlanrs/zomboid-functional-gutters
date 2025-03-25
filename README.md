@@ -168,23 +168,26 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 ### 1.2 Notes
 
 TODO High Priority
+- Fix multi-tile trough in several areas where container is checked
 - Set scrap definition for all pipes
-- Follow gutter bends/corners when crawling gutter
-- Fix: check vertical pipe exists on square first when dir is nil (coming from different z level)
-    - need to ensure a vertical pipe exists to 'connect' the pipes below with the pipes above
 - Add tile props to all pipes
 - Build full mod info panel 
+- Fix ui panel not reacting to placing container on drain tile
 - Invert building def check in drain pipes when source drain is on a player built structure
     - instead of reducing drain pipes to those that share the same building, reduce the pipes to those not attached to a building
+- Disable button & add tooltip when wrench is required in ui panel
 - Add all build icons
 - Add all text translations
 - Update README
 
 TODO Medium Priority
 - Add ui feedback for specific needs when building pipes
+- Reorder tilesheets?
+- Persist 'mode' on drain pipe object as mod data
+- Crawl perimeter of vanilla building in drain check instead of radial search
+    - Will need to test with large buildings
 
 TODO Low Priority
-- Persist 'mode' on drain pipe object as mod data
 - Use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.
     - ex: 
     - some garages are still tagged as the the same building even when physically separate.
@@ -193,6 +196,10 @@ TODO Low Priority
 - Feedback in build menu when placing pipes?
 - Add additional gutter material types
     - clay using inverted clay tiles and clay pipes
+- Water overlay during storms?
+    - overlaySpriteColor
+    - renderOverlaySprites
+    - will need depthmask defined
 - Drain sound effect during storms? 
     - https://theindiestone.com/forums/index.php?/topic/70279-help-with-adding-sound-to-function/
     - https://www.youtube.com/watch?v=FNWgHP9O9tw

@@ -265,7 +265,12 @@ function utils:getClassFieldIndex(classObject, fieldName)
 end
 
 function utils:getObjectDisplayName(object)
-    local objectName = object:getTileName()
+    local objectName = object:getEntityDisplayName()
+    if objectName then
+        return objectName
+    end
+
+    objectName = object:getTileName()
     if objectName then
         return objectName
     end
@@ -313,9 +318,6 @@ end
 
 local function checkDebugMode()
     debugMode = options:getDebug()
-    for k,v in pairs(enums.pipeAtlas.position) do
-        utils:modPrint("Pipe atlas position: "..tostring(k).." -> "..tostring(v))
-    end
 end
 
 LuaEventManager.AddEvent(enums.modEvents.OnGutterTileUpdate)
