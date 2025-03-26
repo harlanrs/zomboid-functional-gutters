@@ -1,8 +1,6 @@
 require "ISUI/ISPanel"
 
-local enums = require("FG_Enums")
 local utils = require("FG_Utils")
-local isoUtils = require("FG_Utils_Iso")
 local serviceUtils = require("FG_Utils_Service")
 
 FG_UI_CollectorInfoPanel = ISPanel:derive("FG_UI_GutterInfoPanel");
@@ -25,7 +23,6 @@ function FG_UI_CollectorInfoPanel:createChildren()
     self:getIsoObjectTextures();
 
     local y = UI_BORDER_SPACING+1;
-    -- local y = 0;
     if self.doTitle then
         y = y+FONT_HGT_SMALL+UI_BORDER_SPACING;
     end
@@ -36,7 +33,6 @@ function FG_UI_CollectorInfoPanel:createChildren()
     if self.container then
         self.fluidBar = ISFluidBar:new(0, y, BUTTON_HGT, self.innerHeight, self.player);
         self.fluidBar:initialise();
-        self.fluidBar:instantiate();
         self:addChild(self.fluidBar);
         fluidBarW = self.fluidBar.width;
 
@@ -161,17 +157,19 @@ function FG_UI_CollectorInfoPanel:prerender()
     end
 
     -- Draw after textures to ensure icon is on top
+    local iconW = 24
+    local iconH = 24
+    local iconX = self.x + 1;
+    local iconY = self.containerBox.y + UI_BORDER_SPACING
+    local hasPlumbIcon = nil
     if self.container then
-        if self.isGutterConnected then
-            local iconW = 16;
-            local iconH = 16;
-            local iconX = self.x + 1;
-            local iconY = self.containerBox.y + UI_BORDER_SPACING;
-            -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
-            -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
-            self:drawTextureScaledStatic(self.gutterConnectedTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
-        end
+        hasPlumbIcon = true
+        local icon = self.isGutterConnected and self.plumbIcon or self.plumbOffIcon;
+        self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
 
+        -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
+        -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
+        
         -- container overlay icon
         -- local iconW = 24;
         -- local iconH = 24;
@@ -182,6 +180,10 @@ function FG_UI_CollectorInfoPanel:prerender()
         -- local iconTexture = self.isGutterConnected and self.gutterConnectedTexture2 or self.gutterDisconnectedTexture;
         -- self:drawTextureScaledStatic(iconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
     end
+
+    iconY = hasPlumbIcon and iconY + iconH + UI_BORDER_SPACING or iconY;
+    local icon = self.isOutside and self.fluidIcon or self.fluidOffIcon;
+    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
 end
 
 function FG_UI_CollectorInfoPanel:renderCollectorInfo()
@@ -319,7 +321,6 @@ function FG_UI_CollectorInfoPanel:render()
 
             self.containerBox.w = math.max(valRight - self.containerBox.x, containerNameRight - self.containerBox.x) + UI_BORDER_SPACING + 1;
             self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING);
-            -- self:setWidth( math.max(self.containerBox.x + self.containerBox.w, self.fluidBar:getRight()) + UI_BORDER_SPACING+1 );
         end
 
         self:renderCollectorInfo();
@@ -364,13 +365,6 @@ end
 function FG_UI_CollectorInfoPanel:getContainer()
     if self.container and self.container:getFluidContainer() then
         return self.container:getFluidContainer();
-    end
-    return nil;
-end
-
-function FG_UI_CollectorInfoPanel:getContainerOwner()
-    if self.container then
-        return self.container:getOwner();
     end
     return nil;
 end
@@ -430,42 +424,47 @@ function FG_UI_CollectorInfoPanel:hasValidContainer()
 end
 
 function FG_UI_CollectorInfoPanel:onClose()
-    if self.containerCopy then
-        FluidContainer.DisposeContainer(self.containerCopy);
-        self.containerCopy = nil;
-    end
+
 end
 
 function FG_UI_CollectorInfoPanel:reloadInfo(full)
     if self.collector then
-        self.baseRainFactor = utils:getModDataBaseRainFactor(self.collector);
+        self.primaryCollector = serviceUtils:getPrimaryCollector(self.collector);
 
-        local fluidContainer = self.collector:getFluidContainer();
-        if fluidContainer then
+        if self.primaryCollector then
+            self.baseRainFactor = serviceUtils:getObjectBaseRainFactor(self.primaryCollector);
+
+            local fluidContainer = self.primaryCollector:getFluidContainer()
             self.totalRainFactor = fluidContainer:getRainCatcher();
+            self.isGutterConnected = utils:getModDataIsGutterConnected(self.primaryCollector);
         else
+            self.baseRainFactor = 0.0;
             self.totalRainFactor = 0.0;
+            self.isGutterConnected = false;
+            self.isCovered = false;
         end
-        self.isGutterConnected = utils:getModDataIsGutterConnected(self.collector, nil);
 
         if self.isInvalid then
             self:setInvalid(false);
         end
     else
+        self.primaryCollector = nil;
         self.baseRainFactor = 0.0;
         self.totalRainFactor = 0.0;
         self.isGutterConnected = false;
+        self.isCollectorCovered = false;
         self:setInvalid(true);
     end
 
+    local gutterSquare = self.gutter:getSquare();
+    self.isOutside = gutterSquare:isOutside();
+
     if full then
-        self.container = self.collector and ISFluidContainer:new(self.collector:getFluidContainer()) or nil;
+        self.container = self.primaryCollector and ISFluidContainer:new(self.primaryCollector:getFluidContainer()) or nil;
         if self.container then
-            self.owner = self.container:getOwner();
-            self.containerCopy = self.container:getFluidContainer():copy();
+            self.owner = self.collector;
         else
             self.owner = self.gutter;
-            self.containerCopy = nil;
         end
         self:clearChildren();
         self:createChildren();
@@ -498,23 +497,28 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     o.missingCollectorTexture = getTexture("carpentry_02_124");
     o.missingIconTexture = getTexture("media/ui/Entity/BTN_Missing_Icon_48x48.png");
     o.gutterConnectedTexture = getTexture("media/ui/craftingMenus/BuildProperty_Drain.png")
+    o.fluidIcon = getTexture("media/ui/fluid_drop_icon.png")
+    o.fluidOffIcon = getTexture("media/ui/fluid_drop_icon_off.png")
+    o.plumbIcon = getTexture("media/ui/plumb_icon.png")
+    o.plumbOffIcon = getTexture("media/ui/plumb_icon_off.png")
+    -- o.fluidDrop = getTexture("media/ui/Entity/fluid_drop_icon.png")
+    -- o.plusGreenTexture = getTexture("media/ui/Moodle_internal_plus_green.png")
+    -- o.minusRedTexture = getTexture("media/ui/Moodle_internal_minus_red.png")
     -- o.gutterConnectedTexture2 = getTexture("media/ui/Entity/icon_transfer_fluids.png")
     -- o.gutterDisconnectedTexture = getTexture("media/ui/Entity/icon_clear_fluids.png")
     -- media/ui/Entity/fluid_drop_icon.png
+    -- media/ui/iconInHotbar.png
+    -- media/ui/inventoryPanes/Button_Settings.png
 
     o.player = _player;
     o.gutter = _gutter;
     o.collector = _collector;
+    o.primaryCollector = serviceUtils:getPrimaryCollector(_collector);
 
     -- Generate ISFluidContainer from the collector iso object
-    o.container = o.collector and ISFluidContainer:new(o.collector:getFluidContainer()) or nil;
-    if o.container then
-        o.owner = o.container:getOwner();
-        o.containerCopy = o.container:getFluidContainer():copy(); -- TODO remove container copy
-    else
-        o.owner = o.gutter;
-        o.containerCopy = nil;
-    end
+    o.container = o.primaryCollector and ISFluidContainer:new(o.primaryCollector:getFluidContainer()) or nil;
+    -- Use collector on same square as drain for multi-tile collectors (primarily to get the correct textures)
+    o.owner = o.container and o.collector or o.gutter;
 
     -- if true add a title.
     o.doTitle = false; -- TODO 

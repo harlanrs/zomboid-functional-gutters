@@ -1,9 +1,7 @@
 if isClient() then return end
 
 local enums = require("FG_Enums")
-local options = require("FG_Options")
 local utils = require("FG_Utils")
-local isoUtils = require("FG_Utils_Iso")
 local serviceUtils = require("FG_Utils_Service")
 local FluidContainerService = require("collector/FG_Collector_FluidContainer")
 local TroughService = require("collector/FG_Collector_Trough")
@@ -29,7 +27,7 @@ gutterService.pipeServiceMap = {
 
 function gutterService:getCollectorService(collectorObject)
     -- Filter out IsoWorldInventoryObjects for now
-    if instanceof(collectorObject, "IsoWorldInventoryObject") then
+    if serviceUtils:isWorldInventoryObject(collectorObject) then
         utils:modPrint("IsoWorldInventoryObjects not supported yet")
         return nil
     end
@@ -72,10 +70,7 @@ function gutterService:connectCollector(collectorObject)
         return
     end
 
-    -- TODO Need to get the connected tile if the object is a multi-tile trough
-
-    -- Calculate the rain factor for the gutter system routed from the collector's tile
-    local square = collectorObject:getSquare()
+    local square = serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     local gutterSegment = serviceUtils:calculateGutterSegment(square)
 
     containerService:connectCollector(collectorObject, gutterSegment.rainFactor)

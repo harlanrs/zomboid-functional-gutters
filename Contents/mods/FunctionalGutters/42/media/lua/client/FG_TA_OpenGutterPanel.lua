@@ -22,20 +22,19 @@ end
 
 function FG_TA_OpenGutterPanel:perform()
 	if self.panelClass and self.panelClass["OpenPanel"] then
-		self.panelClass.OpenPanel(self.character, self.gutter, self.container, self.source)
+		self.panelClass.OpenPanel(self.character, self.gutter, self.source)
 	end
 	-- needed to remove from queue / start next.
 	ISBaseTimedAction.perform(self)
 end
 
-function FG_TA_OpenGutterPanel:new(character, _gutter, _container, _panelClass, isSource)
+function FG_TA_OpenGutterPanel:new(character, _gutter, _panelClass, isSource)
 	local o = ISBaseTimedAction.new(self, character)
     -- TODO
     -- if not ISFluidUtil.validateContainer(_gutter) then
     --     print("FG_TA_OpenGutterPanel not a valid (ISFluidContainer) container?")
     -- end
 	o.gutter = _gutter;
-    o.container = _container;
 	o.panelClass = _panelClass;
 	o.source = isSource;
 	o.maxTime = 10;

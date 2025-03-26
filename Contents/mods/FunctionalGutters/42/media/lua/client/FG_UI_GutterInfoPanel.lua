@@ -12,6 +12,8 @@ local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():g
 
 function FG_UI_GutterInfoPanel:initialise()
     ISPanel.initialise(self);
+
+    self:reloadInfo()
 end
 
 function FG_UI_GutterInfoPanel:prerender() -- Call before render, it's for harder stuff that need init, ect
@@ -304,7 +306,7 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment)
     o.disableBtnPipes = false;
     o.disableBtnRoof = false;
 
-    o.reloadInfo(o);
+    -- o.reloadInfo(o);
 
     o.pipeInfo = {
         [enums.pipeType.drain] = { tag = "Drain"..": ", value = "0", cache = 0 },

@@ -8,12 +8,90 @@ local table_insert = table.insert
 
 local serviceUtils = {}
 
+function serviceUtils:isWorldInventoryObject(object)
+    return instanceof(object, "IsoWorldInventoryObject")
+end
+
 function serviceUtils:isFluidContainerObject(containerObject)
     return instanceof(containerObject, "IsoObject") and containerObject:getFluidContainer() ~= nil
 end
 
-function serviceUtils:isValidContainerObject(containerObject)
+function serviceUtils:isValidCollectorObject(containerObject)
+    if self:isWorldInventoryObject(containerObject) then
+        return false
+    end
+
     return troughUtils:isTrough(containerObject) or self:isFluidContainerObject(containerObject)
+end
+
+function serviceUtils:getPrimaryCollector(object)
+    -- Finds the 'primary' fluid container object for multi-tile objects
+    -- primarily for trough objects atm but could be expanded to other multi-tile objects
+    if not object then
+        return nil
+    end
+
+    if self:isWorldInventoryObject(object) then
+        return nil
+    end
+
+    if troughUtils:isTrough(object) then
+        local primaryTrough = troughUtils:getPrimaryTrough(object)
+        if primaryTrough then
+            return primaryTrough
+        end
+    end
+
+    if self:isFluidContainerObject(object) then
+        return object
+    end
+
+    return nil
+end
+
+
+function serviceUtils:getConnectedCollectorFromSquare(square)
+    local objects = square:getObjects()
+    for i = 0, objects:size() - 1 do
+        local object = objects:get(i)
+        local collectorObject = self:getPrimaryCollector(object)
+        if collectorObject and utils:getModDataIsGutterConnected(collectorObject) then
+            -- Usually object & collectorObject are the same but for cases where multi-tile trough's secondary object is on the drain pipe square 
+            -- we want to return the object that is considered 'primary' for interacting with the proper fluid container
+            return collectorObject
+        end
+    end
+    return nil
+end
+
+function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
+    local square = collectorObject:getSquare()
+    if not square then
+        return nil
+    end
+
+    if utils:isDrainPipeSquare(square) then
+        return square
+    end
+
+    if troughUtils:isTrough(collectorObject) then
+        -- Check if the other trough object is located on a square with a drain pipe
+        local otherTroughObject = troughUtils:getOtherTroughObject(collectorObject)
+        if not otherTroughObject then
+            return nil
+        end
+
+        local otherSquare = otherTroughObject:getSquare()
+        if not otherSquare then
+            return nil
+        end
+
+        if utils:isDrainPipeSquare(otherSquare) then
+            return otherSquare
+        end
+    end
+
+    return nil
 end
 
 function serviceUtils:getObjectBaseRainFactor(object)

@@ -114,7 +114,7 @@ function globalObjectUtils:loadFullTrough(troughObject)
     -- Ignore if this is already a global trough object
     if troughUtils:isTroughObject(troughObject) then return nil end
 
-    local primaryTrough = troughUtils:getPrimaryTroughFromDef(troughObject)
+    local primaryTrough = troughUtils:getPrimaryTrough(troughObject)
     if not primaryTrough then
         -- Primary through hasn't been placed yet
         return nil
@@ -122,19 +122,19 @@ function globalObjectUtils:loadFullTrough(troughObject)
 
     -- If single tile primary trough, load it
     if troughUtils:isSingleTileTroughFromSprite(objectSpriteName) then
-        return self:loadTrough(primaryTrough)
+        return self:loadTrough(primaryTrough), nil
     end
 
-    local secondaryTrough = troughUtils:getSecondaryTroughFromDef(troughObject)
+    local secondaryTrough = troughUtils:getSecondaryTrough(troughObject)
     if not secondaryTrough then
         -- Secondary through hasn't been placed yet
         return nil
     end
 
     primaryTrough = self:loadTrough(primaryTrough)
-    self:loadTrough(secondaryTrough)
+    secondaryTrough = self:loadTrough(secondaryTrough)
 
-    return primaryTrough
+    return primaryTrough, secondaryTrough
 end
 
 return globalObjectUtils

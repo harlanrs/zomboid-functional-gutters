@@ -172,9 +172,9 @@ TODO High Priority
 - Set scrap definition for all pipes
 - Add tile props to all pipes
 - Build full mod info panel 
-- Fix ui panel not reacting to placing container on drain tile
 - Invert building def check in drain pipes when source drain is on a player built structure
     - instead of reducing drain pipes to those that share the same building, reduce the pipes to those not attached to a building
+    - Implemented TODO test
 - Disable button & add tooltip when wrench is required in ui panel
 - Add all build icons
 - Add all text translations
@@ -203,6 +203,14 @@ TODO Low Priority
 - Drain sound effect during storms? 
     - https://theindiestone.com/forums/index.php?/topic/70279-help-with-adding-sound-to-function/
     - https://www.youtube.com/watch?v=FNWgHP9O9tw
+    - https://pzwiki.net/wiki/Sound_(scripts)
+    - Events.OnLoadSoundBanks.Add(doLoadSoundbanks);
+    - shared/SoundBanks/SoundBanks.lua
+    - maybe treat like generator?
+    - WorldSoundManager.instance.addSoundRepeating
+    - (object).addObjectAmbientEmitter
+    - (chunk).addObjectAmbientEmitter
+- Easter egg random chance on first time plumb of existing drain pipes
 
 Notes:
 - Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)

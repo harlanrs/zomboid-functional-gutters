@@ -61,7 +61,7 @@ function troughUtils:isPrimaryTroughSprite(troughSpriteName)
     return false
 end
 
-function troughUtils:getPrimaryTroughFromDef(troughObject)
+function troughUtils:getPrimaryTrough(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
     for _, def in pairs(localFeedingTroughDef) do
@@ -88,7 +88,7 @@ function troughUtils:getPrimaryTroughFromDef(troughObject)
     return nil
 end
 
-function troughUtils:getSecondaryTroughFromDef(troughObject)
+function troughUtils:getSecondaryTrough(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
     for _, def in pairs(localFeedingTroughDef) do
@@ -113,6 +113,20 @@ function troughUtils:getSecondaryTroughFromDef(troughObject)
 
     utils:modPrint("Secondary trough not found for: "..tostring(troughObject))
     return nil
+end
+
+function troughUtils:getOtherTroughObject(troughObject)
+    local spriteName = troughObject:getSpriteName()
+
+    if troughUtils:isSingleTileTroughFromSprite(spriteName) then
+        return nil
+    end
+
+    if self:isPrimaryTroughSprite(spriteName) then
+        return self:getSecondaryTrough(troughObject)
+    end
+
+    return self:getPrimaryTrough(troughObject)
 end
 
 return troughUtils

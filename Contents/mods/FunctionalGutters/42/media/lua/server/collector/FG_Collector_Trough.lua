@@ -18,12 +18,12 @@ end
 function TroughService:connectCollector(containerObject, gutterRainFactor)
     if troughUtils:isTroughSprite(containerObject:getSpriteName()) and not troughUtils:isTroughObject(containerObject) then
         -- Trough is still an IsoObject and needs to be converted to IsoFeedingTrough with a global object
-        containerObject = globalObjectUtils:loadFullTrough(containerObject)
+        containerObject, _ = globalObjectUtils:loadFullTrough(containerObject)
         if not containerObject then return false end
     end
 
     -- Ensure the 'primary' trough object is being used for multi-tile troughs
-    local primaryContainerObject = troughUtils:getPrimaryTroughFromDef(containerObject)
+    local primaryContainerObject = troughUtils:getPrimaryTrough(containerObject)
     if not primaryContainerObject then
         return false
     end
@@ -44,7 +44,7 @@ end
 
 function TroughService:disconnectCollector(containerObject)
     -- Ensure the 'primary' trough object is being used for multi-tile troughs
-    local primaryContainerObject = troughUtils:getPrimaryTroughFromDef(containerObject)
+    local primaryContainerObject = troughUtils:getPrimaryTrough(containerObject)
     if not primaryContainerObject then
         return false
     end
