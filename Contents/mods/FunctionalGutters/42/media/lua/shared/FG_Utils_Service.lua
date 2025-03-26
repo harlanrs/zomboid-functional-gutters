@@ -5,6 +5,7 @@ local isoUtils = require("FG_Utils_Iso")
 local troughUtils = require("FG_Utils_Trough")
 
 local table_insert = table.insert
+local localRandom = newrandom()
 
 local serviceUtils = {}
 
@@ -48,7 +49,6 @@ function serviceUtils:getPrimaryCollector(object)
 
     return nil
 end
-
 
 function serviceUtils:getConnectedCollectorFromSquare(square)
     local objects = square:getObjects()
@@ -115,6 +115,29 @@ function serviceUtils:getObjectBaseRainFactor(object)
     -- Fallback to 0.0 if no base rain factor found
     utils:modPrint("Base rain factor not found for object: "..tostring(object))
     return 0.0
+end
+
+function serviceUtils:handlePostCollectorConnected(square)
+    local _, drainPipe, _, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
+    if not drainPipe then
+        return
+    end
+
+    local drainModData = drainPipe:getModData()
+    if not utils:getModDataDrainCleared(drainPipe, drainModData) then
+        -- Roll dice for easter egg & update mod data
+        drainModData[enums.modDataKey.drainCleared] = true
+        local easterEggRoll = localRandom:random(1, 10)
+        utils:modPrint("Easter egg roll: "..tostring(easterEggRoll))
+        if easterEggRoll == 10 then
+            utils:modPrint("Easter egg triggered!")
+            local adjacentFreeSquare = AdjacentFreeTileFinder.Find(square, getPlayer())
+            if adjacentFreeSquare then
+                local spider = adjacentFreeSquare:AddWorldInventoryItem("Base.RubberSpider", 0.5, 0.5, 0)
+                spider:setName("Itsy Betsy")
+            end
+        end
+    end
 end
 
 function serviceUtils:setDrainPipeModData(square, squareModData)

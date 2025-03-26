@@ -21,6 +21,7 @@ function DrainPipeService:onCreate(object)
     local modData = object:getModData()
     modData["need:Base.BlowTorch"] = nil
     modData["need:Base.WeldingRods"] = nil
+    modData[enums.modDataKey.drainCleared] = true
 end
 
 function DrainPipeService:onIsValid(buildParams)

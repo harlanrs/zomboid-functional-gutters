@@ -132,6 +132,10 @@ function utils:getModDataBaseRainFactor(object, loadedModData)
     return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
 end
 
+function utils:getModDataDrainCleared(object, loadedModData)
+    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.drainCleared)
+end
+
 function utils:getModDataRoofArea(square, loadedModData)
     return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.roofArea)
 end
@@ -236,17 +240,6 @@ function utils:getSpecificIsoObjectFromSquare(square, spriteName)
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
         if spriteName == object:getSpriteName() then
-            return object
-        end
-    end
-    return nil
-end
-
-function utils:getConnectedCollectorFromSquare(square)
-    local objects = square:getObjects()
-    for i = 0, objects:size() - 1 do
-        local object = objects:get(i)
-        if utils:getModDataIsGutterConnected(object) then
             return object
         end
     end

@@ -161,29 +161,33 @@ function FG_UI_CollectorInfoPanel:prerender()
     local iconH = 24
     local iconX = self.x + 1;
     local iconY = self.containerBox.y + UI_BORDER_SPACING
-    local hasPlumbIcon = nil
-    if self.container then
-        hasPlumbIcon = true
-        local icon = self.isGutterConnected and self.plumbIcon or self.plumbOffIcon;
-        self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
 
-        -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
-        -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
-        
-        -- container overlay icon
-        -- local iconW = 24;
-        -- local iconH = 24;
-        -- local iconX = self.x + 1;
-        -- local iconY = self.containerBox.y + UI_BORDER_SPACING;
-        -- -- local iconX = (self.containerBox.x - UI_BORDER_SPACING - iconW) / 2;
-        -- -- local iconY = self.y - (self.height - iconH) / 2;
-        -- local iconTexture = self.isGutterConnected and self.gutterConnectedTexture2 or self.gutterDisconnectedTexture;
-        -- self:drawTextureScaledStatic(iconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
-    end
-
-    iconY = hasPlumbIcon and iconY + iconH + UI_BORDER_SPACING or iconY;
     local icon = self.isOutside and self.fluidIcon or self.fluidOffIcon;
     self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+
+    iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
+    icon = self.isGutterConnected and self.plumbIcon or self.plumbOffIcon;
+    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+
+    iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
+    icon = self.collector and self.collectorIcon or self.collectorOffIcon;
+    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+    -- if self.container then
+    --     -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
+    --     -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
+        
+    --     -- container overlay icon
+    --     -- local iconW = 24;
+    --     -- local iconH = 24;
+    --     -- local iconX = self.x + 1;
+    --     -- local iconY = self.containerBox.y + UI_BORDER_SPACING;
+    --     -- -- local iconX = (self.containerBox.x - UI_BORDER_SPACING - iconW) / 2;
+    --     -- -- local iconY = self.y - (self.height - iconH) / 2;
+    --     -- local iconTexture = self.isGutterConnected and self.gutterConnectedTexture2 or self.gutterDisconnectedTexture;
+    --     -- self:drawTextureScaledStatic(iconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+    -- end
+
+    
 end
 
 function FG_UI_CollectorInfoPanel:renderCollectorInfo()
@@ -501,6 +505,8 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     o.fluidOffIcon = getTexture("media/ui/fluid_drop_icon_off.png")
     o.plumbIcon = getTexture("media/ui/plumb_icon.png")
     o.plumbOffIcon = getTexture("media/ui/plumb_icon_off.png")
+    o.collectorIcon = getTexture("media/ui/collector_icon.png")
+    o.collectorOffIcon = getTexture("media/ui/collector_icon_off.png")
     -- o.fluidDrop = getTexture("media/ui/Entity/fluid_drop_icon.png")
     -- o.plusGreenTexture = getTexture("media/ui/Moodle_internal_plus_green.png")
     -- o.minusRedTexture = getTexture("media/ui/Moodle_internal_minus_red.png")

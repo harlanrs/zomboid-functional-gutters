@@ -71,7 +71,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     local triggerGutterTileUpdateEvent = false
     local squareModData = serviceUtils:syncSquarePipeModData(square)
     if utils:isAnyPipeSprite(sprite) then
-        -- A pipe was built 
+        -- A pipe was built
         checkDrainPipes = true
     end
 
@@ -97,7 +97,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         if drainPipes then
             for i=1, #drainPipes do
                 local drainPipe = drainPipes[i]
-                local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
                     -- Re-run connect logic to update the rain factor for already connected collectors
                     gutterService:connectCollector(connectedCollector)
@@ -146,7 +146,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         -- Trough was placed and converted to a global object
     elseif utils:getModDataIsGutterConnected(placedObject, nil) then
         -- Can't properly clean up all object types on pickup so have to check here for placement
-        utils:modPrint("Cleaning up existing collector object mod data after placing: "..tostring(placedObject))
+        utils:modPrint("Cleaning up existing collector mod data after placing: "..tostring(placedObject))
         gutterService:disconnectCollector(placedObject)
     end
 
@@ -156,7 +156,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         if drainPipes then
             for i=1, #drainPipes do
                 local drainPipe = drainPipes[i]
-                local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
                     gutterService:connectCollector(connectedCollector)
                     triggerGutterTileUpdateEvent = true
@@ -189,7 +189,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
 
         -- Check if the drainpipe was the removed object
         if utils:isDrainPipe(removedObject) then
-            local connectedCollector = utils:getConnectedCollectorFromSquare(square)
+            local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(square)
             if connectedCollector then
                 -- A drain pipe was removed so disconnect the collector
                 utils:modPrint("Disconnecting collector after drain pipe was removed: "..tostring(connectedCollector:getName()))
@@ -235,7 +235,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
         if drainPipes then
             for i=1, #drainPipes do
                 local drainPipe = drainPipes[i]
-                local connectedCollector = utils:getConnectedCollectorFromSquare(drainPipe:getSquare())
+                local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
                     gutterService:connectCollector(connectedCollector)
                     triggerGutterTileUpdateEvent = true

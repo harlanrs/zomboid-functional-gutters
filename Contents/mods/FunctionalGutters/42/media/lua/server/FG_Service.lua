@@ -73,7 +73,10 @@ function gutterService:connectCollector(collectorObject)
     local square = serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     local gutterSegment = serviceUtils:calculateGutterSegment(square)
 
-    containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
+    local success = containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
+    if success then
+        serviceUtils:handlePostCollectorConnected(square)
+    end
 end
 
 function gutterService:disconnectCollector(collectorObject)

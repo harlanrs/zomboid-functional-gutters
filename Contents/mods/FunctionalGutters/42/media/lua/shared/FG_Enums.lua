@@ -251,6 +251,7 @@ enums.modDataKey = {
     isGutterConnected = "FG_isGutterConnected",
     roofArea = "FG_roofArea",
     isRoofSquare = "FG_roofSquare",
+    drainCleared = "FG_drainCleared",
 
     -- pipeConnectedUp
     -- pipeConnectedDown

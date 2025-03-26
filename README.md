@@ -168,7 +168,10 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 ### 1.2 Notes
 
 TODO High Priority
-- Fix multi-tile trough in several areas where container is checked
+- Add icons with tooltip 
+- Add roof section tooltip
+- Add missing container tooltip
+- Add missing wrench tooltip
 - Set scrap definition for all pipes
 - Add tile props to all pipes
 - Build full mod info panel 
@@ -193,7 +196,6 @@ TODO Low Priority
     - some garages are still tagged as the the same building even when physically separate.
     - this would allow players to easily use them without impacting things like drain limit on the main building
 - Take roof angle into consideration?
-- Feedback in build menu when placing pipes?
 - Add additional gutter material types
     - clay using inverted clay tiles and clay pipes
 - Water overlay during storms?
@@ -210,7 +212,6 @@ TODO Low Priority
     - WorldSoundManager.instance.addSoundRepeating
     - (object).addObjectAmbientEmitter
     - (chunk).addObjectAmbientEmitter
-- Easter egg random chance on first time plumb of existing drain pipes
 
 Notes:
 - Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)
