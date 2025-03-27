@@ -6,25 +6,25 @@ module Base
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Pipe - Drain,
-			Icon		= Build_GutterDrainPipe,
+			Icon		= FG_Build_Pipe_Drain,
 		}
         entity ES_GutterPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Pipe - Vertical,
-			Icon		= Build_GutterVerticalPipe,
+			Icon		= FG_Build_Pipe_Vertical,
 		}
         entity ES_RoofPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Pipe - Roof,
-			Icon		= Build_GutterRoofPipe,
+			DisplayName	= Gutter Pipe,
+			Icon		= FG_Build_Pipe_Gutter,
 		}
         entity ES_GutterPipe_Corner
 		{
 			LuaWindowClass	= ISEntityWindow,
 			DisplayName	= Gutter Pipe - Corner,
-			Icon		= Build_GutterRoofPipe,
+			Icon		= FG_Build_Pipe_Corner,
 		}
 	}
 
@@ -34,7 +34,7 @@ module Base
         {
             xuiSkin         = default,
             entityStyle     = ES_GutterDrainPipe,
-            uiEnabled       = true,
+            uiEnabled       = false,
         }
 
         component SpriteConfig
@@ -67,14 +67,15 @@ module Base
             xpAward       = MetalWelding:10,
             category      = Outdoors,
             tags          = Welding,
-            ToolTip       = UI_craft_FunctionalGutters_MetalDrainPipe_tooltip,
+            ToolTip       = UI_craft_FunctionalGutters_MetalPipeDrain_tooltip,
             inputs
             {
                 item 1 tags[WeldingMask] mode:keep,
                 item 4 [Base.BlowTorch] flags[Prop1],
-                item 4 [Base.SheetMetal],
-                item 4 [Base.IronBandSmall],
-                item 4 [Base.WeldingRods],
+                item 3 [Base.SheetMetal],
+                item 1 [Base.SmallSheetMetal],
+                item 3 [Base.IronBandSmall],
+                item 3 [Base.WeldingRods],
             }
         }
     }
@@ -140,7 +141,7 @@ module Base
             xpAward       = MetalWelding:10,
             category      = Outdoors,
             tags          = Welding,
-            ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
+            ToolTip       = UI_craft_FunctionalGutters_MetalPipeVertical_tooltip,
             inputs
             {
                 item 1 tags[WeldingMask] mode:keep,
@@ -190,13 +191,13 @@ module Base
             xpAward       = MetalWelding:5,
             category      = Outdoors,
             tags          = Welding,
-            ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
+            ToolTip       = UI_craft_FunctionalGutters_MetalPipeGutter_tooltip,
             inputs
             {
                 item 1 tags[WeldingMask] mode:keep,
                 item 2 [Base.BlowTorch] flags[Prop1],
                 item 2 [Base.SmallSheetMetal],
-                item 2 [Base.WeldingRods],
+                item 1 [Base.WeldingRods],
             }
         }
     }
@@ -238,12 +239,12 @@ module Base
             xpAward       = MetalWelding:5,
             category      = Outdoors,
             tags          = Welding,
-            ToolTip       = UI_craft_FunctionalGutters_MetalPipe_tooltip,
+            ToolTip       = UI_craft_FunctionalGutters_MetalPipeCorner_tooltip,
             inputs
             {
                 item 1 tags[WeldingMask] mode:keep,
-                item 2 [Base.BlowTorch] flags[Prop1],
-                item 2 [Base.SmallSheetMetal],
+                item 4 [Base.BlowTorch] flags[Prop1],
+                item 4 [Base.SmallSheetMetal],
                 item 2 [Base.WeldingRods],
             }
         }

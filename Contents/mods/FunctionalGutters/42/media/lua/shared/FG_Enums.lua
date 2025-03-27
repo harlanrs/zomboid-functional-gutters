@@ -284,4 +284,21 @@ enums.defaultDrainPipeSearchHeight = 1
 enums.gutterSegmentPerimeterLength = 9
 enums.gutterSegmentCapacityRatio = 0.25
 
+enums.textures = {}
+enums.textures.build = {
+    gutter = "media/textures/Build_GutterRoofPipe.png", -- TODO rename
+    drain = "media/textures/Build_GutterDrainPipe.png",
+    vertical = "media/textures/Build_GutterVerticalPipe.png",
+    -- horizontal = "",
+    -- corner = ""
+}
+enums.textures.icon = {
+    fluidDropOn = "media/ui/fluid_drop_icon.png",
+    fluidDropOff = "media/ui/fluid_drop_icon_off.png",
+    plumbOn = "media/ui/plumb_icon.png",
+    plumbOff = "media/ui/plumb_icon_off.png",
+    collectorOn = "media/ui/collector_icon.png",
+    collectorOff = "media/ui/collector_icon_off.png",
+}
+
 return enums

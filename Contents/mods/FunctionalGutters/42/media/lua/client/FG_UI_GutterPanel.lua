@@ -89,7 +89,6 @@ end
 
 function FG_UI_GutterPanel:addCollectorInfoPanel()
     local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING;
-
     self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutter, self.collector);
     self.collectorPanel:initialise();
     self.collectorPanel:noBackground();
@@ -174,7 +173,7 @@ function FG_UI_GutterPanel:createChildren()
     end
     self:addChild(self.btnToggleConnect);
 
-    self:setWidth(self.collectorPanel:getRight() + UI_BORDER_SPACING + 1);
+    -- self:setWidth(self.collectorPanel:getRight() + UI_BORDER_SPACING + 1);
     self:setHeight(self.btnToggleConnect:getBottom() + UI_BORDER_SPACING+1);
 end
 
@@ -200,7 +199,7 @@ function FG_UI_GutterPanel:render()
     self:renderJoypadFocus()
 
     local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING + 1;
-    self:drawText("Gutter System", x, y, 1, 1, 1, 1, UIFont.Medium);
+    self:drawText(getText("UI_panel_FunctionalGutters_panel_title"), x, y, 1, 1, 1, 1, UIFont.Medium);
 end
 
 function FG_UI_GutterPanel:validatePanel()
@@ -222,10 +221,10 @@ function FG_UI_GutterPanel:validatePanel()
         if not self.disableConnect then
             -- TODO isValid check for container
             if not utils:getModDataIsGutterConnected(self.primaryCollector) then
-                self.btnToggleConnect.title = "Connect";
+                self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_ConnectContainer");
                 self.btnToggleConnect:enableAcceptColor();
             else
-                self.btnToggleConnect.title = "Disconnect";
+                self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_DisconnectContainer");
                 local bgC = self.btnDefault.backgroundColor
                 local bgCMO = self.btnDefault.backgroundColorMouseOver
                 local bC = self.btnDefault.borderColor
@@ -428,11 +427,10 @@ function FG_UI_GutterPanel:reloadCollector()
 end
 
 function FG_UI_GutterPanel:onUpdateGutterTile(square)
-    utils:modPrint("FG_UI_GutterPanel handle gutter tile update event")
     local squareID = square:getID()
     local gutterSquareID = self.gutterSquare:getID()
     if squareID == gutterSquareID or (self.primaryCollectorSquare and squareID == self.primaryCollectorSquare:getID()) then
-        utils:modPrint("Gutter tile update event for related square")
+        utils:modPrint("Gutter panel updating after OnUpdateGutterTile")
         if not utils:isDrainPipeSquare(self.gutterSquare) then
             -- Gutter no longer exists on square so close the panel
             self:close();
@@ -451,7 +449,7 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
         elseif self.collector and not prevCollector then
             -- Collector added to square - refresh the panel
             self.disableConnect = false;
-            self.btnToggleConnect.title = "Connect";
+            self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_ConnectContainer");
             self.btnToggleConnect:setEnable(true);
             self.btnToggleConnect:enableAcceptColor();
             self:reloadCollectorInfoPanel(true)

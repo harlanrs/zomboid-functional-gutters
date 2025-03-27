@@ -168,9 +168,7 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 ### 1.2 Notes
 
 TODO High Priority
-- Add icons with tooltip 
 - Add roof section tooltip
-- Add missing container tooltip
 - Add missing wrench tooltip
 - Set scrap definition for all pipes
 - Add tile props to all pipes
@@ -189,6 +187,7 @@ TODO Medium Priority
 - Persist 'mode' on drain pipe object as mod data
 - Crawl perimeter of vanilla building in drain check instead of radial search
     - Will need to test with large buildings
+- 
 
 TODO Low Priority
 - Use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.

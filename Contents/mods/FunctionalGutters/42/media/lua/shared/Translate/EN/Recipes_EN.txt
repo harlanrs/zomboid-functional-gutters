@@ -1,0 +1,6 @@
+RecipesEN {
+    Metal_GutterDrainPipe = "Gutter Pipe - Drain"
+    Metal_GutterPipe = "Gutter Pipe - Vertical"
+    Metal_RoofPipe = "Gutter Pipe"
+    Metal_GutterPipe_Corner = "Gutter Pipe - Corner (Inside)"
+}

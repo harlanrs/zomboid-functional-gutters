@@ -1,7 +1,10 @@
 require "ISUI/ISPanel"
 
+local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local serviceUtils = require("FG_Utils_Service")
+
+require "FG_UI_IconTooltip"
 
 FG_UI_CollectorInfoPanel = ISPanel:derive("FG_UI_GutterInfoPanel");
 
@@ -22,7 +25,8 @@ function FG_UI_CollectorInfoPanel:createChildren()
 
     self:getIsoObjectTextures();
 
-    local y = UI_BORDER_SPACING+1;
+    local y = 1;
+    -- local y = UI_BORDER_SPACING+1;
     if self.doTitle then
         y = y+FONT_HGT_SMALL+UI_BORDER_SPACING;
     end
@@ -47,6 +51,24 @@ function FG_UI_CollectorInfoPanel:createChildren()
         w = self.width - fluidBarW - UI_BORDER_SPACING*1 - 2,
         h = self.innerHeight,
     }
+
+    local iconDesc = getText("UI_panel_FunctionalGutters_section_Roof_icon_tooltip_success")
+    local icon = enums.textures.icon.fluidDropOn
+    self.fluidIconPanel = FG_UI_IconTooltip:new(self.x, self.y, 24, 24, icon, nil, iconDesc, self.player);
+    self.fluidIconPanel:initialise();
+    self:addChild(self.fluidIconPanel);
+
+    iconDesc = getText("UI_panel_FunctionalGutters_section_Pipes_icon_tooltip_success")
+    icon = enums.textures.icon.plumbOn
+    self.plumbIconPanel = FG_UI_IconTooltip:new(self.x, self.y, 24, 24, icon, nil, iconDesc, self.player);
+    self.plumbIconPanel:initialise();
+    self:addChild(self.plumbIconPanel);
+
+    iconDesc = getText("UI_panel_FunctionalGutters_section_Collector_icon_tooltip_success")
+    icon = enums.textures.icon.collectorOn
+    self.collectorIconPanel = FG_UI_IconTooltip:new(self.x, self.y, 24, 24, icon, nil, iconDesc, self.player);
+    self.collectorIconPanel:initialise();
+    self:addChild(self.collectorIconPanel);
 end
 
 function FG_UI_CollectorInfoPanel:drawTextureIso(texture, x, y, a, r, g, b)
@@ -72,7 +94,7 @@ function FG_UI_CollectorInfoPanel:prerender()
         self.borderColor = {r=c.r, b=c.b, g=c.g, a=c.a};
         local w = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
         self.containerBox.w = w;
-        self.containerBox.h = 80;
+        self.containerBox.h = self.innerHeight; -- 80;
         self.containerBox.x = self:getWidth() - w - UI_BORDER_SPACING + 1;
         self.containerBox.y = self.innerY;
         self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, 0.75, 0, 0, 0);
@@ -100,7 +122,7 @@ function FG_UI_CollectorInfoPanel:prerender()
         self:renderText(countText, countTextX, countTextY, c.r,c.g,c.b,c.a, UIFont.Small);
 
         -- Add "Missing Collector" text below 
-        local text = "Gutter Collector";
+        local text = getText("UI_panel_FunctionalGutters_section_Collector_invalid_MissingCollector");
         c = self.textColor;
         local textW = getTextManager():MeasureStringX(UIFont.Small, text);
         local textX = self.containerBox.x + (self.containerBox.w - textW) / 2;
@@ -157,37 +179,77 @@ function FG_UI_CollectorInfoPanel:prerender()
     end
 
     -- Draw after textures to ensure icon is on top
-    local iconW = 24
+    -- Icon Container
+    local iconContainerW = 24 + 8;
+    local iconContainerH = self.containerBox.h; --72 + 4*UI_BORDER_SPACING;
+    local iconContainerX = self.x - UI_BORDER_SPACING;
+    local iconContainerY = self.containerBox.y;
+    local c = {r=0, g=0, b=0, a=1.0};
+    self:drawRect(iconContainerX, iconContainerY, iconContainerW, iconContainerH, c.a, c.r, c.g, c.b);
+    self:drawTextureScaled(self.gradientTex, iconContainerX, iconContainerY, iconContainerW, iconContainerH, self.gradientAlpha, 1, 1, 1);
+    c = self.borderColor;
+    self:drawRectBorder(iconContainerX, iconContainerY, iconContainerW, iconContainerH, c.a, c.r, c.g, c.b);
+
+    -- Fluid Icon
     local iconH = 24
-    local iconX = self.x + 1;
-    local iconY = self.containerBox.y + UI_BORDER_SPACING
+    local iconX = iconContainerX + 4;
+    local iconY = iconContainerY + 4;
+    if self.fluidIconPanel.x ~= iconX or self.fluidIconPanel.y ~= iconY then
+        self.fluidIconPanel:setX(iconX);
+        self.fluidIconPanel:setY(iconY);
+    end
 
-    local icon = self.isOutside and self.fluidIcon or self.fluidOffIcon;
-    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+    if self.fluidIconPanel.visible ~= true then
+        self.fluidIconPanel:setVisible(true);
+    end
 
-    iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
-    icon = self.isGutterConnected and self.plumbIcon or self.plumbOffIcon;
-    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
+    local icon = self.isOutside and enums.textures.icon.fluidDropOn or enums.textures.icon.fluidDropOff;
+    if self.fluidIconPanel.icon ~= icon then
+        local endText = self.isOutside and "success" or "error"
+        local tooltipText = getText("UI_panel_FunctionalGutters_section_Roof_icon_tooltip_"..endText)
+        self.fluidIconPanel:setDescription(tooltipText);
+        self.fluidIconPanel:setIcon(icon);
+    end
 
-    iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
-    icon = self.collector and self.collectorIcon or self.collectorOffIcon;
-    self:drawTextureScaledStatic(icon, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
-    -- if self.container then
-    --     -- local iconX = (self.containerBox.x - UI_BORDER_SPACING) / 2; --  - iconW
-    --     -- local iconY = self.height - (5*UI_BORDER_SPACING) - iconH;
-        
-    --     -- container overlay icon
-    --     -- local iconW = 24;
-    --     -- local iconH = 24;
-    --     -- local iconX = self.x + 1;
-    --     -- local iconY = self.containerBox.y + UI_BORDER_SPACING;
-    --     -- -- local iconX = (self.containerBox.x - UI_BORDER_SPACING - iconW) / 2;
-    --     -- -- local iconY = self.y - (self.height - iconH) / 2;
-    --     -- local iconTexture = self.isGutterConnected and self.gutterConnectedTexture2 or self.gutterDisconnectedTexture;
-    --     -- self:drawTextureScaledStatic(iconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1);
-    -- end
+    -- Plumb Icon
+    -- iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
+    iconY = iconContainerY + (iconContainerH - iconH) / 2;
+    if self.plumbIconPanel.x ~= iconX or self.plumbIconPanel.y ~= iconY then
+        self.plumbIconPanel:setX(iconX);
+        self.plumbIconPanel:setY(iconY);
+    end
 
-    
+    if self.plumbIconPanel.visible ~= true then
+        self.plumbIconPanel:setVisible(true);
+    end
+
+    icon = self.isGutterConnected and enums.textures.icon.plumbOn or enums.textures.icon.plumbOff;
+    if self.plumbIconPanel.icon ~= icon then
+        local endText = self.isGutterConnected and "success" or "error"
+        local tooltipText = getText("UI_panel_FunctionalGutters_section_Pipes_icon_tooltip_"..endText)
+        self.plumbIconPanel:setDescription(tooltipText);
+        self.plumbIconPanel:setIcon(icon);
+    end
+
+    -- Collector Icon
+    -- iconY = iconY + iconH + UI_BORDER_SPACING or iconY;
+    iconY = iconContainerY + iconContainerH - iconH - 4;
+    if self.collectorIconPanel.x ~= iconX or self.collectorIconPanel.y ~= iconY then
+        self.collectorIconPanel:setX(iconX);
+        self.collectorIconPanel:setY(iconY);
+    end
+
+    if self.collectorIconPanel.visible ~= true then
+        self.collectorIconPanel:setVisible(true);
+    end
+
+    icon = self.collector and enums.textures.icon.collectorOn or enums.textures.icon.collectorOff;
+    if self.collectorIconPanel.icon ~= icon then
+        local endText = self.collector and "success" or "error"
+        local tooltipText = getText("UI_panel_FunctionalGutters_section_Collector_icon_tooltip_"..endText)
+        self.collectorIconPanel:setDescription(tooltipText);
+        self.collectorIconPanel:setIcon(icon);
+    end
 end
 
 function FG_UI_CollectorInfoPanel:renderCollectorInfo()
@@ -445,7 +507,6 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
             self.baseRainFactor = 0.0;
             self.totalRainFactor = 0.0;
             self.isGutterConnected = false;
-            self.isCovered = false;
         end
 
         if self.isInvalid then
@@ -456,7 +517,6 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
         self.baseRainFactor = 0.0;
         self.totalRainFactor = 0.0;
         self.isGutterConnected = false;
-        self.isCollectorCovered = false;
         self:setInvalid(true);
     end
 
@@ -501,12 +561,14 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     o.missingCollectorTexture = getTexture("carpentry_02_124");
     o.missingIconTexture = getTexture("media/ui/Entity/BTN_Missing_Icon_48x48.png");
     o.gutterConnectedTexture = getTexture("media/ui/craftingMenus/BuildProperty_Drain.png")
-    o.fluidIcon = getTexture("media/ui/fluid_drop_icon.png")
-    o.fluidOffIcon = getTexture("media/ui/fluid_drop_icon_off.png")
-    o.plumbIcon = getTexture("media/ui/plumb_icon.png")
-    o.plumbOffIcon = getTexture("media/ui/plumb_icon_off.png")
-    o.collectorIcon = getTexture("media/ui/collector_icon.png")
-    o.collectorOffIcon = getTexture("media/ui/collector_icon_off.png")
+    o.gradientTex = getTexture("media/ui/Fluids/fluid_gradient.png");
+    o.gradientAlpha = 0.15;
+    -- o.fluidIcon = getTexture("media/ui/fluid_drop_icon.png")
+    -- o.fluidOffIcon = getTexture("media/ui/fluid_drop_icon_off.png")
+    -- o.plumbIcon = getTexture("media/ui/plumb_icon.png")
+    -- o.plumbOffIcon = getTexture("media/ui/plumb_icon_off.png")
+    -- o.collectorIcon = getTexture("media/ui/collector_icon.png")
+    -- o.collectorOffIcon = getTexture("media/ui/collector_icon_off.png")
     -- o.fluidDrop = getTexture("media/ui/Entity/fluid_drop_icon.png")
     -- o.plusGreenTexture = getTexture("media/ui/Moodle_internal_plus_green.png")
     -- o.minusRedTexture = getTexture("media/ui/Moodle_internal_minus_red.png")
@@ -549,8 +611,8 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
         capacity = { tag = getText("Fluid_Capacity")..": ", value = "0", cache = 0 },
         stored = { tag = getText("Fluid_Stored")..": ", value = "0", cache = 0 },
         free = { tag = getText("Fluid_Free")..": ", value = "0", cache = 0 },
-        baseRainFactor = { tag = "Base Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
-        totalRainFactor = { tag = "Total Rain Factor"..": ", value = "0.0", cache = 0.0 }, -- TODO translate
+        baseRainFactor = { tag = getText("UI_panel_FunctionalGutters_section_Collector_item_BaseRainFactor")..": ", value = "0.0", cache = 0.0 },
+        totalRainFactor = { tag = getText("UI_panel_FunctionalGutters_section_Collector_item_TotalRainFactor")..": ", value = "0.0", cache = 0.0 },
     }
 
     return o

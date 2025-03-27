@@ -25,7 +25,7 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     local y = UI_BORDER_SPACING + 1;
 
     local c = self.textColor;
-    self:renderText("Pipes", x, y, c.r, c.g, c.b, c.a, UIFont.Small);
+    self:renderText(getText("UI_panel_FunctionalGutters_section_Pipes_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small);
 
     if not self.gutterSegment or not self.gutterSegment.pipeMap == nil then
         return
@@ -82,7 +82,7 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     local y = UI_BORDER_SPACING + 1;
 
     local c = self.textColor;
-    self:renderText("Roof", x, y, c.r, c.g, c.b, c.a, UIFont.Small);
+    self:renderText(getText("UI_panel_FunctionalGutters_section_Roof_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small);
 
     local roofArea = self.gutterSegment.roofArea
     if self.roofInfo.area.cache~=roofArea then
@@ -177,13 +177,13 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
     local btnW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2;
     local btnX = UI_BORDER_SPACING + 1
     local btnY = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT
-    local btnPipesText = "View Pipes";  -- TODO translate
+    local btnPipesText = getText("UI_panel_FunctionalGutters_section_Pipes_btn");
     self.btnPipes = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, btnPipesText, self, self.onPipes);
     self.btnPipes.internal = "PIPES";
     self.btnPipes:initialise();
     self:addChild(self.btnPipes);
 
-    local roofBtnText = "View Roof"; -- TODO translate
+    local roofBtnText = getText("UI_panel_FunctionalGutters_section_Roof_btn");
     btnX = btnX + btnW + UI_BORDER_SPACING + 1
     self.btnRoof = ISButton:new(btnX, btnY, btnW, BUTTON_HGT, roofBtnText, self, self.onRoof);
     self.btnRoof.internal = "ROOF";
@@ -306,18 +306,16 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment)
     o.disableBtnPipes = false;
     o.disableBtnRoof = false;
 
-    -- o.reloadInfo(o);
-
     o.pipeInfo = {
-        [enums.pipeType.drain] = { tag = "Drain"..": ", value = "0", cache = 0 },
-        [enums.pipeType.vertical] = { tag = "Vertical"..": ", value = "0", cache = 0 },
-        [enums.pipeType.gutter] = { tag = "Gutter"..": ", value = "0", cache = 0 },
+        [enums.pipeType.drain] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Drain")..": ", value = "0", cache = 0 },
+        [enums.pipeType.vertical] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Vertical")..": ", value = "0", cache = 0 },
+        [enums.pipeType.gutter] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Gutter")..": ", value = "0", cache = 0 },
     }
     o.roofInfo = {
-        area = { tag = "Total Area"..": ", value = "0", cache = 0 },
-        drainCount = { tag = "Drain Sections"..": ", value = "0", cache = 0 },
+        area = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_TotalArea")..": ", value = "0", cache = 0 },
+        drainCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainSections")..": ", value = "0", cache = 0 },
         optimalDrainCount = { tag = "Optimal Drain Sections"..": ", value = "0", cache = 0 },
-        gutterTileCount = { tag = "Drain Area"..": ", value = "0", cache = 0 },
+        gutterTileCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainArea")..": ", value = "0", cache = 0 },
     }
 
     return o;

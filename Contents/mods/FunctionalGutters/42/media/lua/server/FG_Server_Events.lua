@@ -144,7 +144,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
 
     if loadTroughGlobalObject(placedObject) then
         -- Trough was placed and converted to a global object
-    elseif utils:getModDataIsGutterConnected(placedObject, nil) then
+    elseif utils:getModDataIsGutterConnected(placedObject) then
         -- Can't properly clean up all object types on pickup so have to check here for placement
         utils:modPrint("Cleaning up existing collector mod data after placing: "..tostring(placedObject))
         gutterService:disconnectCollector(placedObject)

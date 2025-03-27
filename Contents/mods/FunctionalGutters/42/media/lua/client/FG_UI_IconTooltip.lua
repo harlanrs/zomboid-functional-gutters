@@ -9,40 +9,38 @@ end
 function FG_UI_IconTooltip:createChildren()
 end
 
-function FG_UI_IconTooltip:render()
-    ISPanel.render(self);
-
-    local c;
-    -- Base backdrop.
-    self:drawRect(0, 0, self.width, self.height, 1.0, 0, 0, 0);
-
-    self.innerX = 2;
-    self.innerY = 2;
-    self.innerW = self.width-4;
-    self.innerH = self.height-4;
-
-    -- draw overlaying ui parts
-    c = self.detailInnerColor;
-    self:drawRectBorder(1, 1, self.width-2, self.height-2, c.a, c.r, c.g, c.b);
-    c = self.borderColor;
-    self:drawRectBorder(0, 0, self.width, self.height, c.a, c.r, c.g, c.b);
-end
-
-
-
-function FG_UI_IconTooltip:setIcon(icon)
-    self.icon = icon;
-end
-
-function FG_UI_IconTooltip:setTooltipText(text)
-    self.text = text;
-end
-
 function FG_UI_IconTooltip:prerender()
     ISPanel.prerender(self);
 
     if self.toolTip and not self:isMouseOver() then
         self:deactivateToolTip();
+    end
+
+    self:drawTextureScaledStatic(self.iconTexture, 0, 0, self.width, self.height, 1, 1, 1, 1);
+end
+
+function FG_UI_IconTooltip:render()
+    ISPanel.render(self);
+end
+
+function FG_UI_IconTooltip:setIcon(icon)
+    if self.icon == icon then return end
+
+    self.icon = icon;
+    self.iconTexture = getTexture(self.icon);
+end
+
+function FG_UI_IconTooltip:setTitle(title)
+    self.title = title;
+    if self.toolTip then
+        self.toolTip:setName(self.title);
+    end
+end
+
+function FG_UI_IconTooltip:setDescription(text)
+    self.description = text;
+    if self.toolTip then
+        self.toolTip:setDescription(self.description);
     end
 end
 
@@ -63,26 +61,17 @@ function FG_UI_IconTooltip:activateToolTip()
         if self.toolTip ~= nil then
             self.toolTip:setVisible(true);
             self.toolTip:addToUIManager();
+            self.toolTip:setName(self.title);
+            self.toolTip:setDescription(self.description);
             self.toolTip:bringToTop()
         else
-            local container = self.container;
-            if self.containerMixed then
-                container = self.containerMixed; --todo make this based of what the mouse is over, and add self.containerAdd
-            end
-            if self.resource then
-                --override with resource if set
-                container = self.resource;
-            end
-            if not container then
-                return;
-            end
-            self.toolTip = ISToolTipInv:new(container);
+            self.toolTip = ISToolTip:new();
+            self.toolTip.descriptionPanel.backgroundColor = {r=0, g=0, b=0, a=0.5};
+            -- self.toolTip.followMouse = false
             self.toolTip:initialise();
             self.toolTip:setVisible(true);
             self.toolTip:addToUIManager();
             self.toolTip:setOwner(self);
-            self.toolTip:setCharacter(self.player);
-            --self.toolTip:doLayout();
         end
     end
 end
@@ -94,7 +83,7 @@ function FG_UI_IconTooltip:deactivateToolTip()
     end
 end
 
-function FG_UI_IconTooltip:new (x, y, width, height, _player, _resource)
+function FG_UI_IconTooltip:new(x, y, width, height, icon, title, description, _player, _resource)
     local o = ISPanel:new(x, y, width, height);
     setmetatable(o, self)
     self.__index = self
@@ -111,9 +100,11 @@ function FG_UI_IconTooltip:new (x, y, width, height, _player, _resource)
     o.anchorTop = false;
     o.anchorBottom = false;
     o.player = _player;
+    o.icon = icon
+    o.iconTexture = getTexture(o.icon);
+    o.title = title;
+    o.description = description;
 
-    o.ratioOrig = 0;
-    o.ratioNew = 0;
     o.drawMeasures = true;
     o.doToolTip = true;
     o.resource = _resource;
