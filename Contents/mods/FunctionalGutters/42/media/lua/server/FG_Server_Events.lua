@@ -7,7 +7,6 @@ local troughUtils = require("FG_Utils_Trough")
 local globalObjectUtils = require("FG_Utils_GlobalObject")
 local gutterService = require("FG_Service")
 
-
 local GutterServerManager = {}
 local GutterCommands = {}
 
@@ -69,7 +68,6 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     local checkDrainPipes = false
     local triggerGutterTileUpdateEvent = false
-    local squareModData = serviceUtils:syncSquarePipeModData(square)
     if utils:isAnyPipeSprite(sprite) then
         -- A pipe was built
         checkDrainPipes = true
@@ -82,6 +80,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         triggerGutterTileUpdateEvent = true
     end
 
+    local squareModData = square:getModData()
     if utils:getModDataIsRoofSquare(square, squareModData) then
         -- Object was built on a square previously marked as a valid roof tile
         serviceUtils:syncSquareRoofModData(square, squareModData)
@@ -117,7 +116,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
     local checkDrainPipes = false
     local triggerGutterTileUpdateEvent = false
     local square = placedObject:getSquare()
-    local squareModData = serviceUtils:syncSquarePipeModData(square)
+    local squareModData = square:getModData()
     if squareModData then
         if utils:getModDataIsRoofSquare(square, squareModData) then
             -- Check if the square roof tile is still 'valid'
@@ -194,7 +193,6 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
                 -- A drain pipe was removed so disconnect the collector
                 utils:modPrint("Disconnecting collector after drain pipe was removed: "..tostring(connectedCollector:getName()))
                 gutterService:disconnectCollector(connectedCollector)
-                serviceUtils:syncSquarePipeModData(square)
             end
         end
 
@@ -264,16 +262,3 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
-
--- Testing to see if these are used yet
-local function processTransaction(action, character, item, source, destination, args)
-    utils:modPrint("Processing transaction: "..action)
-end
-
-Events.OnProcessTransaction.Add(processTransaction)
-
-local function processAction(action, character, args)
-    utils:modPrint("Processing action: "..action)
-end
-
-Events.OnProcessTransaction.Add(processAction)

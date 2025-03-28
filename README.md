@@ -169,13 +169,9 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 TODO High Priority
 - Add roof section tooltip
-- Add missing wrench tooltip
 - Set scrap definition for all pipes
 - Add tile props to all pipes
 - Build full mod info panel 
-- Invert building def check in drain pipes when source drain is on a player built structure
-    - instead of reducing drain pipes to those that share the same building, reduce the pipes to those not attached to a building
-    - Implemented TODO test
 - Disable button & add tooltip when wrench is required in ui panel
 - Add all build icons
 - Add all text translations

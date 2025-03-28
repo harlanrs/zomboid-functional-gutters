@@ -7,6 +7,9 @@ local troughUtils = {}
 local troughNorthFieldIndex = nil
 local localFeedingTroughDef = FeedingTroughDef
 
+---Checks sprite name against a list of known trough sprites
+---@param spriteName any
+---@return boolean
 function troughUtils:isTroughSprite(spriteName)
     for _, troughSprite in ipairs(enums.troughSprites) do
         if spriteName == troughSprite then
@@ -16,6 +19,8 @@ function troughUtils:isTroughSprite(spriteName)
     return false
 end
 
+---@param spriteName any
+---@return boolean
 function troughUtils:isSingleTileTroughFromSprite(spriteName)
     for _, troughSprite in ipairs(enums.smallTroughSprites) do
         if spriteName == troughSprite then
@@ -25,16 +30,24 @@ function troughUtils:isSingleTileTroughFromSprite(spriteName)
     return false
 end
 
-function troughUtils:isTroughObject(isoObject)
-    return instanceof(isoObject, "IsoFeedingTrough")
+---Checks for specific IsoFeedingTrough instance type
+---@param object IsoObject
+---@return boolean
+function troughUtils:isTroughObject(object)
+    return instanceof(object, "IsoFeedingTrough")
 end
 
-function troughUtils:isTrough(isoObject)
-    return self:isTroughObject(isoObject) or self:isTroughSprite(isoObject:getSpriteName())
+-- Check if object is either an IsoFeedingTrough or has a trough sprite
+---@param object IsoObject
+---@return boolean
+function troughUtils:isTrough(object)
+    return self:isTroughObject(object) or self:isTroughSprite(object:getSpriteName())
 end
 
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return boolean
 function troughUtils:isTroughNorth(troughObject)
-    if troughNorthFieldIndex == nil then 
+    if troughNorthFieldIndex == nil then
         troughNorthFieldIndex = utils:getClassFieldIndex(troughObject, "north")
         utils:modPrint("Set trough field 'north' index: "..tostring(troughNorthFieldIndex))
     end
@@ -43,14 +56,20 @@ function troughUtils:isTroughNorth(troughObject)
     return value
 end
 
-function troughUtils:isSecondaryTrough(isoObject)
-    return isoObject:getLinkedX() > 0 and isoObject:getLinkedY() > 0
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return boolean
+function troughUtils:isSecondaryTrough(troughObject)
+    return troughObject:getLinkedX() > 0 and troughObject:getLinkedY() > 0
 end
 
-function troughUtils:isPrimaryTrough(isoObject)
-    return not self:isSecondaryTrough(isoObject)
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return boolean
+function troughUtils:isPrimaryTrough(troughObject)
+    return not self:isSecondaryTrough(troughObject)
 end
 
+---@param troughSpriteName string
+---@return boolean
 function troughUtils:isPrimaryTroughSprite(troughSpriteName)
     for _, def in pairs(localFeedingTroughDef) do
 		if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
@@ -61,6 +80,8 @@ function troughUtils:isPrimaryTroughSprite(troughSpriteName)
     return false
 end
 
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return IsoFeedingTrough|IsoObject|nil primaryTrough
 function troughUtils:getPrimaryTrough(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
@@ -88,6 +109,8 @@ function troughUtils:getPrimaryTrough(troughObject)
     return nil
 end
 
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return IsoFeedingTrough|IsoObject|nil secondaryTrough
 function troughUtils:getSecondaryTrough(troughObject)
     local troughSpriteName = troughObject:getSpriteName()
 
@@ -115,6 +138,8 @@ function troughUtils:getSecondaryTrough(troughObject)
     return nil
 end
 
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return IsoFeedingTrough|IsoObject|nil otherTrough
 function troughUtils:getOtherTroughObject(troughObject)
     local spriteName = troughObject:getSpriteName()
 

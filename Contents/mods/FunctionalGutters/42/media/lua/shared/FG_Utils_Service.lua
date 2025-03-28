@@ -9,22 +9,30 @@ local localRandom = newrandom()
 
 local serviceUtils = {}
 
+---@param object IsoObject
+---@return boolean
 function serviceUtils:isWorldInventoryObject(object)
     return instanceof(object, "IsoWorldInventoryObject")
 end
 
-function serviceUtils:isFluidContainerObject(containerObject)
-    return instanceof(containerObject, "IsoObject") and containerObject:getFluidContainer() ~= nil
+---@param object IsoObject
+---@return boolean
+function serviceUtils:isFluidContainerObject(object)
+    return instanceof(object, "IsoObject") and object:getFluidContainer() ~= nil
 end
 
-function serviceUtils:isValidCollectorObject(containerObject)
-    if self:isWorldInventoryObject(containerObject) then
+---@param object IsoObject
+---@return boolean
+function serviceUtils:isValidCollectorObject(object)
+    if self:isWorldInventoryObject(object) then
         return false
     end
 
-    return troughUtils:isTrough(containerObject) or self:isFluidContainerObject(containerObject)
+    return troughUtils:isTrough(object) or self:isFluidContainerObject(object)
 end
 
+---@param object IsoObject
+---@return IsoObject|nil primaryCollector
 function serviceUtils:getPrimaryCollector(object)
     -- Finds the 'primary' fluid container object for multi-tile objects
     -- primarily for trough objects atm but could be expanded to other multi-tile objects
@@ -50,6 +58,8 @@ function serviceUtils:getPrimaryCollector(object)
     return nil
 end
 
+---@param square IsoGridSquare
+---@return IsoObject|nil connectedCollector
 function serviceUtils:getConnectedCollectorFromSquare(square)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -64,6 +74,8 @@ function serviceUtils:getConnectedCollectorFromSquare(square)
     return nil
 end
 
+---@param collectorObject IsoObject 
+---@return IsoGridSquare|nil drainSquare
 function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     local square = collectorObject:getSquare()
     if not square then
@@ -94,6 +106,8 @@ function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     return nil
 end
 
+---@param object IsoObject
+---@return number
 function serviceUtils:getObjectBaseRainFactor(object)
     -- Note: trough objects don't have an initial FluidContainer and the rain factor is hard coded on initial creation
     if troughUtils:isTrough(object) then
@@ -117,6 +131,7 @@ function serviceUtils:getObjectBaseRainFactor(object)
     return 0.0
 end
 
+---@param square IsoGridSquare
 function serviceUtils:handlePostCollectorConnected(square)
     local _, drainPipe, _, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
     if not drainPipe then
@@ -140,23 +155,9 @@ function serviceUtils:handlePostCollectorConnected(square)
     end
 end
 
--- TODO handle this more explicitly
-function serviceUtils:setDrainPipeModData(square, squareModData)
-    -- Calculate the number of 'roof' tiles above the drain pipe
-    utils:modPrint("Setting drain pipe mod data for square: "..tostring(square))
-    squareModData[enums.modDataKey.roofArea] = isoUtils:getGutterRoofArea(square)
-end
-
-function serviceUtils:cleanupDrainPipeModData(square, squareModData)
-    if squareModData == nil then
-        squareModData = square:getModData()
-    end
-
-    utils:modPrint("Clearing drain pipe mod data for square: "..tostring(square))
-    -- The square no longer has a drain pipe - ensure the square's mod data reflects this
-    squareModData[enums.modDataKey.roofArea] = nil
-end
-
+---@param square IsoGridSquare
+---@param squareModData table|nil
+---@return table squareModData
 function serviceUtils:syncSquareRoofModData(square, squareModData)
     -- Re-evaluate if the square is still valid as a roof tile
     if not squareModData then
@@ -171,23 +172,7 @@ function serviceUtils:syncSquareRoofModData(square, squareModData)
     return squareModData
 end
 
-function serviceUtils:syncSquarePipeModData(square, reload)
-    local squareModData = square:getModData()
-    local roofArea = utils:getModDataRoofArea(square, squareModData)
-    local hasDrainPipe = utils:isDrainPipeSquare(square)
-    if hasDrainPipe and (reload or not roofArea) then
-        self:setDrainPipeModData(square, squareModData)
-    end
-
-    -- Cleanup square mod data if pipes were removed
-    -- TODO should this be explicitly called from the event handler instead?
-    if not hasDrainPipe and roofArea then
-        self:cleanupDrainPipeModData(square, squareModData)
-    end
-
-    return squareModData
-end
-
+---@return integer averageGutterCapacity
 function serviceUtils:getAverageGutterCapacity()
     -- Meters of roof's perimeter covered effectively by a single gutter drain for a standard house
     -- Realistically this is between 6 and 9 meters
@@ -204,6 +189,9 @@ function serviceUtils:getAverageGutterCapacity()
     return averageGutterPerimeterCoverage / averageGutterCapacityRatio
 end
 
+---@param square IsoGridSquare
+---@param radius integer|nil
+---@return table<IsoObject>|nil drainPipes
 function serviceUtils:getLocalDrainPipes(square, radius)
     -- Grab all nearby squares with a drain pipe object
     if not radius then
@@ -215,28 +203,23 @@ function serviceUtils:getLocalDrainPipes(square, radius)
     end
 
     -- Determine if square has a pre-built building or is a player-built structure
-    local buildingDef = isoUtils:getAttachedBuilding(square)
-    if not buildingDef then
-       -- No building found - assume player-built structure and return all drain pipes
-       return drainPipes
-    end
+    local squareBuilding = isoUtils:getAttachedBuilding(square)
 
     -- Reduce the list of drain pipes to only those relevant to the building mode
-    -- TODO eventually check modData if we allow for players to 'convert' buildings to use manually placed gutters
     local associatedDrainPipes = table.newarray()
     for i=1, #drainPipes do
         local drainPipe = drainPipes[i]
-        local attachedBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
-        if buildingDef then
+        local drainBuilding = isoUtils:getAttachedBuilding(drainPipe:getSquare())
+        if squareBuilding then
             -- Vanilla building mode
             -- Check if the drain pipe is attached to the same building
-            if attachedBuildingDef and attachedBuildingDef:getID() == buildingDef:getID() then
+            if drainBuilding and drainBuilding:getID() == squareBuilding:getID() then
                 table_insert(associatedDrainPipes, drainPipe)
             end
         else
             -- Custom building mode
             -- Check if the drain is not attached to any building
-            if not attachedBuildingDef then
+            if not drainBuilding then
                 table_insert(associatedDrainPipes, drainPipe)
             end
         end
@@ -245,6 +228,10 @@ function serviceUtils:getLocalDrainPipes(square, radius)
     return associatedDrainPipes
 end
 
+---@param square IsoGridSquare
+---@param radius integer|nil
+---@param zRadius integer|nil
+---@return table<IsoObject>|nil drainPipes
 function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     if not radius then
         radius = enums.defaultDrainPipeSearchRadius
@@ -296,6 +283,8 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     return drainPipes
 end
 
+---@param square IsoGridSquare
+---@return integer drainCount
 function serviceUtils:getActualGutterDrainCount(square)
     local drainPipes = self:getLocalDrainPipes3D(square, enums.defaultDrainPipeSearchRadius, enums.defaultDrainPipeSearchHeight)
     if not drainPipes then
@@ -305,6 +294,9 @@ function serviceUtils:getActualGutterDrainCount(square)
     return #drainPipes
 end
 
+---@param roofArea integer
+---@param averageGutterCapacity integer|nil
+---@return integer optimalDrainCount
 function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
     -- Light representation of the gutter system as a whole
     -- Gutters are typically designed to work together as a unit to cover the entire roof (ex: one on each "side" of a roof slant direction or one on each corner)
@@ -331,6 +323,11 @@ function serviceUtils:getEstimatedGutterDrainCount(roofArea, averageGutterCapaci
     return estimatedGutterCount
 end
 
+---@param roofArea integer
+---@param optimalDrainCount integer
+---@param actualDrainCount integer
+---@param averageGutterCapacity integer|nil
+---@return integer gutterTileCount
 function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCount, actualDrainCount, averageGutterCapacity)
     -- Divides up the area of the roof into segments for each estimated gutter and calculates the effective tiles covered by each gutter
     -- Ex: 70 tile roof with 2 gutter capacity would have 35 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
@@ -373,6 +370,8 @@ function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCoun
     return gutterTileCount
 end
 
+---@param gutterTileCount integer
+---@return number gutterRainFactor
 function serviceUtils:calculateGutterSegmentRainFactor(gutterTileCount)
     -- Aim for this value to be 1.0 with mod options between 0.0 and 2.0
     local roofTileRainFactor = options:getGutterRainFactor() -- TODO rename to "gutterTileRainFactor"
@@ -385,6 +384,8 @@ function serviceUtils:calculateGutterSegmentRainFactor(gutterTileCount)
     return gutterSegmentRainFactor
 end
 
+---@param square IsoGridSquare
+---@return table|nil gutterSegment
 function serviceUtils:calculateGutterSegment(square)
     -- Notes:
     -- 1 tile is 1 meter squared

@@ -214,8 +214,7 @@ end
 
 function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
     if not square then return end
-
-    local roofObject
+    local highlightObject
     if self.gutterSegment.buildingType == enums.buildingType.vanilla then
         -- If vanilla building, try to find the square's roof object
         if utils:hasRoofProp(square) then
@@ -223,30 +222,30 @@ function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
             for i = 0, squareObjects:size() - 1 do
                 local object = squareObjects:get(i)
                 if utils:isRoofObject(object) then
-                    roofObject = object
+                    highlightObject = object
                     break
                 end
             end
         end
     end
 
-    if not roofObject then
+    if not highlightObject then
         -- Use the square's floor as the roof object
         local floor = square:getFloor()
         if floor then
-            roofObject = floor
+            highlightObject = floor
         end
     end
 
-    if not roofObject then
+    if not highlightObject then
         utils:modPrint("No roof object found for square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return
     end
 
-    roofObject:setHighlighted(highlight, false);
+    highlightObject:setHighlighted(highlight, false);
     if highlight then
-        roofObject:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
-        roofObject:setBlink(true);
+        highlightObject:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
+        highlightObject:setBlink(true);
     end
 end
 

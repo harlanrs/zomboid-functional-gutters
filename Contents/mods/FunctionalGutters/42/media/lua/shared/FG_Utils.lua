@@ -6,12 +6,15 @@ local utils = {}
 local debugMode = false
 local localIsoObjectType = IsoObjectType
 
+---@param message string
 function utils:modPrint(message)
     if debugMode then
         print("["..enums.modName.."] --------------------------------> "..message)
     end
 end
 
+---@param spriteName string
+---@return table|nil spriteDef
 function utils:getPipeSpriteDef(spriteName)
     local spriteDef = enums.pipes[spriteName]
     if spriteDef then
@@ -20,6 +23,8 @@ function utils:getPipeSpriteDef(spriteName)
     return nil
 end
 
+---@param spriteName string
+---@return string|nil spriteDef
 function utils:getSpriteCategory(spriteName)
     local spriteDef = enums.pipes[spriteName]
     if spriteDef and spriteDef.type then
@@ -28,14 +33,20 @@ function utils:getSpriteCategory(spriteName)
     return nil
 end
 
+---@param spriteName string
+---@param spriteCategory string
+---@return boolean
 function utils:isSpriteCategoryMember(spriteName, spriteCategory)
     local foundSpriteCategory = self:getSpriteCategory(spriteName)
     if foundSpriteCategory == spriteCategory then
         return true
     end
-    return nil
+    return false
 end
 
+---@param object IsoObject
+---@param spriteCategory string
+---@return boolean
 function utils:isSpriteCategoryObject(object, spriteCategory)
     if not object then return false end
 
@@ -45,7 +56,10 @@ function utils:isSpriteCategoryObject(object, spriteCategory)
     return self:isSpriteCategoryMember(spriteName, spriteCategory)
 end
 
--- Unused atm since pipes are all handled by tile properties
+-- NOTE: Unused atm since pipes are all handled by tile properties
+---@param square IsoGridSquare
+---@param spriteCategory string
+---@return boolean
 function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -59,10 +73,13 @@ function utils:hasSpriteCategoryMemberOnTile(square, spriteCategory)
     return false
 end
 
+-- TODO return table instead
+---@param square IsoGridSquare
+---@param spriteCategory string
+---@return number|nil index, IsoObject|nil spriteObject, string|nil spriteName, string|nil spriteCategory
 function utils:getSpriteCategoryMemberOnTile(square, spriteCategory)
     -- NOTE: This function returns the first object found on the tile
     -- We do allow multiple pipe objects on a single tile but only one of each type
-    -- TODO return table instead?
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
         local object = objects:get(i)
@@ -76,7 +93,8 @@ function utils:getSpriteCategoryMemberOnTile(square, spriteCategory)
     return nil, nil, nil, nil
 end
 
-
+---@param spriteName string
+---@return boolean
 function utils:isAnyPipeSprite(spriteName)
     if self:getSpriteCategory(spriteName) then
         return true
@@ -85,6 +103,8 @@ function utils:isAnyPipeSprite(spriteName)
     return false
 end
 
+---@param spriteName string
+---@return boolean
 function utils:isDrainPipeSprite(spriteName)
     local spriteCategory = self:getSpriteCategory(spriteName)
     if spriteCategory == enums.pipeType.drain then
@@ -93,28 +113,42 @@ function utils:isDrainPipeSprite(spriteName)
     return false
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isAnyPipe(object)
     local spriteName = object:getSpriteName()
     return self:isAnyPipeSprite(spriteName)
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isDrainPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.drain)
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isVerticalPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.vertical)
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isHorizontalPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.horizontal)
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isGutterPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.gutter)
 end
 
-function utils:getModDataKeyValue(object, loadedModData, key)
+---@param object IsoObject|IsoGridSquare
+---@param key string
+---@param loadedModData table|nil
+---@return any|nil value
+function utils:getModDataKeyValue(object, key, loadedModData)
     if not loadedModData and not object:hasModData() then
         -- Ignore if object has no existing mod data to avoid unwanted initialization
         return nil
@@ -125,45 +159,76 @@ function utils:getModDataKeyValue(object, loadedModData, key)
     return loadedModData[key]
 end
 
+---@param object IsoObject
+---@param loadedModData table|nil
+---@return any|nil value
 function utils:getModDataIsGutterConnected(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.isGutterConnected)
+    return self:getModDataKeyValue(object, enums.modDataKey.isGutterConnected, loadedModData)
 end
 
+---@param object IsoObject
+---@param loadedModData table|nil
+---@return number|nil value
 function utils:getModDataBaseRainFactor(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.baseRainFactor)
+    return self:getModDataKeyValue(object, enums.modDataKey.baseRainFactor, loadedModData)
 end
 
+---@param object IsoObject
+---@param loadedModData table|nil
+---@return boolean|nil
 function utils:getModDataDrainCleared(object, loadedModData)
-    return self:getModDataKeyValue(object, loadedModData, enums.modDataKey.drainCleared)
+    return self:getModDataKeyValue(object,  enums.modDataKey.drainCleared, loadedModData)
 end
 
+---@param square IsoGridSquare
+---@param loadedModData table|nil
+---@return integer|nil roofArea
 function utils:getModDataRoofArea(square, loadedModData)
-    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.roofArea)
+    return self:getModDataKeyValue(square, enums.modDataKey.roofArea, loadedModData)
 end
 
+---@param square IsoGridSquare
+---@param loadedModData table|nil
+---@return boolean|nil
 function utils:getModDataIsRoofSquare(square, loadedModData)
-    return self:getModDataKeyValue(square, loadedModData, enums.modDataKey.isRoofSquare)
+    return self:getModDataKeyValue(square, enums.modDataKey.isRoofSquare, loadedModData)
 end
 
-function utils:checkProp(square, props, propName)
+---@param square IsoGridSquare
+---@param propName string
+---@param props table|nil
+---@return boolean
+function utils:checkProp(square, propName, props)
     if not props then
         props = square:getProperties()
     end
     return props:Is(propName)
 end
 
+---@param square IsoGridSquare
+---@param props table|nil
+---@return boolean
 function utils:isDrainPipeSquare(square, props)
-    return self:checkProp(square, props, enums.customProps.IsDrainPipe)
+    return self:checkProp(square, enums.customProps.IsDrainPipe, props)
 end
 
+---@param square IsoGridSquare
+---@param props table|nil
+---@return boolean
 function utils:isVerticalPipeSquare(square, props)
-    return self:checkProp(square, props, enums.customProps.IsVerticalPipe)
+    return self:checkProp(square, enums.customProps.IsVerticalPipe, props)
 end
 
+---@param square IsoGridSquare
+---@param props table|nil
+---@return boolean
 function utils:isGutterPipeSquare(square, props)
-    return self:checkProp(square, props, enums.customProps.IsGutterPipe)
+    return self:checkProp(square, enums.customProps.IsGutterPipe, props)
 end
 
+---@param square IsoGridSquare
+---@param props table|nil
+---@return boolean
 function utils:isAnyPipeSquare(square, props)
     if not props then
         props = square:getProperties()
@@ -171,6 +236,8 @@ function utils:isAnyPipeSquare(square, props)
     return self:isDrainPipeSquare(square, props) or self:isVerticalPipeSquare(square, props) or self:isGutterPipeSquare(square, props)
 end
 
+---@param object IsoObject
+---@return GameEntityScript|nil
 function utils:getObjectEntityScript(object)
     local entityScriptName = object:getName()
     if not entityScriptName then
@@ -180,6 +247,8 @@ function utils:getObjectEntityScript(object)
     return ScriptManager.instance:getGameEntityScript(entityScriptName)
 end
 
+---@param object IsoObject
+---@return number|nil
 function utils:getObjectRainFactor(object)
     -- Get the current rain factor from the object's FluidContainer
     local fluidContainer = object:getFluidContainer()
@@ -188,6 +257,8 @@ function utils:getObjectRainFactor(object)
     return fluidContainer:getRainCatcher()
 end
 
+---@param object IsoObject
+---@return integer|nil
 function utils:getObjectScriptRainFactor(object)
     -- Get the base rain factor from the object's GameEntityScript
     local entityScript = self:getObjectEntityScript(object)
@@ -205,18 +276,29 @@ function utils:getObjectScriptRainFactor(object)
     return fluidContainerScript:getRainCatcher()
 end
 
+---@param item InventoryItem
+---@return boolean
 local function predicateNotBroken(item)
     return not item:isBroken()
 end
 
+---@param playerInv ItemContainer
+---@param itemName string
+---@return boolean
 function utils:playerHasItem(playerInv, itemName)
     return playerInv:containsTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:containsTagEvalRecurse(itemName, predicateNotBroken)
 end
 
+---@param playerInv ItemContainer
+---@param itemName string
+---@return InventoryItem|nil item
 function utils:playerGetItem(playerInv, itemName)
     return playerInv:getFirstTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:getFirstTagEvalRecurse(itemName, predicateNotBroken)
 end
 
+---@param object IsoObject|IsoGridSquare
+---@param replace boolean
+---@return table|nil objectModData
 function utils:patchModData(object, replace)
     if not object:hasModData() then return end
 
@@ -236,6 +318,9 @@ function utils:patchModData(object, replace)
     return objectModData
 end
 
+---@param square IsoGridSquare
+---@param spriteName string
+---@return IsoFeedingTrough|IsoObject|nil object
 function utils:getSpecificIsoObjectFromSquare(square, spriteName)
     local objects = square:getObjects()
     for i = 0, objects:size() - 1 do
@@ -247,10 +332,14 @@ function utils:getSpecificIsoObjectFromSquare(square, spriteName)
     return nil
 end
 
+---@param square IsoGridSquare
+---@return boolean
 function utils:hasRoofProp(square)
     return square:Has(localIsoObjectType.WestRoofB) or square:Has(localIsoObjectType.WestRoofM) or square:Has(localIsoObjectType.WestRoofT)
 end
 
+---@param object IsoObject
+---@return boolean
 function utils:isRoofObject(object)
     if not object then return false end
 
@@ -262,6 +351,9 @@ function utils:isRoofObject(object)
     return false
 end
 
+---@param classObject table
+---@param fieldName string
+---@return integer fieldIndex
 function utils:getClassFieldIndex(classObject, fieldName)
     local i = 0
     while true do
@@ -273,6 +365,8 @@ function utils:getClassFieldIndex(classObject, fieldName)
     end
 end
 
+---@param object IsoObject
+---@return string
 function utils:getObjectDisplayName(object)
     local objectName = object:getEntityDisplayName()
     if objectName then
@@ -302,6 +396,8 @@ function utils:getObjectDisplayName(object)
     return "Unknown"
 end
 
+---@param object IsoObject
+---@return table
 function utils:buildObjectCommandArgs(object)
     return {
         x = object:getX(),
@@ -311,6 +407,8 @@ function utils:buildObjectCommandArgs(object)
     }
 end
 
+---@param args table
+---@return IsoObject|nil
 function utils:parseObjectCommandArgs(args)
     local square = getCell():getGridSquare(args.x, args.y, args.z)
     if not square then

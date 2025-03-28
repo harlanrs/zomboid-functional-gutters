@@ -71,16 +71,16 @@ function DrainPipeService:onIsValid(buildParams)
     if closeDrainPipe then
         -- Check if drain pipe in on the same pre-made building as the selected drain square
         -- Allows for placing drains closer together when they are part of different nearby buildings
-        local buildingDef = isoUtils:getAttachedBuilding(square)
-        local closeDrainPipeBuildingDef = isoUtils:getAttachedBuilding(closeDrainPipe:getSquare())
-        if not buildingDef and not closeDrainPipeBuildingDef then
+        local buildSquareBuilding = isoUtils:getAttachedBuilding(square)
+        local closeDrainPipeBuilding = isoUtils:getAttachedBuilding(closeDrainPipe:getSquare())
+        if not buildSquareBuilding and not closeDrainPipeBuilding then
             -- Neither are a building
             return false
         end
 
-        if buildingDef and closeDrainPipeBuildingDef then
+        if buildSquareBuilding and closeDrainPipeBuilding then
             -- Both are buildings - check if they are the same building
-            if buildingDef:getID() == closeDrainPipeBuildingDef:getID() then
+            if buildSquareBuilding:getID() == closeDrainPipeBuilding:getID() then
                 return false
             end
             -- Different buildings - allow for closer placement

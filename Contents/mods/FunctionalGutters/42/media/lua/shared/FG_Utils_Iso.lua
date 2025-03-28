@@ -7,6 +7,9 @@ local localIsoDirections = IsoDirections
 local localIsoFlagType = IsoFlagType
 local table_insert = table.insert
 
+---@param square IsoGridSquare
+---@param north boolean
+---@return integer x, integer y, integer z
 function isoUtils:getSquare2Pos(square, north)
     local x = square:getX()
     local y = square:getY()
@@ -19,6 +22,9 @@ function isoUtils:getSquare2Pos(square, north)
     return x, y, z
 end
 
+---@param square IsoGridSquare
+---@param north boolean
+---@return integer x, integer y, integer z
 function isoUtils:getSquare2PosReverse(square, north)
     local x = square:getX()
     local y = square:getY()
@@ -31,6 +37,9 @@ function isoUtils:getSquare2PosReverse(square, north)
     return x, y, z
 end
 
+---@param square IsoGridSquare
+---@param north boolean
+---@return IsoGridSquare
 function isoUtils:getSquare2(square, north, reverse)
     local x, y, z
     if reverse then
@@ -41,6 +50,8 @@ function isoUtils:getSquare2(square, north, reverse)
     return getCell():getGridSquare(x, y, z)
 end
 
+---@param square IsoGridSquare
+---@return boolean
 function isoUtils:isValidRoofSquare(square)
     -- Ensure is not covered by a roof
     if not square:isOutside() then
@@ -57,6 +68,8 @@ function isoUtils:isValidRoofSquare(square)
     return true
 end
 
+---@param square IsoGridSquare
+---@return boolean|nil
 function isoUtils:isValidPlayerBuiltFloor(square)
     -- Ensure has player-built floor
     local hasPlayerBuiltFloor = square:getPlayerBuiltFloor()
@@ -67,6 +80,9 @@ function isoUtils:isValidPlayerBuiltFloor(square)
     return isoUtils:isValidRoofSquare(square)
 end
 
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
 function isoUtils:hasDoorWindowN(square, props)
     if not props then
         props = square:getProperties()
@@ -74,13 +90,19 @@ function isoUtils:hasDoorWindowN(square, props)
     return props:Is(localIsoFlagType.DoorWallN) or props:Is("WindowN") -- IsoFlagType has "windowN" not "WindowN" which is a bug
 end
 
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
 function isoUtils:hasDoorWindowW(square, props)
     if not props then
         props = square:getProperties()
     end
-    return props:Is(localIsoFlagType.DoorWallW) or props:Is("WindowW")
+    return props:Is(localIsoFlagType.DoorWallW) or props:Is("WindowW") -- IsoFlagType has "windowW" not "WindowW" which is a bug
 end
 
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
 function isoUtils:hasWallW(square, props)
     if not props then
         props = square:getProperties()
@@ -97,6 +119,9 @@ function isoUtils:hasWallW(square, props)
     return false
 end
 
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
 function isoUtils:hasWallN(square, props)
     if not props then
         props = square:getProperties()
@@ -113,6 +138,9 @@ function isoUtils:hasWallN(square, props)
     return false
 end
 
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
 function isoUtils:hasDoorWindowNW(square, props)
     if not props then
         props = square:getProperties()
@@ -120,8 +148,13 @@ function isoUtils:hasDoorWindowNW(square, props)
     return self:hasDoorWindowN(square, props) or self:hasDoorWindowW(square, props)
 end
 
-function isoUtils:hasWallNW(square)
-    local props = square:getProperties()
+---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
+function isoUtils:hasWallNW(square, props)
+    if not props then
+        props = square:getProperties()
+    end
     if self:hasWallN(square, props) or self:hasWallW(square, props) then
         return true
     end
@@ -129,10 +162,13 @@ function isoUtils:hasWallNW(square)
     return false
 end
 
-function isoUtils:getAdjacentBuilding(square, dir)
-    if not dir then
+---@param square IsoGridSquare
+---@param directions table<IsoDirections>|nil
+---@return IsoBuilding|nil
+function isoUtils:getAdjacentBuilding(square, directions)
+    if not directions then
         -- South & East tiles are least likely
-        dir = table.newarray(
+        directions = table.newarray(
             localIsoDirections.N,
             localIsoDirections.W,
             localIsoDirections.NW,
@@ -144,18 +180,21 @@ function isoUtils:getAdjacentBuilding(square, dir)
         )
     end
 
-    for i=1, #dir do
-        local adjacentSquare = square:getAdjacentSquare(dir[i])
+    for i=1, #directions do
+        local adjacentSquare = square:getAdjacentSquare(directions[i])
         local adjacentBuilding = adjacentSquare:getBuilding()
         if adjacentBuilding then
-            return adjacentBuilding:getDef()
+            return adjacentBuilding
         end
     end
 
     return nil
 end
 
-function isoUtils:getBuildingRoofRoom(building, z)
+---@param building IsoBuilding
+---@param z integer
+---@return integer|nil
+function isoUtils:getBuildingRoofRoomID(building, z)
     local buildingDef = building:getDef()
     local roofRoomId = buildingDef:getRoofRoomID(z)
     if roofRoomId < 0 then
@@ -164,6 +203,9 @@ function isoUtils:getBuildingRoofRoom(building, z)
     return roofRoomId
 end
 
+---@param buildingDef BuildingDef
+---@param z integer
+---@return integer|nil
 function isoUtils:getBuildingFloorArea(buildingDef, z)
     local maxZ = buildingDef:getMaxLevel()
     if z == nil then
@@ -186,6 +228,12 @@ function isoUtils:getBuildingFloorArea(buildingDef, z)
     return area
 end
 
+---@param square IsoGridSquare
+---@param squareProps PropertyContainer
+---@param gutterSystemMap table
+---@param prevDir IsoDirections|nil
+---@param crawlSteps integer|nil
+---@return IsoGridSquare|nil
 function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
     if not square then return nil end
 
@@ -199,7 +247,7 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
     if crawlSteps > enums.maxGutterCrawlSteps then
         -- Shouldn't hit unless player builds a system with 25+ gutter objects
         -- adding as safeguard against runaway recursion
-        utils:modPrint("Crawl steps exceeded 25")
+        utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
         return square
     end
 
@@ -244,9 +292,16 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
         end
     end
 
+    -- TODO rethink response now that we check forked paths and won't have a singular final square
     return square
 end
 
+---@param square IsoGridSquare
+---@param squareProps PropertyContainer
+---@param gutterSystemMap table
+---@param prevDir IsoDirections|nil
+---@param crawlSteps integer|nil
+---@return IsoGridSquare|nil
 function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
     if not square then return nil end
 
@@ -279,9 +334,15 @@ function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevD
         return crawlUp
     end
 
+    -- TODO rethink response now that we check forked paths and won't have a singular final square
     return square
 end
 
+---@param square IsoGridSquare
+---@param gutterSystemMap table
+---@param prevDir IsoDirections|nil
+---@param crawlSteps integer|nil
+---@return IsoGridSquare|nil
 function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps)
     if not square then return nil end
 
@@ -307,9 +368,15 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
     self:crawlHorizontalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
     self:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
 
+    -- TODO rethink response now that we check forked paths and won't have a singular final square
     return square
 end
 
+---@param square IsoGridSquare
+---@param roofMap table
+---@param dir IsoDirections|nil
+---@param crawlSteps integer|nil
+---@return IsoGridSquare|nil
 function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps)
     if not square then
         utils:modPrint("No square found")
@@ -350,9 +417,12 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
         return crawlNext
     end
 
+    -- TODO rethink response now that we check forked paths and won't have a singular final square
     return square
 end
 
+---@param square any
+---@return table pipeMap
 function isoUtils:crawlGutterSystem(square)
     local gutterSystemMap = {
         [enums.pipeType.drain] = table.newarray(),
@@ -364,8 +434,11 @@ function isoUtils:crawlGutterSystem(square)
     return gutterSystemMap
 end
 
-function isoUtils:isSquareInGutterPipeMap(square, gutterPipeMap)
-    for _, pipeSquares in pairs(gutterPipeMap) do
+---@param square any
+---@param pipeMap table
+---@return boolean
+function isoUtils:isSquareInGutterPipeMap(square, pipeMap)
+    for _, pipeSquares in pairs(pipeMap) do
         for i=1, #pipeSquares do
             local gutterSquare = pipeSquares[i]
             if square:getID() == gutterSquare:getID() then
@@ -377,11 +450,13 @@ function isoUtils:isSquareInGutterPipeMap(square, gutterPipeMap)
     return false
 end
 
-function isoUtils:getPlayerBuildingRoofSquares(gutterPipeMap)
+---@param pipeMap table
+---@return table<IsoGridSquare>
+function isoUtils:getPlayerBuildingRoofSquares(pipeMap)
     local validRoofSquares = {}
 
-    for i=1, #gutterPipeMap[enums.pipeType.gutter] do
-        local gutterSquare = gutterPipeMap[enums.pipeType.gutter][i]
+    for i=1, #pipeMap[enums.pipeType.gutter] do
+        local gutterSquare = pipeMap[enums.pipeType.gutter][i]
         local _, _, spriteName, _ = utils:getSpriteCategoryMemberOnTile(gutterSquare, enums.pipeType.gutter)
         if not spriteName then
             -- Shouldn't happen but check just in case
@@ -412,21 +487,25 @@ function isoUtils:getPlayerBuildingRoofSquares(gutterPipeMap)
     return validRoofSquares
 end
 
-function isoUtils:getPlayerBuildingRoofArea(square, gutterPipeMap)
-    if not gutterPipeMap then
-        gutterPipeMap = self:crawlGutterSystem(square)
+---@param pipeMap table
+---@return integer roofArea, table<IsoGridSquare> roofSquares
+function isoUtils:getPlayerBuildingRoofArea(square, pipeMap)
+    if not pipeMap then
+        pipeMap = self:crawlGutterSystem(square)
     end
 
-    local validRoofSquares = self:getPlayerBuildingRoofSquares(gutterPipeMap)
+    local roofSquares = self:getPlayerBuildingRoofSquares(pipeMap)
 
     local totalArea = 0
-    for k, v in pairs(validRoofSquares) do
+    for k, v in pairs(roofSquares) do
         totalArea = totalArea + 1
     end
 
-    return totalArea, validRoofSquares
+    return totalArea, roofSquares
 end
 
+---@param square IsoGridSquare
+---@return integer topLevel
 function isoUtils:findGutterTopLevel(square)
     local cell = square:getCell()
     local x = square:getX()
@@ -449,26 +528,22 @@ function isoUtils:findGutterTopLevel(square)
     return z
 end
 
+---@param square IsoGridSquare
 function isoUtils:getAttachedBuilding(square)
     -- Check square directly
     local squareBuilding = square:getBuilding()
     if squareBuilding then
-        return squareBuilding:getDef()
-    end
-
-    -- Check square's meta grid (includes the outside perimeter squares unlike base square:getBuilding() method)
-    local buildingDef = getWorld():getMetaGrid():getAssociatedBuildingAt(square:getX(), square:getY())
-    if buildingDef then
-        return buildingDef
+        return squareBuilding
     end
 
     -- Check adjacent squares
     return self:getAdjacentBuilding(square)
 end
 
-function isoUtils:getGutterTopLevel(gutterPipeMap)
+---@param pipeMap table
+function isoUtils:getGutterTopLevel(pipeMap)
     local topLevel = 0
-    for pipeType, pipeSquares in pairs(gutterPipeMap) do
+    for pipeType, pipeSquares in pairs(pipeMap) do
         if pipeType == enums.pipeType.drain or pipeType == enums.pipeType.vertical then
             -- Only check vertical or drain pipes
             for i=1, #pipeSquares do
@@ -484,6 +559,9 @@ function isoUtils:getGutterTopLevel(gutterPipeMap)
     return topLevel
 end
 
+---@param buildingDef BuildingDef
+---@param zLevel integer
+---@return table<IsoGridSquare> floorSquares
 function isoUtils:getVanillaBuildingFloorSquares(buildingDef, zLevel)
     local floorSquares = {}
     local buildingDefRooms = buildingDef:getRooms()
@@ -510,17 +588,18 @@ function isoUtils:getVanillaBuildingFloorSquares(buildingDef, zLevel)
     return floorSquares
 end
 
-function isoUtils:getVanillaBuildingRoofArea(square, gutterPipeMap, buildingDef)
-    if not buildingDef then
-        buildingDef = self:getAttachedBuilding(square)
+
+---@param square IsoGridSquare
+---@param pipeMap table
+---@param building IsoBuilding
+---@return integer roofArea, table<IsoGridSquare> roofSquares
+function isoUtils:getVanillaBuildingRoofArea(square, pipeMap, building)
+    if not pipeMap then
+        pipeMap = self:crawlGutterSystem(square)
     end
 
-    if not buildingDef then
-        -- No building def exists for this square
-        return nil, nil
-    end
-
-    local topGutterFloor = self:getGutterTopLevel(gutterPipeMap)
+    local topGutterFloor = self:getGutterTopLevel(pipeMap)
+    local buildingDef = building:getDef()
     local floorSquares = self:getVanillaBuildingFloorSquares(buildingDef, topGutterFloor)
     local maxZ = buildingDef:getMaxLevel()
     local roofArea = 0
@@ -547,22 +626,29 @@ function isoUtils:getVanillaBuildingRoofArea(square, gutterPipeMap, buildingDef)
     return roofArea, roofSquares
 end
 
-function isoUtils:getGutterRoofArea(square, gutterPipeMap)
-    local buildingDef = self:getAttachedBuilding(square)
+---@param square IsoGridSquare
+---@param pipeMap table
+---@return integer roofArea, table<IsoGridSquare> roofSquares, "vanilla"|"custom" buildingType
+function isoUtils:getGutterRoofArea(square, pipeMap)
+    local building = self:getAttachedBuilding(square)
     local roofArea, roofSquares, buildingType
-    if buildingDef then
+    if building then
         -- Vanilla building mode
         buildingType = enums.buildingType.vanilla
-        roofArea, roofSquares = self:getVanillaBuildingRoofArea(square, gutterPipeMap, buildingDef)
+        roofArea, roofSquares = self:getVanillaBuildingRoofArea(square, pipeMap, building)
     else
         -- Custom building mode
         buildingType = enums.buildingType.custom
-        roofArea, roofSquares = self:getPlayerBuildingRoofArea(square, gutterPipeMap)
+        roofArea, roofSquares = self:getPlayerBuildingRoofArea(square, pipeMap)
     end
 
     return roofArea, roofSquares, buildingType
 end
 
+---@param square IsoGridSquare
+---@param radius integer
+---@param pipeType "drain"|"vertical"|"gutter"
+---@return IsoObject|nil
 function isoUtils:findPipeInRadius(square, radius, pipeType)
     local sx,sy,sz = square:getX(), square:getY(), square:getZ();
     for x = sx-radius,sx+radius do
@@ -580,6 +666,9 @@ function isoUtils:findPipeInRadius(square, radius, pipeType)
     return nil
 end
 
+---@param square IsoGridSquare
+---@param radius integer
+---@return table<IsoObject>
 function isoUtils:findAllDrainsInRadius(square, radius)
     local pipeObjects = table.newarray()
     local sx,sy,sz = square:getX(), square:getY(), square:getZ();
