@@ -1,7 +1,5 @@
 if isClient() then return end
 
-require "FluidType"
-
 local utils = require("FG_Utils")
 local troughUtils = require("FG_Utils_Trough")
 local globalObjectUtils = require("FG_Utils_GlobalObject")

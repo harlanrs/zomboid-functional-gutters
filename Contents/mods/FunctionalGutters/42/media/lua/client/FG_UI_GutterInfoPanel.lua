@@ -212,19 +212,43 @@ function FG_UI_GutterInfoPanel:highlightGutterObject(square, highlight)
     end
 end
 
-function FG_UI_GutterInfoPanel:highlightCoveredFloor(square, highlight)
+function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
     if not square then return end
 
-    local floor = square:getFloor()
-    if floor then
-        floor:setHighlighted(highlight, false);
-        if highlight then
-            floor:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
-            floor:setBlink(true);
+    local roofObject
+    if self.gutterSegment.buildingType == enums.buildingType.vanilla then
+        -- If vanilla building, try to find the square's roof object
+        if utils:hasRoofProp(square) then
+            local squareObjects = square:getObjects()
+            for i = 0, squareObjects:size() - 1 do
+                local object = squareObjects:get(i)
+                if utils:isRoofObject(object) then
+                    roofObject = object
+                    break
+                end
+            end
         end
     end
-end
 
+    if not roofObject then
+        -- Use the square's floor as the roof object
+        local floor = square:getFloor()
+        if floor then
+            roofObject = floor
+        end
+    end
+
+    if not roofObject then
+        utils:modPrint("No roof object found for square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+        return
+    end
+
+    roofObject:setHighlighted(highlight, false);
+    if highlight then
+        roofObject:setHighlightColor(OBJECT_HIGHLIGHT_COLOR);
+        roofObject:setBlink(true);
+    end
+end
 
 function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
     if not self.gutterSegment.pipeMap then return end
@@ -241,7 +265,7 @@ function FG_UI_GutterInfoPanel:highlightRoofArea(highlight)
     if not self.gutterSegment.roofMap then return end
 
     for _, roofSquare in pairs(self.gutterSegment.roofMap) do
-        self:highlightCoveredFloor(roofSquare, highlight)
+        self:highlightCoveredRoof(roofSquare, highlight)
     end
     self.roofAreaHighlight = highlight;
 end

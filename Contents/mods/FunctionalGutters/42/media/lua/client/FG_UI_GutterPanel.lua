@@ -408,7 +408,12 @@ function FG_UI_GutterPanel:reloadInfo()
         self:close();
         return;
     end
+    
     self.gutterSegment = serviceUtils:calculateGutterSegment(self.gutterSquare);
+    if not self.gutterSegment then
+        self:close();
+        return;
+    end
 end
 
 function FG_UI_GutterPanel:reloadCollector()

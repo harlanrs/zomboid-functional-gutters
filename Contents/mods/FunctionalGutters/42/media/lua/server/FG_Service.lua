@@ -9,8 +9,6 @@ local DrainPipeService = require("pipe/FG_Pipe_Drain")
 local VerticalPipeService = require("pipe/FG_Pipe_Vertical")
 local GutterPipeService = require("pipe/FG_Pipe_Gutter")
 
-require("FG_Utils_MapObjects")
-
 local gutterService = {}
 
 gutterService.collectorServiceMap = {
@@ -71,7 +69,16 @@ function gutterService:connectCollector(collectorObject)
     end
 
     local square = serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
+    if not square then
+        utils:modPrint("No drain pipe square found for collector: "..tostring(collectorObject))
+        return
+    end
+
     local gutterSegment = serviceUtils:calculateGutterSegment(square)
+    if not gutterSegment then
+        utils:modPrint("No gutter segment found for square: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+        return
+    end
 
     local success = containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
     if success then

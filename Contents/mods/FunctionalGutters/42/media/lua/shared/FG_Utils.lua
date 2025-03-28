@@ -4,6 +4,7 @@ local enums = require("FG_Enums")
 local utils = {}
 
 local debugMode = false
+local localIsoObjectType = IsoObjectType
 
 function utils:modPrint(message)
     if debugMode then
@@ -244,6 +245,21 @@ function utils:getSpecificIsoObjectFromSquare(square, spriteName)
         end
     end
     return nil
+end
+
+function utils:hasRoofProp(square)
+    return square:Has(localIsoObjectType.WestRoofB) or square:Has(localIsoObjectType.WestRoofM) or square:Has(localIsoObjectType.WestRoofT)
+end
+
+function utils:isRoofObject(object)
+    if not object then return false end
+
+    local objectType = object:getType()
+    if objectType == localIsoObjectType.WestRoofB or objectType == localIsoObjectType.WestRoofM or objectType == localIsoObjectType.WestRoofT then
+        return true
+    end
+
+    return false
 end
 
 function utils:getClassFieldIndex(classObject, fieldName)

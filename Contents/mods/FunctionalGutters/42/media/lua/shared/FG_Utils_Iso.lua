@@ -41,13 +41,7 @@ function isoUtils:getSquare2(square, north, reverse)
     return getCell():getGridSquare(x, y, z)
 end
 
-function isoUtils:isValidPlayerBuiltFloor(square)
-    -- Ensure has player-built floor
-    local hasPlayerBuiltFloor = square:getPlayerBuiltFloor()
-    if not hasPlayerBuiltFloor then
-        return nil
-    end
-
+function isoUtils:isValidRoofSquare(square)
     -- Ensure is not covered by a roof
     if not square:isOutside() then
         return false
@@ -61,6 +55,16 @@ function isoUtils:isValidPlayerBuiltFloor(square)
     end
 
     return true
+end
+
+function isoUtils:isValidPlayerBuiltFloor(square)
+    -- Ensure has player-built floor
+    local hasPlayerBuiltFloor = square:getPlayerBuiltFloor()
+    if not hasPlayerBuiltFloor then
+        return nil
+    end
+
+    return isoUtils:isValidRoofSquare(square)
 end
 
 function isoUtils:hasDoorWindowN(square, props)
@@ -373,8 +377,8 @@ function isoUtils:isSquareInGutterPipeMap(square, gutterPipeMap)
     return false
 end
 
-function isoUtils:getGutterCoveredFloors(gutterPipeMap)
-    local validRoofTiles = {}
+function isoUtils:getPlayerBuildingRoofSquares(gutterPipeMap)
+    local validRoofSquares = {}
 
     for i=1, #gutterPipeMap[enums.pipeType.gutter] do
         local gutterSquare = gutterPipeMap[enums.pipeType.gutter][i]
@@ -393,7 +397,7 @@ function isoUtils:getGutterCoveredFloors(gutterPipeMap)
             local attachedRoofX = gutterSquare:getX()
             local attachedRoofY = gutterSquare:getY() - 1
             local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
-            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, IsoDirections.N, squareCrawlSteps)
+            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofSquares, IsoDirections.N, squareCrawlSteps)
         end
 
         if spriteDef.position == IsoDirections.W or fullCornerSprite then
@@ -401,26 +405,26 @@ function isoUtils:getGutterCoveredFloors(gutterPipeMap)
             local attachedRoofX = gutterSquare:getX() - 1
             local attachedRoofY = gutterSquare:getY()
             local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
-            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofTiles, IsoDirections.W, squareCrawlSteps)
+            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofSquares, IsoDirections.W, squareCrawlSteps)
         end
     end
 
-    return validRoofTiles
+    return validRoofSquares
 end
 
-function isoUtils:getPlayerBuildingFloorArea(square, gutterPipeMap)
+function isoUtils:getPlayerBuildingRoofArea(square, gutterPipeMap)
     if not gutterPipeMap then
         gutterPipeMap = self:crawlGutterSystem(square)
     end
 
-    local validRoofTiles = self:getGutterCoveredFloors(gutterPipeMap)
+    local validRoofSquares = self:getPlayerBuildingRoofSquares(gutterPipeMap)
 
     local totalArea = 0
-    for k, v in pairs(validRoofTiles) do
+    for k, v in pairs(validRoofSquares) do
         totalArea = totalArea + 1
     end
 
-    return totalArea, validRoofTiles
+    return totalArea, validRoofSquares
 end
 
 function isoUtils:findGutterTopLevel(square)
@@ -428,7 +432,7 @@ function isoUtils:findGutterTopLevel(square)
     local x = square:getX()
     local y = square:getY()
     local z = square:getZ()
-    -- Check 5 max
+    -- Check 5 max; maybe increase if needed
     for i=1, 4 do
         local nextFloor = z + 1
         local nextSquare = cell:getGridSquare(x, y, nextFloor)
@@ -462,54 +466,101 @@ function isoUtils:getAttachedBuilding(square)
     return self:getAdjacentBuilding(square)
 end
 
-function isoUtils:getGutterRoofArea(square, gutterPipeMap)
-    local buildingDef = self:getAttachedBuilding(square)
-    if buildingDef then
-        -- Vanilla building mode
-        -- Calculate area of top-floor assuming it's 1-1 square -> roof
-        local topGutterFloor = isoUtils:findGutterTopLevel(square)
-
-        local floorArea = self:getBuildingFloorArea(buildingDef, topGutterFloor)
-        local maxZ = buildingDef:getMaxLevel()
-        if floorArea and topGutterFloor < maxZ then
-            -- Remove the area of the floor above the top gutter floor
-            local nextFloorZ = topGutterFloor + 1
-            local nextFloorArea = self:getBuildingFloorArea(buildingDef, nextFloorZ)
-            if nextFloorArea then
-                floorArea = floorArea - nextFloorArea
+function isoUtils:getGutterTopLevel(gutterPipeMap)
+    local topLevel = 0
+    for pipeType, pipeSquares in pairs(gutterPipeMap) do
+        if pipeType == enums.pipeType.drain or pipeType == enums.pipeType.vertical then
+            -- Only check vertical or drain pipes
+            for i=1, #pipeSquares do
+                local gutterSquare = pipeSquares[i]
+                local squareZ = gutterSquare:getZ()
+                if squareZ > topLevel then
+                    topLevel = squareZ
+                end
             end
         end
-
-        -- TODO map the roof squares to highlight?
-        return floorArea, nil
-    else
-        -- Custom building mode
-        -- Check for player built floors
-        return self:getPlayerBuildingFloorArea(square, gutterPipeMap)
     end
+
+    return topLevel
 end
 
-function isoUtils:applyToSquareStack(square, func)
-    local cell = square:getCell()
-    local x = square:getX()
-    local y = square:getY()
-    local z = 0
-
-    -- Check 5 max
-    for i=1, 4 do
-        local nextFloor = z + 1
-        local nextSquare = cell:getGridSquare(x, y, nextFloor)
-        local value = func(nextSquare)
-        if value then
-            return z
-        elseif value == false then
-            break
+function isoUtils:getVanillaBuildingFloorSquares(buildingDef, zLevel)
+    local floorSquares = {}
+    local buildingDefRooms = buildingDef:getRooms()
+    for i=0, buildingDefRooms:size() - 1 do
+        local roomDef  = buildingDefRooms:get(i)
+        local roomZ = roomDef:getZ()
+        if roomZ == zLevel then
+            if roomDef:isEmptyOutside() then
+                -- Ignore empty outside rooms
+                utils:modPrint("Room is empty outside: "..tostring(roomDef:getID()))
+            else
+                local isoRoom = roomDef:getIsoRoom()
+                if isoRoom then
+                    local roomSquares = isoRoom:getSquares()
+                    for j=0, roomSquares:size() - 1 do
+                        local square = roomSquares:get(j)
+                        floorSquares[square:getID()] = square
+                    end
+                end
+            end
         end
-
-        z = nextFloor
     end
 
-    return z
+    return floorSquares
+end
+
+function isoUtils:getVanillaBuildingRoofArea(square, gutterPipeMap, buildingDef)
+    if not buildingDef then
+        buildingDef = self:getAttachedBuilding(square)
+    end
+
+    if not buildingDef then
+        -- No building def exists for this square
+        return nil, nil
+    end
+
+    local topGutterFloor = self:getGutterTopLevel(gutterPipeMap)
+    local floorSquares = self:getVanillaBuildingFloorSquares(buildingDef, topGutterFloor)
+    local maxZ = buildingDef:getMaxLevel()
+    local roofArea = 0
+    local roofSquares = {}
+
+    for _, floorSquare in pairs(floorSquares) do
+        local squareX = floorSquare:getX()
+        local squareY = floorSquare:getY()
+        local squareZ = floorSquare:getZ()
+        local roofSquare = getCell():getGridSquare(squareX, squareY, squareZ + 1)
+        if squareZ == maxZ then
+            -- If the square is at the max level, then we can assume the square above is a valid roof
+            roofArea = roofArea + 1
+            roofSquares[roofSquare:getID()] = roofSquare
+        else
+            -- Otherwise check if the square above is valid
+            if self:isValidRoofSquare(roofSquare) then
+                roofArea = roofArea + 1
+                roofSquares[roofSquare:getID()] = roofSquare
+            end
+        end
+    end
+
+    return roofArea, roofSquares
+end
+
+function isoUtils:getGutterRoofArea(square, gutterPipeMap)
+    local buildingDef = self:getAttachedBuilding(square)
+    local roofArea, roofSquares, buildingType
+    if buildingDef then
+        -- Vanilla building mode
+        buildingType = enums.buildingType.vanilla
+        roofArea, roofSquares = self:getVanillaBuildingRoofArea(square, gutterPipeMap, buildingDef)
+    else
+        -- Custom building mode
+        buildingType = enums.buildingType.custom
+        roofArea, roofSquares = self:getPlayerBuildingRoofArea(square, gutterPipeMap)
+    end
+
+    return roofArea, roofSquares, buildingType
 end
 
 function isoUtils:findPipeInRadius(square, radius, pipeType)

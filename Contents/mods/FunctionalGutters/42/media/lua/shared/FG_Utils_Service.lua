@@ -140,6 +140,7 @@ function serviceUtils:handlePostCollectorConnected(square)
     end
 end
 
+-- TODO handle this more explicitly
 function serviceUtils:setDrainPipeModData(square, squareModData)
     -- Calculate the number of 'roof' tiles above the drain pipe
     utils:modPrint("Setting drain pipe mod data for square: "..tostring(square))
@@ -410,18 +411,19 @@ function serviceUtils:calculateGutterSegment(square)
         drainCount = 1,
         rainFactor = 0.0,
         pipeMap = nil,
-        roofMap = nil
+        roofMap = nil,
+        buildingType = nil,
     }
 
     if not utils:isDrainPipeSquare(square) then
-        -- Check most likely already occurred in external context but just in case
+        -- Check most likely already occurred in externally but just in case
         -- Drain pipes are essentially the main 'nodes' in a gutter system so have to start from their specific squares
         utils:modPrint("Square is not a drain pipe: "..tostring(square))
-        return gutterSegment
+        return nil
     end
 
     gutterSegment.pipeMap = isoUtils:crawlGutterSystem(square)
-    local roofArea, roofMap = isoUtils:getGutterRoofArea(square, gutterSegment.pipeMap)
+    local roofArea, roofMap, buildingType = isoUtils:getGutterRoofArea(square, gutterSegment.pipeMap)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))
         return gutterSegment
@@ -431,6 +433,7 @@ function serviceUtils:calculateGutterSegment(square)
     squareModData[enums.modDataKey.roofArea] = roofArea
     gutterSegment.roofArea = roofArea
     gutterSegment.roofMap = roofMap
+    gutterSegment.buildingType = buildingType
 
     local averageGutterCapacity = self:getAverageGutterCapacity()
     gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
