@@ -205,6 +205,8 @@ function serviceUtils:getLocalDrainPipes(square, radius)
     -- Determine if square has a pre-built building or is a player-built structure
     local squareBuilding = isoUtils:getAttachedBuilding(square)
 
+    local maxLevel = utils:getModDataMaxLevel(square)
+
     -- Reduce the list of drain pipes to only those relevant to the building mode
     local associatedDrainPipes = table.newarray()
     for i=1, #drainPipes do
@@ -214,7 +216,25 @@ function serviceUtils:getLocalDrainPipes(square, radius)
             -- Vanilla building mode
             -- Check if the drain pipe is attached to the same building
             if drainBuilding and drainBuilding:getID() == squareBuilding:getID() then
-                table_insert(associatedDrainPipes, drainPipe)
+                -- Check if drains on the same building are getting water from the same level
+                if maxLevel then
+                    local drainPipeSquare = drainPipe:getSquare()
+                    local pipeMaxLevel = utils:getModDataMaxLevel(drainPipeSquare)
+                    if pipeMaxLevel then
+                        if pipeMaxLevel == maxLevel then
+                            -- Add the drain pipe to the list of associated pipes
+                            table_insert(associatedDrainPipes, drainPipe)
+                        end
+                    else
+                        -- If the drain pipe doesn't have a max level, go ahead an add it to the list of associated pipes
+                        -- Would rather over estimate than under estimate
+                        table_insert(associatedDrainPipes, drainPipe)
+                    end
+                else
+                    -- If for some reason the maxLevel is nil, go ahead an add it to the list of associated pipes
+                    -- Would rather over estimate than under estimate
+                    table_insert(associatedDrainPipes, drainPipe)
+                end
             end
         else
             -- Custom building mode
@@ -414,6 +434,8 @@ function serviceUtils:calculateGutterSegment(square)
         pipeMap = nil,
         roofMap = nil,
         buildingType = nil,
+        maxLevel = nil,
+        averageGutterCapacity = 0,
     }
 
     if not utils:isDrainPipeSquare(square) then
@@ -430,19 +452,24 @@ function serviceUtils:calculateGutterSegment(square)
         return gutterSegment
     end
 
-    local squareModData = square:getModData()
-    squareModData[enums.modDataKey.roofArea] = roofArea
     gutterSegment.roofArea = roofArea
     gutterSegment.roofMap = roofMap
     gutterSegment.buildingType = buildingType
+    gutterSegment.maxLevel = isoUtils:getGutterTopLevel(gutterSegment.pipeMap) + 1
 
-    local averageGutterCapacity = self:getAverageGutterCapacity()
-    gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(roofArea, averageGutterCapacity)
+    -- Persist some data on the square for quick checks
+    local squareModData = square:getModData()
+    squareModData[enums.modDataKey.roofArea] = gutterSegment.roofArea
+    squareModData[enums.modDataKey.buildingType] = gutterSegment.buildingType
+    squareModData[enums.modDataKey.maxLevel] = gutterSegment.maxLevel
+
+    gutterSegment.averageGutterCapacity = self:getAverageGutterCapacity()
+    gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSegment.roofArea, gutterSegment.averageGutterCapacity)
     gutterSegment.drainCount = self:getActualGutterDrainCount(square)
-    gutterSegment.tileCount = self:calculateGutterSegmentTileCount(roofArea, gutterSegment.optimalDrainCount, gutterSegment.drainCount, averageGutterCapacity)
+    gutterSegment.tileCount = self:calculateGutterSegmentTileCount(gutterSegment.roofArea, gutterSegment.optimalDrainCount, gutterSegment.drainCount, gutterSegment.averageGutterCapacity)
     gutterSegment.rainFactor = self:calculateGutterSegmentRainFactor(gutterSegment.tileCount)
 
-    utils:modPrint("Roof area: "..tostring(roofArea))
+    utils:modPrint("Roof area: "..tostring(gutterSegment.roofArea))
     utils:modPrint("Optimal drain count: "..tostring(gutterSegment.optimalDrainCount))
     utils:modPrint("Actual drain count: "..tostring(gutterSegment.drainCount))
     utils:modPrint("Segment tile count: "..tostring(gutterSegment.tileCount))

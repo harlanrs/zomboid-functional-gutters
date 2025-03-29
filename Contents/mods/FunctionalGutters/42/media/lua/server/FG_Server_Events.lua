@@ -68,12 +68,14 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     local checkDrainPipes = false
     local triggerGutterTileUpdateEvent = false
+    local triggerSquare = square
     if utils:isAnyPipeSprite(sprite) then
         -- A pipe was built
         checkDrainPipes = true
     end
 
-    if utils:isDrainPipeSquare(square) then
+    local isDrainPipeSquare = utils:isDrainPipeSquare(square)
+    if isDrainPipeSquare then
         -- Object was built on a tile marked as having a gutter drain
         utils:modPrint("Object built on drain pipe tile")
         checkDrainPipes = true
@@ -87,6 +89,24 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         if not utils:getModDataIsRoofSquare(square, squareModData) then
             -- The square is no longer a roof tile so re-crawl the gutter system
             checkDrainPipes = true
+        end
+    end
+
+    if troughUtils:isTroughSprite(sprite) then
+        -- Trough was built, check if it is multi-tile
+        local troughObject = utils:getSpecificIsoObjectFromSquare(square, sprite)
+        if troughObject then
+            -- TODO eventually use generic sprite grid instead of trough-specific to support other multi-tile objects
+            local otherTroughObject = troughUtils:getOtherTroughObject(troughObject)
+            if otherTroughObject then
+                -- Check if other trough object is on a drain pipe square
+                local otherSquare = otherTroughObject:getSquare()
+                if utils:isDrainPipeSquare(otherSquare) then
+                    -- Other trough is on drain pipe square
+                    triggerGutterTileUpdateEvent = true
+                    triggerSquare = otherSquare
+                end
+            end
         end
     end
 
@@ -107,7 +127,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     end
 
     if triggerGutterTileUpdateEvent then
-        triggerEvent(enums.modEvents.OnGutterTileUpdate, square)
+        triggerEvent(enums.modEvents.OnGutterTileUpdate, triggerSquare)
     end
 end
 

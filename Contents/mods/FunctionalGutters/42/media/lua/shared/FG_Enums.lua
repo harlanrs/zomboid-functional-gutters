@@ -252,6 +252,8 @@ enums.modDataKey = {
     isGutterConnected = "FG_isGutterConnected",
     -- Drain square
     roofArea = "FG_roofArea",
+    buildingType = "FG_buildingType",
+    maxLevel = "FG_maxLevel",
     -- Drain object
     drainCleared = "FG_drainCleared",
     -- Roof square
@@ -282,7 +284,8 @@ enums.modEvents = {
 }
 
 enums.maxRoofCrawlSteps = 4
-enums.maxGutterCrawlSteps = 25
+enums.maxGutterCrawlSteps = 36
+enums.maxBuildingBoundCrawlSteps = 25
 enums.defaultDrainPipeSearchRadius = 16
 enums.defaultDrainPipeSearchHeight = 1
 enums.gutterSegmentPerimeterLength = 9

@@ -189,6 +189,20 @@ end
 
 ---@param square IsoGridSquare
 ---@param loadedModData table|nil
+---@return integer|nil roofArea
+function utils:getModDataBuildingType(square, loadedModData)
+    return self:getModDataKeyValue(square, enums.modDataKey.buildingType, loadedModData)
+end
+
+---@param square IsoGridSquare
+---@param loadedModData table|nil
+---@return integer|nil roofArea
+function utils:getModDataMaxLevel(square, loadedModData)
+    return self:getModDataKeyValue(square, enums.modDataKey.maxLevel, loadedModData)
+end
+
+---@param square IsoGridSquare
+---@param loadedModData table|nil
 ---@return boolean|nil
 function utils:getModDataIsRoofSquare(square, loadedModData)
     return self:getModDataKeyValue(square, enums.modDataKey.isRoofSquare, loadedModData)

@@ -245,8 +245,8 @@ function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, pre
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
     if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a system with 25+ gutter objects
-        -- adding as safeguard against runaway recursion
+        -- Shouldn't hit unless player builds a large system with more gutter objects
+        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
         utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
         return square
     end
@@ -314,7 +314,7 @@ function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevD
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
     if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a system with more gutter objects
+        -- Shouldn't hit unless player builds a large system with more gutter objects
         -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
         utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
         return square
@@ -359,9 +359,9 @@ function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps
     if not crawlSteps then crawlSteps = 0 end
     crawlSteps = crawlSteps + 1
     if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a system with 25+ gutter objects
-        -- adding as safeguard against runaway recursion
-        utils:modPrint("Crawl steps exceeded 25")
+        -- Shouldn't hit unless player builds a large system with more gutter objects
+        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
         return square
     end
 
@@ -593,6 +593,7 @@ end
 ---@param building IsoBuilding
 ---@return integer roofArea, table<IsoGridSquare> roofSquares
 function isoUtils:getVanillaBuildingRoofAreaFromFloors(square, pipeMap, building)
+    -- NOTE: not used atm because building bounds strategy is more accurate for a broader set of configurations
     if not pipeMap then
         pipeMap = self:crawlGutterSystem(square)
     end
@@ -684,11 +685,11 @@ function isoUtils:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building
             end
 
             -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
-            if y >= enums.maxGutterCrawlSteps then break end
+            if y >= enums.maxBuildingBoundCrawlSteps then break end
         end
 
         -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
-        if x >= enums.maxGutterCrawlSteps then break end
+        if x >= enums.maxBuildingBoundCrawlSteps then break end
     end
 
     return roofArea, roofSquares
