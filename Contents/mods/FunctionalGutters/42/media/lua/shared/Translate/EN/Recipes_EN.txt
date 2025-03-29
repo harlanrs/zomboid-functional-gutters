@@ -1,6 +1,10 @@
+/* 
+    Note: appears to use the entity's DisplayName with spaces removed instead of entity script name 
+    TODO: verify "-" character is valid in name
+*/
 RecipesEN {
-    Metal_GutterDrainPipe = "Gutter Pipe - Drain"
-    Metal_GutterPipe = "Gutter Pipe - Vertical"
-    Metal_RoofPipe = "Gutter Pipe"
-    Metal_GutterPipe_Corner = "Gutter Pipe - Corner (Inside)"
+    MetalGutterPipe-Drain = "Metal Gutter Pipe - Drain"
+    MetalGutterPipe-Vertical = "Metal Gutter Pipe - Vertical"
+    MetalGutterPipe = "Metal Gutter Pipe"
+    MetalGutterPipe-Corner = "Metal Gutter Pipe - Corner (Inside)"
 }

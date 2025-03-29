@@ -10,7 +10,7 @@ end
 
 local function AddGutterSystemContext(player, context, drainObject)
     local playerObject = getSpecificPlayer(player)
-    context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, DoOpenGutterPanel, drainObject);
+    context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, DoOpenGutterPanel, drainObject)
 end
 
 

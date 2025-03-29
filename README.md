@@ -166,34 +166,46 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 
 ### 1.2 Notes
-
 TODO Release Priority
-- Build gutter on garage door frame
-- Add roof section tooltip
-- Set scrap definition for all pipes
-- Add tile props to all pipes
-- Build full mod info panel 
-- Disable button & add tooltip when wrench is required in ui panel
-- Add all build icons
-- Add all text translations
+- Add all build definitions
+    - icons
+        - just need outside corner
+    - cleanup entity name
+    - input items
 - Cleanup/Reorder tilesheets?
+- Build full mod info panel 
+- Add roof section tooltip
+    - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
+- Add all text translations
 - Update README
 
-TODO Medium Priority
-- Check segments that don't reach top floor to ensure they only access nearby roofs that make sense
-- Persist details such as buildingType and maxFloor
-    - consider floor level for determining if two drains on the same vanilla building 'overlap'
+TODO Medium Priority / Next steps
+- Add additional gutter material types
+    - clay using inverted clay tiles and clay pipes
+- Allow blacksmithing option for metal gutter
+    - would need intermediary craftable pipes as alternate input resource
+    - worth it if still requires welding the pieces together? 
+        - Potentially not an issue if we can get placeables working well allowing us to directly craft the moveable version from the forge
+- Allow picking up & placing pipes
+    - bumped from 1.2 release due to differences in how placement rules work for moveables vs initial building
 - Add ui feedback for specific needs when building pipes
-- Persist 'mode' on drain pipe object as mod data
+
 - Crawl perimeter of vanilla building in drain check instead of radial search
     - Will need to test with large buildings
 - Prevent connected to containers that can't receive tainted water
     - include warning
 
-TODO Low Priority
+TODO Low Priority / Next steps
+- Trigger reload in gutter ui when player inv changes (for pickup/drop of pipewrench when required)
+- Build gutter on garage door frame
+    - currently horizontal gutter pipes don't do anything for vanilla buildings so maybe not a problem
+    - IsoDoor.getGarageDoorIndex
+- Allow manually switching building 'mode' to custom by adding horizontal gutter pipes to vanilla?
+    - or just enable vertical pipes to connect with horizontal/gutter pipes allowing for snaking up vanilla buildings 
+- Check segments that don't reach top floor to ensure they only access nearby roofs that make sense (vanilla buildings)
+    - currently just assumed to have access to any roof on that level even if it doesn't make sense visually
+    - Only a 'problem' on some vanilla buildings and we already assume existing gutter structures that we are hooking in to so maybe not a problem at all
 - Take roof angle into consideration?
-- Add additional gutter material types
-    - clay using inverted clay tiles and clay pipes
 - Water overlay during storms?
     - overlaySpriteColor
     - renderOverlaySprites
@@ -209,7 +221,3 @@ TODO Low Priority
     - (object).addObjectAmbientEmitter
     - (chunk).addObjectAmbientEmitter
 
-Notes:
-- Look into spriteconfig LogicClass for placement logic (ex: LogicClass      = WoodenWall,)
-- Look into spriteconfig corner option (ex: corner = constructedobjects_01_76,)
-    - might be specifically related to the sprite logic class

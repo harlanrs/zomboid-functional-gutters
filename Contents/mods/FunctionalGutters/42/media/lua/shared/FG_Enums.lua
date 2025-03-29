@@ -22,37 +22,37 @@ enums.buildingType = {
 
 enums.pipes = {
     -- Drain pipes
-    -- Mostly used in water towers
+    -- Water tower
     industry_02_76 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.W, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.E,
     }, -- drain facing east
     industry_02_77 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.S,
     }, -- north drain facing south
     industry_02_78 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.N,
     }, -- north drain facing north
     industry_02_79 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NE, -- verify
+        position = IsoDirections.NW,
         facing = IsoDirections.W,
     }, -- drain facing west
 
-    -- Vertical pipes with curve bottom
-    -- industry_02_236 = {},
-    -- industry_02_237 = {},
-    -- industry_02_240 = {},
-    -- industry_02_241 = {},
-    -- industry_02_242 = {},
-    -- industry_02_244 = {},
-    -- industry_02_245 = {},
-    -- industry_02_246 = {},
+    -- Standard industrial
+    -- industry_02_236 = {}, -- long bottom | nw corner | point south
+    -- industry_02_237 = {}, -- long bottom | nw corner | point east
+    -- industry_02_240 = {}, -- long bottom
+    -- industry_02_241 = {}, -- long bottom
+    -- industry_02_242 = {}, -- long bottom
+    -- industry_02_244 = {}, -- long bottom
+    -- industry_02_245 = {}, -- long bottom
+    -- industry_02_246 = {}, -- long bottom
     industry_02_260 = {
         type = enums.pipeType.drain,
         position = IsoDirections.NW,
@@ -76,8 +76,12 @@ enums.pipes = {
 
     --------------------------------------
     -- Vertical pipes 
-    -- water tower
-    -- industry_02_34 = {}, -- TBD
+    -- Water tower
+    industry_02_34 = {
+        type = enums.pipeType.vertical,
+        position = IsoDirections.NW,
+        facing = nil,
+    },
 
     -- Standard industrial
     industry_02_238 = {
@@ -104,41 +108,44 @@ enums.pipes = {
     --------------------------------------
     -- Horizontal pipes
     -- Water tower
-    industry_02_37 = {
-        type = enums.pipeType.horizontal,
-        position = IsoDirections.W,
-        facing = nil,
-    }, -- TODO verify
-    industry_02_38 = {
-        type = enums.pipeType.horizontal,
-        position = IsoDirections.N,
-        facing = nil,
-    }, -- TODO verify north
+    -- industry_02_37 = {
+    --     type = enums.pipeType.horizontal,
+    --     position = IsoDirections.W,
+    --     facing = nil,
+    -- }, -- TODO verify
+    -- industry_02_38 = {
+    --     type = enums.pipeType.horizontal,
+    --     position = IsoDirections.N,
+    --     facing = nil,
+    -- }, -- TODO verify north
+
+    -- Standard industrial
     industry_02_226 = {
         type = enums.pipeType.horizontal,
-        position = IsoDirections.W,
+        position = IsoDirections.N,
         facing = nil,
-    }, -- TODO verify
+    },
     industry_02_230 = {
         type = enums.pipeType.horizontal,
-        position = IsoDirections.W,
+        position = IsoDirections.S,
         facing = nil,
-    }, -- TODO verify
+    },
     industry_02_224 = {
         type = enums.pipeType.horizontal,
-        position = IsoDirections.N,
+        position = IsoDirections.W,
         facing = nil,
-    },  -- TODO verify north
+    },
     industry_02_231 = {
         type = enums.pipeType.horizontal,
-        position = IsoDirections.N,
+        position = IsoDirections.E,
         facing = nil,
-    },   -- TODO verify north
+    },
     -- "roofs_06_6", -- roof gutter south
     -- "roofs_06_7", -- roof gutter east
     -- "roofs_06_21", -- roof south east corner small
     -- "roofs_06_20" -- roof north west corner large
 
+    -- Gutter pipes
     -- Custom sprites
     gutter_01_5 = {
         type = enums.pipeType.gutter,

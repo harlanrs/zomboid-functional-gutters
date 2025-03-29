@@ -2,38 +2,48 @@ module Base
 {
 	xuiSkin default
 	{
+        /* TODO ES_Metal_GutterPipe_Drain */
 		entity ES_GutterDrainPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Pipe - Drain,
+			DisplayName	= Metal Gutter Pipe - Drain,
 			Icon		= FG_Build_Pipe_Drain,
 		}
+
+        /* TODO ES_Metal_GutterPipe_Vertical */
         entity ES_GutterPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Pipe - Vertical,
+			DisplayName	= Metal Gutter Pipe - Vertical,
 			Icon		= FG_Build_Pipe_Vertical,
 		}
+
+        /* TODO ES_Metal_GutterPipe */
         entity ES_RoofPipe
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Pipe,
+			DisplayName	= Metal Gutter Pipe,
 			Icon		= FG_Build_Pipe_Gutter,
 		}
+
+        /* TODO ES_Metal_GutterPipe_Corner_Inside */
         entity ES_GutterPipe_Corner
 		{
 			LuaWindowClass	= ISEntityWindow,
-			DisplayName	= Gutter Pipe - Corner,
+			DisplayName	= Metal Gutter Pipe - Corner,
 			Icon		= FG_Build_Pipe_Corner,
 		}
+
+        /* TODO ES_Metal_GutterPipe_Corner_Outside */
 	}
 
+    /* TODO Metal_GutterPipe_Drain */
     entity Metal_GutterDrainPipe
     {
         component UiConfig
         {
             xuiSkin         = default,
-            entityStyle     = ES_GutterDrainPipe,
+            entityStyle     = ES_GutterDrainPipe, /* TODO */
             uiEnabled       = false,
         }
 
@@ -65,8 +75,8 @@ module Base
             time          = 250,
             SkillRequired = MetalWelding:2,
             xpAward       = MetalWelding:10,
-            category      = Outdoors,
-            tags          = Welding,
+            category      = Welding,
+            tags          = Welding;Outdoors,
             ToolTip       = UI_craft_FunctionalGutters_MetalPipeDrain_tooltip,
             inputs
             {
@@ -80,12 +90,13 @@ module Base
         }
     }
 
+    /* TODO Metal_GutterPipe_Vertical */
     entity Metal_GutterPipe
     {
         component UiConfig
         {
             xuiSkin         = default,
-            entityStyle     = ES_GutterPipe,
+            entityStyle     = ES_GutterPipe, /* TODO */
             uiEnabled       = false,
         }
 
@@ -139,8 +150,8 @@ module Base
             time          = 250,
             SkillRequired = MetalWelding:2,
             xpAward       = MetalWelding:10,
-            category      = Outdoors,
-            tags          = Welding,
+            category      = Welding,
+            tags          = Welding;Outdoors,
             ToolTip       = UI_craft_FunctionalGutters_MetalPipeVertical_tooltip,
             inputs
             {
@@ -153,12 +164,13 @@ module Base
         }
     }
 
+    /* TODO Metal_GutterPipe */
     entity Metal_RoofPipe
     {
         component UiConfig
         {
             xuiSkin         = default,
-            entityStyle     = ES_RoofPipe,
+            entityStyle     = ES_RoofPipe, /* TODO */
             uiEnabled       = false,
         }
 
@@ -189,8 +201,8 @@ module Base
             time          = 100,
             SkillRequired = MetalWelding:2,
             xpAward       = MetalWelding:5,
-            category      = Outdoors,
-            tags          = Welding,
+            category      = Welding,
+            tags          = Welding;Outdoors,
             ToolTip       = UI_craft_FunctionalGutters_MetalPipeGutter_tooltip,
             inputs
             {
@@ -202,12 +214,13 @@ module Base
         }
     }
 
+    /* TODO Metal_GutterPipe_Corner_Inside */
     entity Metal_GutterPipe_Corner
     {
         component UiConfig
         {
             xuiSkin         = default,
-            entityStyle     = ES_GutterPipe_Corner,
+            entityStyle     = ES_GutterPipe_Corner, /* TODO */
             uiEnabled       = false,
         }
 
@@ -237,8 +250,8 @@ module Base
             time          = 100,
             SkillRequired = MetalWelding:2,
             xpAward       = MetalWelding:5,
-            category      = Outdoors,
-            tags          = Welding,
+            category      = Welding,
+            tags          = Welding;Outdoors,
             ToolTip       = UI_craft_FunctionalGutters_MetalPipeCorner_tooltip,
             inputs
             {
@@ -249,4 +262,6 @@ module Base
             }
         }
     }
+
+    /* TODO Metal_GutterPipe_Corner_Outside */
 }
