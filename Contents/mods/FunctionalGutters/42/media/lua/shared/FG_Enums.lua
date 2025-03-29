@@ -247,11 +247,15 @@ enums.customProps = {
 -- Adding prefix to avoid potential namespace conflicts
 -- and make it easier to find in blanket search
 enums.modDataKey = {
+    -- Collector object
     baseRainFactor = "FG_baseRainFactor",
     isGutterConnected = "FG_isGutterConnected",
+    -- Drain square
     roofArea = "FG_roofArea",
-    isRoofSquare = "FG_roofSquare",
+    -- Drain object
     drainCleared = "FG_drainCleared",
+    -- Roof square
+    isRoofSquare = "FG_roofSquare",
 
     -- pipeConnectedUp
     -- pipeConnectedDown

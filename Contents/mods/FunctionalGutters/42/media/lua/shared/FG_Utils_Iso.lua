@@ -588,12 +588,11 @@ function isoUtils:getVanillaBuildingFloorSquares(buildingDef, zLevel)
     return floorSquares
 end
 
-
 ---@param square IsoGridSquare
 ---@param pipeMap table
 ---@param building IsoBuilding
 ---@return integer roofArea, table<IsoGridSquare> roofSquares
-function isoUtils:getVanillaBuildingRoofArea(square, pipeMap, building)
+function isoUtils:getVanillaBuildingRoofAreaFromFloors(square, pipeMap, building)
     if not pipeMap then
         pipeMap = self:crawlGutterSystem(square)
     end
@@ -628,6 +627,75 @@ end
 
 ---@param square IsoGridSquare
 ---@param pipeMap table
+---@param building IsoBuilding
+---@return integer roofArea, table<IsoGridSquare> roofSquares
+function isoUtils:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building)
+    -- NOTE: "bounds" strategy is generally more accurate for a broader set of configurations compared to "rooms" strategy 
+    -- but might be less performant for buildings that generate a large bounding rect compared to what space is actually occupied by the structure
+    if not pipeMap then
+        pipeMap = self:crawlGutterSystem(square)
+    end
+
+    local topGutterFloor = self:getGutterTopLevel(pipeMap)
+    local buildingDef = building:getDef()
+    local buildingBounds = {
+        x = buildingDef:getX(),
+        y = buildingDef:getY(),
+        x2 = buildingDef:getX2(),
+        y2 = buildingDef:getY2(),
+        w = buildingDef:getW(),
+        h = buildingDef:getH(),
+    }
+    local buildingDefId = buildingDef:getID() -- NOTE: different from IsoBuilding ID
+    local maxZ = buildingDef:getMaxLevel()
+    local minZ = buildingDef:getMinLevel()
+    local roofZ = topGutterFloor > maxZ and maxZ + 1 or topGutterFloor + 1
+    local roofArea = 0
+    local roofSquares = {}
+
+    local startX = buildingBounds.x
+    local startY = buildingBounds.y
+    local metaGrid = getWorld():getMetaGrid()
+    for x = 0, buildingBounds.w do
+        for y = 0, buildingBounds.h do
+            local squareX = startX + x
+            local squareY = startY + y
+
+            -- Verify square is 'associated' with the building
+            -- Roof squares are not in the bounds of the IsoBuilding but will still be associated with it from a meta grid perspective
+            -- Additionally, building bounds might intersect or overlap so we need to ensure roofs from other buildings are not included
+            local associatedBuilding = metaGrid:getAssociatedBuildingAt(squareX, squareY)
+            if associatedBuilding and associatedBuilding:getID() == buildingDefId then
+                local roofSquare = getCell():getGridSquare(squareX, squareY, roofZ)
+                -- Check if the square is valid to be considered a roof square
+                if roofSquare and self:isValidRoofSquare(roofSquare) then
+                    -- If the square doesn't have a floor, it might still be a valid roof but requires additional checks
+                    if not roofSquare:getFloor() then
+                        -- Verify the square is associated with a room on the min z level of the building (generally the 'ground' floor has the largest area of rooms)
+                        if metaGrid:getRoomAt(squareX, squareY, minZ) then
+                            roofArea = roofArea + 1
+                            roofSquares[roofSquare:getID()] = roofSquare
+                        end
+                    else
+                        roofArea = roofArea + 1
+                        roofSquares[roofSquare:getID()] = roofSquare
+                    end
+                end
+            end
+
+            -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
+            if y >= enums.maxGutterCrawlSteps then break end
+        end
+
+        -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
+        if x >= enums.maxGutterCrawlSteps then break end
+    end
+
+    return roofArea, roofSquares
+end
+
+---@param square IsoGridSquare
+---@param pipeMap table
 ---@return integer roofArea, table<IsoGridSquare> roofSquares, "vanilla"|"custom" buildingType
 function isoUtils:getGutterRoofArea(square, pipeMap)
     local building = self:getAttachedBuilding(square)
@@ -635,7 +703,7 @@ function isoUtils:getGutterRoofArea(square, pipeMap)
     if building then
         -- Vanilla building mode
         buildingType = enums.buildingType.vanilla
-        roofArea, roofSquares = self:getVanillaBuildingRoofArea(square, pipeMap, building)
+        roofArea, roofSquares = self:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building)
     else
         -- Custom building mode
         buildingType = enums.buildingType.custom

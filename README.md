@@ -167,7 +167,8 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 ### 1.2 Notes
 
-TODO High Priority
+TODO Release Priority
+- Build gutter on garage door frame
 - Add roof section tooltip
 - Set scrap definition for all pipes
 - Add tile props to all pipes
@@ -175,21 +176,21 @@ TODO High Priority
 - Disable button & add tooltip when wrench is required in ui panel
 - Add all build icons
 - Add all text translations
+- Cleanup/Reorder tilesheets?
 - Update README
 
 TODO Medium Priority
+- Check segments that don't reach top floor to ensure they only access nearby roofs that make sense
+- Persist details such as buildingType and maxFloor
+    - consider floor level for determining if two drains on the same vanilla building 'overlap'
 - Add ui feedback for specific needs when building pipes
-- Reorder tilesheets?
 - Persist 'mode' on drain pipe object as mod data
 - Crawl perimeter of vanilla building in drain check instead of radial search
     - Will need to test with large buildings
-- 
+- Prevent connected to containers that can't receive tainted water
+    - include warning
 
 TODO Low Priority
-- Use gutter pipes as a means to manually switch from pre-built to player-built mode on pre-built buildings.
-    - ex: 
-    - some garages are still tagged as the the same building even when physically separate.
-    - this would allow players to easily use them without impacting things like drain limit on the main building
 - Take roof angle into consideration?
 - Add additional gutter material types
     - clay using inverted clay tiles and clay pipes

@@ -238,6 +238,7 @@ function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
     end
 
     if not highlightObject then
+        -- Might still be a 'valid roof' but nothing to highlight (ex: multi-level roof) but also could indicate over counting of roof area
         utils:modPrint("No roof object found for square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
         return
     end
