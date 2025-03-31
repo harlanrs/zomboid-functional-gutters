@@ -247,8 +247,8 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
     end
 
     if checkDrainPipes then
-        utils:modPrint("Checking local drain pipes after object removed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         -- Seek all nearby drain pipes to update the rain factor
+        utils:modPrint("Checking local drain pipes after object removed: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
             for i=1, #drainPipes do
@@ -267,11 +267,31 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
     end
 end
 
+local function swapAltGutterBuildSprite(square, sprite)
+    -- NOTE: could be done in the OnCreate method but would require removing the object, re-adding it, and a lot of extra checks/cleanup across multiple squares
+    -- Since we are already having to wrap the setInfo method, it is much easier to replace the square & sprite right before the object is created
+    if sprite == "gutter_01_7" then
+        -- Top-down build helper sprite so replace with the 'real' gutter on the adjacent square below
+        square = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ() - 1)
+        sprite = enums.gutterAltBuildMap[sprite]
+    elseif sprite == "gutter_01_9" then
+        -- Top-down build helper sprite so replace with the 'real' gutter on the adjacent square below
+        square = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ() - 1)
+        sprite = enums.gutterAltBuildMap[sprite]
+    end
+
+    return square, sprite
+end
+
 -- TODO re-evaluate if we can get this event from any other source beside having to wrap the function
 local ISBuildIsoEntity_setInfo = ISBuildIsoEntity.setInfo
 function ISBuildIsoEntity:setInfo(square, north, sprite, openSprite)
     -- React to the creation of a new iso object from the build menu
     -- NOTE: using ISBuildIsoEntity:setInfo instead of ISBuildIsoEntity:create as it is possible for the create function to exit early unsuccessfully
+    if enums.gutterAltBuildMap[sprite] then
+        square, sprite = swapAltGutterBuildSprite(square, sprite)
+    end
+
     ISBuildIsoEntity_setInfo(self, square, north, sprite, openSprite)
 
     GutterServerManager.OnIsoObjectBuilt(square, sprite)

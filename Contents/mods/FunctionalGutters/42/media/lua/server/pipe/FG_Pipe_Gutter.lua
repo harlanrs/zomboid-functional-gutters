@@ -25,13 +25,52 @@ end
 
 function GutterPipeService:onIsValid(buildParams)
     local square = buildParams.square
+    local tileInfoSprite = buildParams.tileInfo:getSpriteName();
+    local pipeDef = enums.pipes[tileInfoSprite]
+
+    if tileInfoSprite == "gutter_01_7" then
+        -- Top-down build helper sprite so grab the 'real' square to check
+        local z = square:getZ() - 1
+        if z < 0 then
+            return false
+        end
+        square = getCell():getGridSquare(square:getX(), square:getY() + 1, z)
+        pipeDef = enums.pipes[enums.gutterAltBuildMap[tileInfoSprite]]
+    elseif tileInfoSprite == "gutter_01_9" then
+        -- Top-down build helper sprite so grab the 'real' square to check
+        local z = square:getZ() - 1
+        if z < 0 then
+            return false
+        end
+        square = getCell():getGridSquare(square:getX() + 1, square:getY(), z)
+        pipeDef = enums.pipes[enums.gutterAltBuildMap[tileInfoSprite]]
+    end
+
+    if not square then
+        return false
+    end
+
+    if not pipeDef then
+        return false
+    end
 
     -- Requires being outside
     if not square:isOutside() then
         return false
     end
 
-    -- Requires a wall/pole (to attach on)
+    -- Requires no existing gutter pipe on tile
+    if utils:isGutterPipeSquare(square) then
+        return false
+    end
+
+    -- Requires not having stairs on the tile
+    if square:HasStairs() then
+        return false
+    end
+
+    -- Requires a wall/pole on same level or floor on level above (to attach on)
+    -- TODO check if there is a garage door section
     if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
         -- Check if the square to the north has a wall on the west
         local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
@@ -40,21 +79,28 @@ function GutterPipeService:onIsValid(buildParams)
         end
 
         if not isoUtils:hasWallW(adjacentSquareN) then
-            -- Check if the square to the west has a wall on the north
-            local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
-            if not adjacentSquareW then
+            -- Check if there is a floor on the adjacent square north + 1 z level
+            local adjacentSquareNUp = getCell():getGridSquare(adjacentSquareN:getX(), adjacentSquareN:getY(), adjacentSquareN:getZ() + 1)
+            if not adjacentSquareNUp then
                 return false
             end
 
-            if not isoUtils:hasWallN(adjacentSquareW) then
-                return false
+            if not adjacentSquareNUp:hasFloor() then
+                -- Check if the square to the west has a wall on the north
+                local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
+                if not adjacentSquareW then
+                    return false
+                end
+
+                if not isoUtils:hasWallN(adjacentSquareW) then
+                    -- Check if there is a floor on the adjacent square west + 1 z level
+                    local adjacentSquareWUp = getCell():getGridSquare(adjacentSquareW:getX(), adjacentSquareW:getY(), adjacentSquareW:getZ() + 1)
+                    if not adjacentSquareWUp or not adjacentSquareWUp:hasFloor() then
+                        return false
+                    end
+                end
             end
         end
-    end
-
-    -- Requires no existing gutter pipe on tile
-    if utils:isGutterPipeSquare(square) then
-        return false
     end
 
 	return true

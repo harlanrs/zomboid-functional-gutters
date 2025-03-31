@@ -253,8 +253,9 @@ end
 function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
     if not self.gutterSegment.pipeMap then return end
 
-    for _, gutterPipeType in pairs(self.gutterSegment.pipeMap) do
-        for _, pipeSquare in ipairs(gutterPipeType) do
+    for _, pipeTypeSquares in pairs(self.gutterSegment.pipeMap) do
+        for i=1, #pipeTypeSquares do
+            local pipeSquare = pipeTypeSquares[i]
             self:highlightGutterObject(pipeSquare, highlight)
         end
     end

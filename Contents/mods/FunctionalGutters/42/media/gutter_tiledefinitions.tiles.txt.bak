@@ -4,30 +4,6 @@ tileset
     file = gutter_01
     size = 8,8
     id = 1
-    // gutter_01_0
-    tile
-    {
-        xy = 0,0
-        MaterialType = Metal
-    }
-    // gutter_01_1
-    tile
-    {
-        xy = 1,0
-        MaterialType = Metal
-    }
-    // gutter_01_2
-    tile
-    {
-        xy = 2,0
-        MaterialType = Metal
-    }
-    // gutter_01_3
-    tile
-    {
-        xy = 3,0
-        MaterialType = Metal
-    }
     // gutter_01_4
     tile
     {
@@ -55,12 +31,6 @@ tileset
         Material = SmallMetalPlates
         MaterialType = Metal_Light
     }
-    // gutter_01_7
-    tile
-    {
-        xy = 7,0
-        MaterialType = Metal
-    }
     // gutter_01_8
     tile
     {
@@ -69,12 +39,6 @@ tileset
         IsGutterPipe = 
         Material = SmallMetalPlates
         MaterialType = Metal_Light
-    }
-    // gutter_01_9
-    tile
-    {
-        xy = 1,1
-        MaterialType = Metal
     }
 }
 tileset
@@ -86,56 +50,76 @@ tileset
     tile
     {
         xy = 6,29
+        CanScrap = 
         IsVerticalPipe = 
+        Material = MetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_239
     tile
     {
         xy = 7,29
+        CanScrap = 
         IsVerticalPipe = 
+        Material = MetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_243
     tile
     {
         xy = 3,30
+        CanScrap = 
         IsVerticalPipe = 
+        Material = MetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_247
     tile
     {
         xy = 7,30
+        CanScrap = 
         IsVerticalPipe = 
+        Material = MetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_260
     tile
     {
         xy = 4,32
+        CanScrap = 
         IsDrainPipe = 
+        Material = MetalPlates
+        Material2 = SmallMetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_261
     tile
     {
         xy = 5,32
+        CanScrap = 
         IsDrainPipe = 
+        Material = MetalPlates
+        Material2 = SmallMetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_262
     tile
     {
         xy = 6,32
+        CanScrap = 
         IsDrainPipe = 
+        Material = MetalPlates
+        Material2 = SmallMetalPlates
         MaterialType = Metal_Light
     }
     // industry_02_263
     tile
     {
         xy = 7,32
+        CanScrap = 
         IsDrainPipe = 
+        Material = MetalPlates
+        Material2 = SmallMetalPlates
         MaterialType = Metal_Light
     }
 }

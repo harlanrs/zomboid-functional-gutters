@@ -57,8 +57,7 @@ function globalObjectUtils:replaceExistingTrough(isoObject)
     return isoObject
 end
 
-
------@param object IsoFeedingTrough|IsoObject -- commented out since typing wasn't following full context and throwing a warning
+-----@param object IsoFeedingTrough|IsoObject -- commented out type def since typing wasn't following full context and throwing a warning
 ---@return IsoFeedingTrough
 function globalObjectUtils:loadTrough(object)
     if not troughUtils:isTroughObject(object) then

@@ -6,5 +6,6 @@ RecipesEN {
     MetalGutterPipe-Drain = "Metal Gutter Pipe - Drain"
     MetalGutterPipe-Vertical = "Metal Gutter Pipe - Vertical"
     MetalGutterPipe = "Metal Gutter Pipe"
-    MetalGutterPipe-Corner = "Metal Gutter Pipe - Corner (Inside)"
+    MetalGutterPipe-Corner = "Metal Gutter Pipe - Corner"
+    MetalGutterPipe-CornerSmall = "Metal Gutter Pipe - Corner (Small)"
 }

@@ -31,6 +31,12 @@ tileset
         Material = SmallMetalPlates
         MaterialType = Metal_Light
     }
+    // gutter_01_7
+    tile
+    {
+        xy = 7,0
+        IsGutterPipe = 
+    }
     // gutter_01_8
     tile
     {
@@ -39,6 +45,12 @@ tileset
         IsGutterPipe = 
         Material = SmallMetalPlates
         MaterialType = Metal_Light
+    }
+    // gutter_01_9
+    tile
+    {
+        xy = 1,1
+        IsGutterPipe = 
     }
 }
 tileset

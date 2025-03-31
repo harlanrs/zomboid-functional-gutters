@@ -12,10 +12,11 @@ UI_EN = {
     UI_context_menu_FunctionalGutters_ConnectContainer = "Connect"
     UI_context_menu_FunctionalGutters_DisconnectContainer = "Disconnect"
 
-    UI_craft_FunctionalGutters_MetalPipeDrain_tooltip = "Connects the gutter section to a fluid container. <br>Must be attached to a wall for support."
-    UI_craft_FunctionalGutters_MetalPipeVertical_tooltip = "Extends the gutter section an additional level vertically. <br>Must be attached to a wall and built above a drain/vertical pipe for support"
-    UI_craft_FunctionalGutters_MetalPipeGutter_tooltip = "Collects rain water from adjacent floors/roof and extends the gutter section horizontally. <br>Must be attached to a wall for support."
-    UI_craft_FunctionalGutters_MetalPipeCorner_tooltip = "Collects rain water from both sides of corner and extends the gutter section horizontally. <br>Must be attached to a wall for support."
+    UI_craft_FunctionalGutters_MetalPipeDrain_tooltip = "Connects the gutter section to a nearby fluid container. <br>Must be attached to a wall for support."
+    UI_craft_FunctionalGutters_MetalPipeVertical_tooltip = "Extends the gutter section up an additional level. <br>Must be attached to a wall and above a drain or vertical pipe for support."
+    UI_craft_FunctionalGutters_MetalPipeGutter_tooltip = "Extends the gutter section horizontally, <br>collecting rain water from adjacent floors."
+    UI_craft_FunctionalGutters_MetalPipeCorner_tooltip = "Extends the gutter section around the inside corner, <br>collecting rain water from both sides."
+    UI_craft_FunctionalGutters_MetalPipeCornerSmall_tooltip = "Extends the gutter section around the outside corner, <br>but doesn't collect any rain water itself."
 
     UI_panel_FunctionalGutters_panel_title = "Gutter System"
     UI_panel_FunctionalGutters_section_Pipes_title = "Pipes"

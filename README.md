@@ -167,12 +167,7 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 ### 1.2 Notes
 TODO Release Priority
-- Add all build definitions
-    - icons
-        - just need outside corner
-    - cleanup entity name
-    - input items
-- Cleanup/Reorder tilesheets?
+- Cleanup mod data when drain pipe is removed
 - Build full mod info panel 
 - Add roof section tooltip
     - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
@@ -189,13 +184,13 @@ TODO Medium Priority / Next steps
 - Allow picking up & placing pipes
     - bumped from 1.2 release due to differences in how placement rules work for moveables vs initial building
 - Add ui feedback for specific needs when building pipes
-
 - Crawl perimeter of vanilla building in drain check instead of radial search
     - Will need to test with large buildings
 - Prevent connected to containers that can't receive tainted water
     - include warning
 
 TODO Low Priority / Next steps
+- Add depthmask to gutter pipes
 - Trigger reload in gutter ui when player inv changes (for pickup/drop of pipewrench when required)
 - Build gutter on garage door frame
     - currently horizontal gutter pipes don't do anything for vanilla buildings so maybe not a problem

@@ -11,7 +11,8 @@ local localFeedingTroughDef = FeedingTroughDef
 ---@param spriteName any
 ---@return boolean
 function troughUtils:isTroughSprite(spriteName)
-    for _, troughSprite in ipairs(enums.troughSprites) do
+    for i=1, #enums.troughSprites do
+        local troughSprite = enums.troughSprites[i]
         if spriteName == troughSprite then
             return true
         end
@@ -22,7 +23,8 @@ end
 ---@param spriteName any
 ---@return boolean
 function troughUtils:isSingleTileTroughFromSprite(spriteName)
-    for _, troughSprite in ipairs(enums.smallTroughSprites) do
+    for i=1, #enums.smallTroughSprites do
+        local troughSprite = enums.smallTroughSprites[i]
         if spriteName == troughSprite then
             return true
         end

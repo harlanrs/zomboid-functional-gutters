@@ -65,14 +65,14 @@ enums.pipes = {
     }, -- nw corner | point east
     industry_02_262 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW,
+        position = IsoDirections.NE,
         facing = IsoDirections.S,
-    }, -- nw corner | point south
+    }, -- ne corner | point south
     industry_02_263 = {
         type = enums.pipeType.drain,
-        position = IsoDirections.NW,
+        position = IsoDirections.SW,
         facing = IsoDirections.E,
-    }, -- nw corner | point east
+    }, -- sw corner | point east
 
     --------------------------------------
     -- Vertical pipes 
@@ -140,11 +140,8 @@ enums.pipes = {
         position = IsoDirections.E,
         facing = nil,
     },
-    -- "roofs_06_6", -- roof gutter south
-    -- "roofs_06_7", -- roof gutter east
-    -- "roofs_06_21", -- roof south east corner small
-    -- "roofs_06_20" -- roof north west corner large
 
+    --------------------------------------
     -- Gutter pipes
     -- Custom sprites
     gutter_01_5 = {
@@ -173,10 +170,15 @@ enums.pipes = {
     },
 }
 
+enums.gutterAltBuildMap = {
+    gutter_01_7 = "gutter_01_6",
+    gutter_01_9 = "gutter_01_5",
+}
+
 local function mapPipesByType(pipeCategory)
     local categoryPipes = {}
 
-    for spriteName, spriteDef in ipairs(enums.pipes) do
+    for spriteName, spriteDef in pairs(enums.pipes) do
         if spriteDef.type == pipeCategory then
             categoryPipes[spriteName] = spriteDef
         end
@@ -188,7 +190,7 @@ end
 local function mapPipesByPosition(position)
     local positionPipes = {}
 
-    for spriteName, spriteDef in ipairs(enums.pipes) do
+    for spriteName, spriteDef in pairs(enums.pipes) do
         if spriteDef.position == position then
             positionPipes[spriteName] = spriteDef
         end
