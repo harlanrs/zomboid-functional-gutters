@@ -74,13 +74,13 @@ function gutterService:connectCollector(collectorObject)
         return
     end
 
-    local gutterSegment = serviceUtils:calculateGutterSegment(square)
-    if not gutterSegment then
-        utils:modPrint("No gutter segment found for square: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+    local gutterSection = serviceUtils:calculateGutterSection(square)
+    if not gutterSection then
+        utils:modPrint("No gutter section found for square: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         return
     end
 
-    local success = containerService:connectCollector(collectorObject, gutterSegment.rainFactor)
+    local success = containerService:connectCollector(collectorObject, gutterSection.rainFactor)
     if success then
         serviceUtils:handlePostCollectorConnected(square)
     end

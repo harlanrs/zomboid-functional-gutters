@@ -52,7 +52,7 @@ end
 function FG_TA_DisconnectContainer:complete()
 	if self.containerObject then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		utils:modPrint("Sending client command disconnectCollector: " .. tostring(args))
+		utils:modPrint("Sending client command disconnectCollector")
 		sendClientCommand(self.character, enums.modName, enums.modCommands.disconnectCollector, args)
 	else
 		utils:modPrint("Failed to disconnect collector: " .. tostring(self.containerObject))

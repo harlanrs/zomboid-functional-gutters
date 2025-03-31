@@ -167,7 +167,7 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 ### 1.2 Notes
 TODO Release Priority
-- Cleanup mod data when drain pipe is removed
+- Move positioning of ui icons bar
 - Build full mod info panel 
 - Add roof section tooltip
     - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
@@ -197,7 +197,7 @@ TODO Low Priority / Next steps
     - IsoDoor.getGarageDoorIndex
 - Allow manually switching building 'mode' to custom by adding horizontal gutter pipes to vanilla?
     - or just enable vertical pipes to connect with horizontal/gutter pipes allowing for snaking up vanilla buildings 
-- Check segments that don't reach top floor to ensure they only access nearby roofs that make sense (vanilla buildings)
+- Check sections that don't reach top floor to ensure they only access nearby roofs that make sense (vanilla buildings)
     - currently just assumed to have access to any roof on that level even if it doesn't make sense visually
     - Only a 'problem' on some vanilla buildings and we already assume existing gutter structures that we are hooking in to so maybe not a problem at all
 - Take roof angle into consideration?

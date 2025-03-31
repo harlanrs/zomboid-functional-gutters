@@ -208,6 +208,19 @@ function utils:getModDataIsRoofSquare(square, loadedModData)
     return self:getModDataKeyValue(square, enums.modDataKey.isRoofSquare, loadedModData)
 end
 
+---Let's be polite and clean up after ourselves
+---@param square IsoGridSquare
+---@param loadedModData table|nil
+function utils:cleanSquareDrainModData(square, loadedModData)
+    if not loadedModData then
+        -- Load mod data if not provided
+        loadedModData = square:getModData()
+    end
+    loadedModData[enums.modDataKey.roofArea] = nil
+    loadedModData[enums.modDataKey.buildingType] = nil
+    loadedModData[enums.modDataKey.maxLevel] = nil
+end
+
 ---@param square IsoGridSquare
 ---@param propName string
 ---@param props table|nil

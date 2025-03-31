@@ -237,13 +237,10 @@ enums.smallTroughSprites = table.newarray(
 )
 
 enums.woodenPoleSprite = "walls_exterior_wooden_01_27"
-enums.logPoleSprite = "carpentry_02_61"
-enums.logPoleSprite2 = "carpentry_02_103" -- used in game yet?
 
 enums.options = {
     debug = "Debug",
-    showContextUI = "ShowContextUI", -- Deprecated: rolled into debug
-    gutterRainFactor = "GutterRainFactor",
+    roofRainFactor = "RoofRainFactor",
     requireWrench = "RequireWrench",
 }
 
@@ -267,21 +264,10 @@ enums.modDataKey = {
     drainCleared = "FG_drainCleared",
     -- Roof square
     isRoofSquare = "FG_roofSquare",
-
-    -- pipeConnectedUp
-    -- pipeConnectedDown
-    -- pipeConnectedNorth
-    -- pipeConnectedSouth
-    -- pipeConnectedEast
-    -- pipeConnectedWest
-    -- hasSlopedRoofNorth
-    -- hasSlopedRoofWest
 }
 
 -- Use to map old mod data keys to new keys (if needed during update)
 enums.oldModDataKey = {}
-
-enums.troughBaseRainFactor = 0.55
 
 enums.modCommands = {
     connectCollector = "connectCollector",
@@ -292,29 +278,31 @@ enums.modEvents = {
     OnGutterTileUpdate ="OnGutterTileUpdate"
 }
 
+enums.troughBaseRainFactor = 0.55
 enums.maxRoofCrawlSteps = 4
 enums.maxGutterCrawlSteps = 36
 enums.maxBuildingBoundCrawlSteps = 25
 enums.defaultDrainPipeSearchRadius = 16
 enums.defaultDrainPipeSearchHeight = 1
-enums.gutterSegmentPerimeterLength = 9
-enums.gutterSegmentCapacityRatio = 0.25
+enums.gutterSectionPerimeterLength = 9
+enums.gutterSectionCapacityRatio = 0.25
+enums.gutterSectionOverflowEfficiency = 0.25
 
 enums.textures = {}
 enums.textures.build = {
-    gutter = "media/textures/Build_GutterRoofPipe.png", -- TODO rename
-    drain = "media/textures/Build_GutterDrainPipe.png",
-    vertical = "media/textures/Build_GutterVerticalPipe.png",
-    -- horizontal = "",
-    -- corner = ""
+    gutter = "media/textures/FG_Build_Pipe_Gutter.png",
+    drain = "media/textures/FG_Build_Pipe_Drain.png",
+    vertical = "media/textures/FG_Build_Pipe_Vertical.png",
+    corner = "media/textures/FG_Build_Pipe_Corner.png",
+    cornerSmall = "media/textures/FG_Build_Pipe_Corner_Small.png",
 }
 enums.textures.icon = {
-    fluidDropOn = "media/ui/fluid_drop_icon.png",
-    fluidDropOff = "media/ui/fluid_drop_icon_off.png",
-    plumbOn = "media/ui/plumb_icon.png",
-    plumbOff = "media/ui/plumb_icon_off.png",
-    collectorOn = "media/ui/collector_icon.png",
-    collectorOff = "media/ui/collector_icon_off.png",
+    fluidDropOn = "media/ui/FG_Fluid_Drop_Icon.png",
+    fluidDropOff = "media/ui/FG_Fluid_Drop_Icon_Off.png",
+    plumbOn = "media/ui/FG_Plumb_Icon.png",
+    plumbOff = "media/ui/FG_Plumb_Icon_Off.png",
+    collectorOn = "media/ui/FG_Collector_Icon.png",
+    collectorOff = "media/ui/FG_Collector_Icon_Off.png",
 }
 
 return enums

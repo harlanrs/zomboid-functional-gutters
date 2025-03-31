@@ -143,9 +143,7 @@ function serviceUtils:handlePostCollectorConnected(square)
         -- Roll dice for easter egg & update mod data
         drainModData[enums.modDataKey.drainCleared] = true
         local easterEggRoll = localRandom:random(1, 10)
-        utils:modPrint("Easter egg roll: "..tostring(easterEggRoll))
         if easterEggRoll == 10 then
-            utils:modPrint("Easter egg triggered!")
             local adjacentFreeSquare = AdjacentFreeTileFinder.Find(square, getPlayer())
             if adjacentFreeSquare then
                 local spider = adjacentFreeSquare:AddWorldInventoryItem("Base.RubberSpider", 0.5, 0.5, 0)
@@ -176,10 +174,10 @@ end
 function serviceUtils:getAverageGutterCapacity()
     -- Meters of roof's perimeter covered effectively by a single gutter drain for a standard house
     -- Realistically this is between 6 and 9 meters
-    local averageGutterPerimeterCoverage = enums.gutterSegmentPerimeterLength
+    local averageGutterPerimeterCoverage = enums.gutterSectionPerimeterLength
 
     -- Ratio of perimeter side length to max surface area covered by a single gutter
-    local averageGutterCapacityRatio = enums.gutterSegmentCapacityRatio
+    local averageGutterCapacityRatio = enums.gutterSectionCapacityRatio
 
     -- Meters of roof's area covered effectively by a single gutter for a standard house
     -- Don't want to simply take the square of the perimeter coverage as this wouldn't be very accurate for a real roof and would over-emphasize the gutter perimeter value
@@ -347,9 +345,9 @@ end
 ---@param optimalDrainCount integer
 ---@param actualDrainCount integer
 ---@param averageGutterCapacity integer|nil
----@return integer gutterTileCount
-function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCount, actualDrainCount, averageGutterCapacity)
-    -- Divides up the area of the roof into segments for each estimated gutter and calculates the effective tiles covered by each gutter
+---@return number gutterTileCount, number overflowArea
+function serviceUtils:calculateGutterSectionTileCount(roofArea, optimalDrainCount, actualDrainCount, averageGutterCapacity)
+    -- Divides up the area of the roof into sections for each estimated gutter drain and calculates the effective tiles covered by each section
     -- Ex: 70 tile roof with 2 gutter capacity would have 35 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
     -- Ex: 110 tile roof with 4 estimated gutters would have 27.5 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
     -- Additionally since we stop at 4 gutter capacity, any leftover area is divided up among the estimated gutter capacity but at a highly reduced efficiency
@@ -359,20 +357,19 @@ function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCoun
     end
 
     local gutterTileCount = roofArea / optimalDrainCount
-    local remainingArea = gutterTileCount - averageGutterCapacity
-    if remainingArea >= 1 then
+    local overflowArea = gutterTileCount - averageGutterCapacity
+    if overflowArea >= 1 then
         -- Set the gutter tile count to the average (max) capacity and calculate remainder as overflow
         gutterTileCount = averageGutterCapacity
-        local gutterCapacityOverflow = remainingArea
+        local gutterCapacityOverflow = overflowArea
         utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
 
         -- Overflow 'tile' is only 25% as effective since the system is overloaded
-        local gutterOverflowEfficiency = 0.25
-        local gutterOverflowTileCount = gutterCapacityOverflow * gutterOverflowEfficiency
+        local gutterOverflowTileCount = gutterCapacityOverflow * enums.gutterSectionOverflowEfficiency
         utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
 
         -- Prevent the overflow capacity from exceeding 25% of the average gutter capacity
-        local maxOverflowArea = averageGutterCapacity * gutterOverflowEfficiency
+        local maxOverflowArea = averageGutterCapacity * enums.gutterSectionOverflowEfficiency
         if gutterOverflowTileCount > maxOverflowArea then
             utils:modPrint("Gutter overflow capacity exceeds max: "..tostring(maxOverflowArea))
             gutterOverflowTileCount = maxOverflowArea
@@ -387,37 +384,35 @@ function serviceUtils:calculateGutterSegmentTileCount(roofArea, optimalDrainCoun
         gutterTileCount = gutterTileCount - overdraftTileCount
     end
 
-    return gutterTileCount
+    return gutterTileCount, overflowArea
 end
 
 ---@param gutterTileCount integer
 ---@return number gutterRainFactor
-function serviceUtils:calculateGutterSegmentRainFactor(gutterTileCount)
+function serviceUtils:calculateGutterSectionRainFactor(gutterTileCount)
     -- Aim for this value to be 1.0 with mod options between 0.0 and 2.0
-    local roofTileRainFactor = options:getGutterRainFactor() -- TODO rename to "gutterTileRainFactor"
+    local roofTileRainFactor = options:getRoofRainFactor()
     local gutterEfficiencyFactor = 1
     -- TODO each gutter pipe can has its own factor based on 'quality' up to 95% efficiency
-    -- TODO should take an average of quality across all connected gutter pipes but maybe save that for later
+    -- TODO should take an average of quality across all connected gutter pipes
 
     -- The total factor for the specific pipe based on it's own gutter efficiency
-    local gutterSegmentRainFactor = gutterTileCount * gutterEfficiencyFactor / 10 * roofTileRainFactor
-    return gutterSegmentRainFactor
+    return gutterTileCount * gutterEfficiencyFactor / 10 * roofTileRainFactor
 end
 
 ---@param square IsoGridSquare
----@return table|nil gutterSegment
-function serviceUtils:calculateGutterSegment(square)
+---@return table|nil gutterSection
+function serviceUtils:calculateGutterSection(square)
     -- Notes:
     -- 1 tile is 1 meter squared
-    -- 
     -- 1 millimeter (mm) of rain means 1 liter of water falling on every square meter of area
-    --
+
     -- Drizzle: Less than 2 mm/hr 
     -- Light Rain: 2-4 mm/hr 
     -- Moderate Rain: 4-7.6 mm/hr 
     -- Heavy Rain: Greater than 7.6 mm/hr 
 
-    -- unadjusted that means for 1 tile, 
+    -- Unadjusted that means for 1 tile: 
     -- 1-2 liters of water per hour for a slight drizzle
     -- 2-4 liters of water per hour for light rain
     -- 4-7.6 liters of water per hour for moderate rain
@@ -425,7 +420,7 @@ function serviceUtils:calculateGutterSegment(square)
 
     -- Rain intensity is already factored into base game systems so we need to balance the generated rain factor to be useful but not trivial or too powerful
     -- Realistically a roof gutter system would produce nearly an entire rain barrel's worth of water (600l) in just a few hours when considering the area of the roof
-    local gutterSegment = {
+    local gutterSection = {
         roofArea = 0,
         tileCount = 0,
         optimalDrainCount = 1,
@@ -436,6 +431,8 @@ function serviceUtils:calculateGutterSegment(square)
         buildingType = nil,
         maxLevel = nil,
         averageGutterCapacity = 0,
+        overflowArea = 0,
+        overflowEfficiency = enums.gutterSectionOverflowEfficiency,
     }
 
     if not utils:isDrainPipeSquare(square) then
@@ -445,36 +442,36 @@ function serviceUtils:calculateGutterSegment(square)
         return nil
     end
 
-    gutterSegment.pipeMap = isoUtils:crawlGutterSystem(square)
-    local roofArea, roofMap, buildingType = isoUtils:getGutterRoofArea(square, gutterSegment.pipeMap)
+    gutterSection.pipeMap = isoUtils:crawlGutterSystem(square)
+    local roofArea, roofMap, buildingType = isoUtils:getGutterRoofArea(square, gutterSection.pipeMap)
     if not roofArea then
         utils:modPrint("No roof area found for square: "..tostring(square))
-        return gutterSegment
+        return gutterSection
     end
 
-    gutterSegment.roofArea = roofArea
-    gutterSegment.roofMap = roofMap
-    gutterSegment.buildingType = buildingType
-    gutterSegment.maxLevel = isoUtils:getGutterTopLevel(gutterSegment.pipeMap) + 1
+    gutterSection.roofArea = roofArea
+    gutterSection.roofMap = roofMap
+    gutterSection.buildingType = buildingType
+    gutterSection.maxLevel = isoUtils:getGutterTopLevel(gutterSection.pipeMap) + 1
 
     -- Persist some data on the square for quick checks
     local squareModData = square:getModData()
-    squareModData[enums.modDataKey.roofArea] = gutterSegment.roofArea
-    squareModData[enums.modDataKey.buildingType] = gutterSegment.buildingType
-    squareModData[enums.modDataKey.maxLevel] = gutterSegment.maxLevel
+    squareModData[enums.modDataKey.roofArea] = gutterSection.roofArea
+    squareModData[enums.modDataKey.buildingType] = gutterSection.buildingType
+    squareModData[enums.modDataKey.maxLevel] = gutterSection.maxLevel
 
-    gutterSegment.averageGutterCapacity = self:getAverageGutterCapacity()
-    gutterSegment.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSegment.roofArea, gutterSegment.averageGutterCapacity)
-    gutterSegment.drainCount = self:getActualGutterDrainCount(square)
-    gutterSegment.tileCount = self:calculateGutterSegmentTileCount(gutterSegment.roofArea, gutterSegment.optimalDrainCount, gutterSegment.drainCount, gutterSegment.averageGutterCapacity)
-    gutterSegment.rainFactor = self:calculateGutterSegmentRainFactor(gutterSegment.tileCount)
+    gutterSection.averageGutterCapacity = self:getAverageGutterCapacity()
+    gutterSection.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSection.roofArea, gutterSection.averageGutterCapacity)
+    gutterSection.drainCount = self:getActualGutterDrainCount(square)
+    gutterSection.tileCount, gutterSection.overflowArea = self:calculateGutterSectionTileCount(gutterSection.roofArea, gutterSection.optimalDrainCount, gutterSection.drainCount, gutterSection.averageGutterCapacity)
+    gutterSection.rainFactor = self:calculateGutterSectionRainFactor(gutterSection.tileCount)
 
-    utils:modPrint("Roof area: "..tostring(gutterSegment.roofArea))
-    utils:modPrint("Optimal drain count: "..tostring(gutterSegment.optimalDrainCount))
-    utils:modPrint("Actual drain count: "..tostring(gutterSegment.drainCount))
-    utils:modPrint("Segment tile count: "..tostring(gutterSegment.tileCount))
-    utils:modPrint("Segment rain factor: "..tostring(gutterSegment.rainFactor))
-    return gutterSegment
+    utils:modPrint("Roof area: "..tostring(gutterSection.roofArea))
+    utils:modPrint("Optimal drain count: "..tostring(gutterSection.optimalDrainCount))
+    utils:modPrint("Actual drain count: "..tostring(gutterSection.drainCount))
+    utils:modPrint("Section tile count: "..tostring(gutterSection.tileCount))
+    utils:modPrint("Section rain factor: "..tostring(gutterSection.rainFactor))
+    return gutterSection
 end
 
 return serviceUtils

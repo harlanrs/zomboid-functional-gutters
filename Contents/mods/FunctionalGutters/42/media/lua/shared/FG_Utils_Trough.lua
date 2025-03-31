@@ -51,7 +51,6 @@ end
 function troughUtils:isTroughNorth(troughObject)
     if troughNorthFieldIndex == nil then
         troughNorthFieldIndex = utils:getClassFieldIndex(troughObject, "north")
-        utils:modPrint("Set trough field 'north' index: "..tostring(troughNorthFieldIndex))
     end
     local field = getClassField(troughObject,troughNorthFieldIndex)
     local value = getClassFieldVal(troughObject, field)

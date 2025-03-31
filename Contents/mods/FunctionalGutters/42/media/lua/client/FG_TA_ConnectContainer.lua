@@ -52,7 +52,7 @@ end
 function FG_TA_ConnectContainer:complete()
 	if self.containerObject then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		utils:modPrint("Sending client command connectCollector: " .. tostring(args))
+		utils:modPrint("Sending client command connectCollector")
 		sendClientCommand(self.character, enums.modName, enums.modCommands.connectCollector, args)
 	else
 		utils:modPrint("Failed to connect collector: " .. tostring(self.containerObject))

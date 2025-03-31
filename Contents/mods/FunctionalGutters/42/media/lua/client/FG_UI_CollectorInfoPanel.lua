@@ -444,7 +444,7 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
     if not self.ownerTexture then
         return
     end
-    local square = self.gutter:getSquare()
+    local square = self.gutterDrain:getSquare()
     if not square then return end
 
     if square then
@@ -518,7 +518,7 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
         self:setInvalid(true)
     end
 
-    local gutterSquare = self.gutter:getSquare()
+    local gutterSquare = self.gutterDrain:getSquare()
     self.isOutside = gutterSquare:isOutside()
 
     if full then
@@ -526,14 +526,14 @@ function FG_UI_CollectorInfoPanel:reloadInfo(full)
         if self.container then
             self.owner = self.collector
         else
-            self.owner = self.gutter
+            self.owner = self.gutterDrain
         end
         self:clearChildren()
         self:createChildren()
     end
 end
 
-function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
+function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutterDrain, _collector)
     local width = 300
     local height = BUTTON_HGT*5+UI_BORDER_SPACING*5+FONT_HGT_SMALL
     local o = ISPanel:new(x, y, width, height)
@@ -563,14 +563,14 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutter, _collector)
     o.gradientAlpha = 0.15
 
     o.player = _player
-    o.gutter = _gutter
+    o.gutterDrain = _gutterDrain
     o.collector = _collector
     o.primaryCollector = serviceUtils:getPrimaryCollector(_collector)
 
     -- Generate ISFluidContainer from the collector iso object
     o.container = o.primaryCollector and ISFluidContainer:new(o.primaryCollector:getFluidContainer()) or nil
     -- Use collector on same square as drain for multi-tile collectors (primarily to get the correct textures)
-    o.owner = o.container and o.collector or o.gutter
+    o.owner = o.container and o.collector or o.gutterDrain
 
     -- if true add a title.
     o.doTitle = false -- TODO 

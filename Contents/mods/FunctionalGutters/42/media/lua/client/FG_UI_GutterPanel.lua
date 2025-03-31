@@ -18,13 +18,13 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GOOD_COLOR = getCore():getGoodHighlitedColor()
 
-function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _source)
+function FG_UI_GutterPanel.OpenPanel(_player, _gutterDrain, _source)
     if not _player then
         utils:modPrint("FG_UI_GutterPanel not provided a valid player.")
         return
     end
 
-    if not _gutter or not utils:isDrainPipe(_gutter) then
+    if not _gutterDrain or not utils:isDrainPipe(_gutterDrain) then
         utils:modPrint("FG_UI_GutterPanel not provided a valid gutter.")
         return
     end
@@ -48,7 +48,7 @@ function FG_UI_GutterPanel.OpenPanel(_player, _gutter, _source)
         FG_UI_GutterPanel.players[playerNum] = {}
     end
 
-    local ui = FG_UI_GutterPanel:new(x, y, _player, _gutter)
+    local ui = FG_UI_GutterPanel:new(x, y, _player, _gutterDrain)
     ui:initialise()
     ui:instantiate()
     ui:setVisible(true)
@@ -83,7 +83,7 @@ end
 
 function FG_UI_GutterPanel:addCollectorInfoPanel()
     local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING
-    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutter, self.collector)
+    self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutterDrain, self.collector)
     self.collectorPanel:initialise()
     self.collectorPanel:noBackground()
     self.collectorPanel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0}
@@ -101,7 +101,7 @@ end
 function FG_UI_GutterPanel:addGutterInfoPanel()
     local x = UI_BORDER_SPACING+1
     local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING
-    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutter, self.gutterSegment)
+    self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutterDrain, self.gutterSection)
     self:addChild(self.gutterPanel)
 end
 
@@ -250,7 +250,7 @@ function FG_UI_GutterPanel:update()
         end
     end
 
-    if not self.gutter or not self.gutterSquare then
+    if not self.gutterDrain or not self.gutterSquare then
         self:close()
         return
     end
@@ -425,8 +425,8 @@ function FG_UI_GutterPanel:reloadGutterInfoPanel()
         self.gutterPanel:highlightRoofArea(false)
     end
 
-    self.gutterPanel.gutter = self.gutter -- TODO rename gutter -> drainPipe
-    self.gutterPanel.gutterSegment = self.gutterSegment
+    self.gutterPanel.gutter = self.gutterDrain -- TODO rename gutter -> drainPipe
+    self.gutterPanel.gutterSection = self.gutterSection
     self.gutterPanel:reloadInfo()
 
     if refreshGutterHighlight then
@@ -449,14 +449,14 @@ function FG_UI_GutterPanel:reloadCollectorInfoPanel(full)
 end
 
 function FG_UI_GutterPanel:reloadInfo()
-    _, self.gutter, _, _ = utils:getSpriteCategoryMemberOnTile(self.gutterSquare, enums.pipeType.drain)
-    if not self.gutter then
+    _, self.gutterDrain, _, _ = utils:getSpriteCategoryMemberOnTile(self.gutterSquare, enums.pipeType.drain)
+    if not self.gutterDrain then
         self:close()
         return
     end
 
-    self.gutterSegment = serviceUtils:calculateGutterSegment(self.gutterSquare)
-    if not self.gutterSegment then
+    self.gutterSection = serviceUtils:calculateGutterSection(self.gutterSquare)
+    if not self.gutterSection then
         self:close()
         return
     end
@@ -516,7 +516,7 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
     else
         -- Updated gutter tile wasn't primary drain square
         -- Potentially could be new pipe or other related change to the gutter system so still want to reload data
-        -- Event could theoretically not be related to this specific gutter segment but easier to just do redundant work in these rare cases
+        -- Event could theoretically not be related to this specific gutter section but easier to just do redundant work in these rare cases
         self:reloadCollector()
         self:reloadInfo()
         self:reloadGutterInfoPanel()
@@ -524,7 +524,7 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
     end
 end
 
-function FG_UI_GutterPanel:new(x, y, _player, _gutter)
+function FG_UI_GutterPanel:new(x, y, _player, _gutterDrain)
     local w = 300 + (2 * UI_BORDER_SPACING)
     local h = 600
     local o = ISPanelJoypad.new(self, x, y, w, h)
@@ -549,8 +549,8 @@ function FG_UI_GutterPanel:new(x, y, _player, _gutter)
 
     o.moveWithMouse = true
     o.player = _player
-    o.gutter = _gutter
-    o.gutterSquare = o.gutter:getSquare()
+    o.gutterDrain = _gutterDrain
+    o.gutterSquare = o.gutterDrain:getSquare()
 
     o.gutterPanel = nil
     o.collectorPanel = nil

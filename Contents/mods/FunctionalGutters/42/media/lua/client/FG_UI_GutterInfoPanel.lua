@@ -27,10 +27,10 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     local c = self.textColor
     self:renderText(getText("UI_panel_FunctionalGutters_section_Pipes_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
-    if not self.gutterSegment or not self.gutterSegment.pipeMap == nil then
+    if not self.gutterSection or not self.gutterSection.pipeMap == nil then
         return
     end
-    local pipeMap = self.gutterSegment.pipeMap
+    local pipeMap = self.gutterSection.pipeMap
     local drainCount = #pipeMap[enums.pipeType.drain]
     if self.pipeInfo.drain.cache~=drainCount then
         self.pipeInfo.drain.cache = drainCount
@@ -84,25 +84,25 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     local c = self.textColor
     self:renderText(getText("UI_panel_FunctionalGutters_section_Roof_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
-    local roofArea = self.gutterSegment.roofArea
+    local roofArea = self.gutterSection.roofArea
     if self.roofInfo.area.cache~=roofArea then
         self.roofInfo.area.cache = roofArea
         self.roofInfo.area.value = tostring(roofArea)
     end
 
-    local systemDrainCount = self.gutterSegment.drainCount
+    local systemDrainCount = self.gutterSection.drainCount
     if self.roofInfo.drainCount.cache~=systemDrainCount then
         self.roofInfo.drainCount.cache = systemDrainCount
         self.roofInfo.drainCount.value = tostring(systemDrainCount)
     end
 
-    local optimalDrainCount = self.gutterSegment.optimalDrainCount
+    local optimalDrainCount = self.gutterSection.optimalDrainCount
     if self.roofInfo.optimalDrainCount.cache~=optimalDrainCount then
         self.roofInfo.optimalDrainCount.cache = optimalDrainCount
         self.roofInfo.optimalDrainCount.value = tostring(optimalDrainCount)
     end
 
-    local gutterTileCount = self.gutterSegment.tileCount
+    local gutterTileCount = self.gutterSection.tileCount
     if self.roofInfo.gutterTileCount.cache~=gutterTileCount then
         self.roofInfo.gutterTileCount.cache = gutterTileCount
         self.roofInfo.gutterTileCount.value = (not gutterTileCount or gutterTileCount == 0) and "0" or tostring(round(gutterTileCount, 2))
@@ -215,7 +215,7 @@ end
 function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
     if not square then return end
     local highlightObject
-    if self.gutterSegment.buildingType == enums.buildingType.vanilla then
+    if self.gutterSection.buildingType == enums.buildingType.vanilla then
         -- If vanilla building, try to find the square's roof object
         if utils:hasRoofProp(square) then
             local squareObjects = square:getObjects()
@@ -251,9 +251,9 @@ function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
 end
 
 function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
-    if not self.gutterSegment.pipeMap then return end
+    if not self.gutterSection.pipeMap then return end
 
-    for _, pipeTypeSquares in pairs(self.gutterSegment.pipeMap) do
+    for _, pipeTypeSquares in pairs(self.gutterSection.pipeMap) do
         for i=1, #pipeTypeSquares do
             local pipeSquare = pipeTypeSquares[i]
             self:highlightGutterObject(pipeSquare, highlight)
@@ -263,9 +263,9 @@ function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
 end
 
 function FG_UI_GutterInfoPanel:highlightRoofArea(highlight)
-    if not self.gutterSegment.roofMap then return end
+    if not self.gutterSection.roofMap then return end
 
-    for _, roofSquare in pairs(self.gutterSegment.roofMap) do
+    for _, roofSquare in pairs(self.gutterSection.roofMap) do
         self:highlightCoveredRoof(roofSquare, highlight)
     end
     self.roofAreaHighlight = highlight
@@ -303,10 +303,10 @@ function FG_UI_GutterInfoPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _fu
 end
 
 function FG_UI_GutterInfoPanel:reloadInfo()
-    self.square = self.gutter:getSquare()
+    self.square = self.gutterDrain:getSquare()
 end
 
-function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment)
+function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     local o = {}
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
@@ -321,8 +321,8 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSegment)
     o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
     o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
 
-    o.gutter = gutter
-    o.gutterSegment = gutterSegment
+    o.gutterDrain = gutter
+    o.gutterSection = gutterSection
 
     o.gutterHighlight = false
     o.roofAreaHighlight = false
