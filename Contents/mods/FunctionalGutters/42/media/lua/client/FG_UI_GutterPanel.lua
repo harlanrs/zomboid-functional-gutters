@@ -425,7 +425,7 @@ function FG_UI_GutterPanel:reloadGutterInfoPanel()
         self.gutterPanel:highlightRoofArea(false)
     end
 
-    self.gutterPanel.gutter = self.gutterDrain -- TODO rename gutter -> drainPipe
+    self.gutterPanel.gutterDrain = self.gutterDrain -- TODO rename gutter -> drainPipe
     self.gutterPanel.gutterSection = self.gutterSection
     self.gutterPanel:reloadInfo()
 
@@ -494,17 +494,10 @@ function FG_UI_GutterPanel:onUpdateGutterTile(square)
 
         if not self.collector and prevCollector then
             -- Collector removed from square - refresh the panel
-            -- self.disableConnect = true
-            -- self.btnToggleConnect.title = "No Collector" -- TODO translate
-            -- self.btnToggleConnect:setEnable(false)
             self:styleToggleButton()
             self:reloadCollectorInfoPanel(true)
         elseif self.collector and not prevCollector then
             -- Collector added to square - refresh the panel
-            -- self.disableConnect = false
-            -- self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_ConnectContainer")
-            -- self.btnToggleConnect:setEnable(true)
-            -- self.btnToggleConnect:enableAcceptColor()
             self:styleToggleButton()
             self:reloadCollectorInfoPanel(true)
         else

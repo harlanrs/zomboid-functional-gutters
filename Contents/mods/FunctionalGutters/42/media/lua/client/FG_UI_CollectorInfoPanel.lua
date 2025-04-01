@@ -26,7 +26,6 @@ function FG_UI_CollectorInfoPanel:createChildren()
     self:getIsoObjectTextures()
 
     local y = 1
-    -- local y = UI_BORDER_SPACING+1
     if self.doTitle then
         y = y+FONT_HGT_SMALL+UI_BORDER_SPACING
     end
@@ -181,7 +180,7 @@ function FG_UI_CollectorInfoPanel:prerender()
     -- Draw after textures to ensure icon is on top
     -- Icon Container
     local iconContainerW = 24 + 8
-    local iconContainerH = self.containerBox.h --72 + 4*UI_BORDER_SPACING
+    local iconContainerH = self.containerBox.h
     local iconContainerX = self.x - UI_BORDER_SPACING
     local iconContainerY = self.containerBox.y
     local c = {r=0, g=0, b=0, a=1.0}
@@ -434,6 +433,7 @@ function FG_UI_CollectorInfoPanel:getContainer()
 end
 
 function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
+    -- Copied from vanilla Fluid Container UI with minor modifications
     self.textureList = {}
 
     if (not self.owner) or (not instanceof(self.owner, "IsoObject")) or (not self.owner:getTextureName()) then
@@ -577,6 +577,7 @@ function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutterDrain, _collector)
     o.title = "" -- TODO
     o.customTitle = false
 
+    -- TODO remove unused holdovers from copied vanilla fluid panel
     o.funcTarget = false
     o.onContainerAdd = false
     o.overrideAddFull = false
