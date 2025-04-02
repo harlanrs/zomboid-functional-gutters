@@ -1,0 +1,15 @@
+Print_Text_EN = {
+
+Print_Text_KnoxKnews_July1_Classifieds_Gutter_title = "Classifieds - July 1 1993",
+
+Print_Text_KnoxKnews_July1_Classifieds_Gutter_info = "Rangers triumph in West Point - see page 3\n"..
+"Local teacher wins national award - see page 4\n\n"..
+"BRANDENBURG DISASTER FUNDS ON THE WAY, SAYS GOVERNOR\n\n"..
+"[image] - Governor Cal Fairweather speaking in Frankfort yesterday.\n\n"..
+"FRANKFORT - Governor Cal Fairweather has reassured Brandenburg's mayor that the long-promised federal funds for the rebuilding of Brandenburg are "on the way."\n Despite an overwhelming early response following the tornado on April 18, which saw ample aid provided for residents in the aftermath, promised federal funds for rebuilding have still not arrived, with buildings patched up with wood, and major damage still evident.\n Early warnings meant many residents were taking shelter when the tornado touched down in the northeast part of town, but the high winds killed three residents and injured dozens. The F2 tornado destroyed cars and razed houses. Hundreds of people remain homeless, living in hotels or trailer parks paid for by the state, with others living with relatives or friends. Up to 40% of residences and 30% of businesses in the area are uninsured, meaning the cost to the taxpayer could exceed 50 million dollars.\n Kentucky is often struck by tornadoes, but the April whirlwind took authorities by... (continued p.2)\n\n"..
+"HUNTER INJURED IN DEER ATTACK\n\n"..
+"RIVERSIDE - John Nathan, a hunter from New York, has said he was lucky to not have been severely injured after a run-in with a stag in the forest west of Riverside. "I've been hunting in the Knox area for years," said Nathan, "but I never saw something like this, especially outside of rutting season. I was lining up a shot on a rabbit when a white-tail stag suddenly burst out of... (continued p.4)\n\n"..
+"EKRON'S OLDEST RESIDENT GIVES LONG LIFE SECRET\n\n"..
+"EKRON - Full of lively talk and old songs, it's hard to believe Nancy Hume, Ekron's oldest resident, is 103 years old. "I outlived all my friends," she says, then adds with a smile, "but I outlived all my enemies too!" So what are Nancy's secrets? "Bourbon with your supper, bed before 10, and never get involved with men. Never!"",
+
+}

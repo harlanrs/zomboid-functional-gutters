@@ -450,7 +450,7 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
     if square then
         if square:getFloor() and square:getFloor():getTextureName() and getTexture(square:getFloor():getTextureName()) then
             local t = { texture = getTexture(square:getFloor():getTextureName()), offsetY = 0 }
-            table_insert(self.textureList, t )
+            table_insert(self.textureList, t)
         end
 
         for i = 1, square:getObjects():size()-1 do
@@ -487,7 +487,7 @@ function FG_UI_CollectorInfoPanel:hasValidContainer()
     end
 end
 
-function FG_UI_CollectorInfoPanel:onClose()
+function FG_UI_CollectorInfoPanel:close()
 
 end
 

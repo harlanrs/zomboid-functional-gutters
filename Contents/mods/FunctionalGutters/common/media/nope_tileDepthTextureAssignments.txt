@@ -1,4 +1,0 @@
-tileDepthTextureAssignments
-{
-	VERSION = 1,
-}

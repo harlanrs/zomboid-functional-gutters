@@ -2,6 +2,7 @@ require "ISUI/ISPanelJoypad"
 
 require "FG_UI_GutterInfoPanel"
 require "FG_UI_CollectorInfoPanel"
+require "FG_UI_PrintMediaPage"
 
 local utils = require("FG_Utils")
 local options = require("FG_Options")
@@ -276,10 +277,56 @@ function FG_UI_GutterPanel:close()
 
     -- Cleanup panels
     self.gutterPanel:close()
-    self.collectorPanel:onClose() -- TODO sync terms onClose vs close
+    self.collectorPanel:close()
+    -- if self.infoPanel then
+    --     self.infoPanel:close()
+    -- end
 
     self:setVisible(false)
     self:removeFromUIManager()
+end
+
+function FG_UI_GutterPanel:openInfoPage()
+    local win = PZAPI.UI.PrintMedia{
+        x = 730, y = 100,
+    }
+    local val = "KnoxKnews_July1_Classifieds_Gutter"
+    win.media_id = val
+    win.data = getText("Print_Media_" .. val .. "_info")
+    win.children.bar.children.name.text = getText("Print_Media_" .. val .. "_title")
+    win.textTitle = getText("Print_Text_" .. val .. "_title")
+    win.textData = string.gsub(getText("Print_Text_" .. val .. "_info"), "\\n", "\n")
+
+    win:instantiate()
+    win.javaObj:setAlwaysOnTop(false)
+    local playerNum = self.player:getPlayerNum()
+    if getJoypadData(playerNum) then
+        ISAtomUIJoypad.Apply(win)
+        win.close = function(self)
+            UIManager.RemoveElement(self.javaObj)
+            if getJoypadData(self.playerNum) then
+                setJoypadFocus(self.playerNum, self.prevFocus)
+            end
+        end
+        win.children.bar.children.closeButton.onLeftClick = function(_self)
+            getSoundManager():playUISound(_self.sounds.activate)
+            _self.parent.parent:close()
+        end
+        win.playerNum = playerNum
+        win.prevFocus = getJoypadData(playerNum).focus
+        win.onJoypadDown = function(self, button, joypadData)
+            if button == Joypad.BButton then
+                self.children.bar.children.closeButton:onLeftClick()
+            end
+            if button == Joypad.XButton then
+                self:onClickNewspaperButton()
+            end
+            if button == Joypad.YButton then
+                self:onClickMapButton()
+            end
+        end
+        setJoypadFocus(playerNum, win)
+    end
 end
 
 function FG_UI_GutterPanel:onButton(_btn)
@@ -288,6 +335,13 @@ function FG_UI_GutterPanel:onButton(_btn)
     elseif _btn.internal=="INFO" then
         -- TODO
         utils:modPrint("Info button clicked")
+        self:openInfoPage()
+        -- self.infoPanel = FG_UI_PrintMediaPage:new(200, 200, self.player)
+        -- self.infoPanel:initialise()
+        -- self.infoPanel:addToUIManager();
+        -- self.infoPanel:setX((getCore():getScreenWidth() / 2) - (self.infoPanel.width / 2));
+        -- self.infoPanel:setY((getCore():getScreenHeight() / 2) - (self.infoPanel.height / 2));
+        -- ISLayoutManager.RegisterWindow('PrintMedia', PrintMediaManager, self)
     elseif _btn.internal=="BUILD" then
         ISEntityUI.OpenBuildWindow(self.player, nil, "*")
         local buildMenu = ISEntityUI.players[self.player:getPlayerNum()].windows["BuildWindow"]

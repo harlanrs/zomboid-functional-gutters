@@ -168,7 +168,6 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 ### 1.2 Notes
 TODO Release Priority
 - Move positioning of ui icons bar
-- Build full mod info panel 
 - Add roof section tooltip
     - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
 - Add all text translations
@@ -215,4 +214,3 @@ TODO Low Priority / Next steps
     - WorldSoundManager.instance.addSoundRepeating
     - (object).addObjectAmbientEmitter
     - (chunk).addObjectAmbientEmitter
-
