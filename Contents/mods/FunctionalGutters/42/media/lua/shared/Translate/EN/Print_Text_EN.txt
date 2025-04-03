@@ -2,14 +2,24 @@ Print_Text_EN = {
 
 Print_Text_KnoxKnews_July1_Classifieds_Gutter_title = "Classifieds - July 1 1993",
 
-Print_Text_KnoxKnews_July1_Classifieds_Gutter_info = "Rangers triumph in West Point - see page 3\n"..
-"Local teacher wins national award - see page 4\n\n"..
-"BRANDENBURG DISASTER FUNDS ON THE WAY, SAYS GOVERNOR\n\n"..
-"[image] - Governor Cal Fairweather speaking in Frankfort yesterday.\n\n"..
-"FRANKFORT - Governor Cal Fairweather has reassured Brandenburg's mayor that the long-promised federal funds for the rebuilding of Brandenburg are "on the way."\n Despite an overwhelming early response following the tornado on April 18, which saw ample aid provided for residents in the aftermath, promised federal funds for rebuilding have still not arrived, with buildings patched up with wood, and major damage still evident.\n Early warnings meant many residents were taking shelter when the tornado touched down in the northeast part of town, but the high winds killed three residents and injured dozens. The F2 tornado destroyed cars and razed houses. Hundreds of people remain homeless, living in hotels or trailer parks paid for by the state, with others living with relatives or friends. Up to 40% of residences and 30% of businesses in the area are uninsured, meaning the cost to the taxpayer could exceed 50 million dollars.\n Kentucky is often struck by tornadoes, but the April whirlwind took authorities by... (continued p.2)\n\n"..
-"HUNTER INJURED IN DEER ATTACK\n\n"..
-"RIVERSIDE - John Nathan, a hunter from New York, has said he was lucky to not have been severely injured after a run-in with a stag in the forest west of Riverside. "I've been hunting in the Knox area for years," said Nathan, "but I never saw something like this, especially outside of rutting season. I was lining up a shot on a rabbit when a white-tail stag suddenly burst out of... (continued p.4)\n\n"..
-"EKRON'S OLDEST RESIDENT GIVES LONG LIFE SECRET\n\n"..
-"EKRON - Full of lively talk and old songs, it's hard to believe Nancy Hume, Ekron's oldest resident, is 103 years old. "I outlived all my friends," she says, then adds with a smile, "but I outlived all my enemies too!" So what are Nancy's secrets? "Bourbon with your supper, bed before 10, and never get involved with men. Never!"",
+Print_Text_KnoxKnews_July1_Classifieds_Gutter_info = "(ADVERTISEMENT) Handy Randy's Guide to Gutter Rain Harvesting\n"..
+"Any farmer, rancher, or survivalist worth their salt will tell you that water is the most important resource needed to secure a plentiful future. Break free from the shackles of the government's chemically-laced water supply. Follow the easy steps outlined by Handy Randy's Guide to Gutter Rain Harvesting (HRGGRH) and ensure your family never goes thirsty again. \nNeed more convincing? Here's a sneak peak at the wisdom Handy Randy is offering for 6 small payments of $19.99.\n\n"..
+"(PREVIEW) Chapter 1 - Core Components\n"..
+"All gutter rain harvesting systems are comprised of 3 core components: \n"..
+"— An area of roof or floors exposed to the outside elements \n"..
+"— A drain pipe to funnel rain water from the roof \n"..
+"— A collector to receive rain water from the drain pipe\n\n"..
+"(PREVIEW) Chapter 2 - Pre-Existing Structures \n"..
+"As outlined by the standardized building codes of Kentucky, residential and commercial structures are all required to be outfitted with gutters regardless of the shape or angle of their roof. \nThese pre-installed gutters make any building a convenient option for harvesting rain water as you won't need to risk life and limb clambering across the roof to hang the gutter pipes yourself. Some of these buildings may even have drain pipes accessible on the ground floor requiring only a fluid container to complete the system. \nSimply place the collector on the drain pipe and connect them together with few quick turns of a pipe wrench.\n\n"..
+"No drain? No pain!\n"..
+"If no existing drain pipe is available, even an amateur welder could hack together their own using some spare scraps of metal. It doesn't have to be pretty, just water tight! \nAdd vertical pipes to extend the drain up as many floors as needed to access the gutters around the roof. Make sure these pipes are properly aligned with the drain and supported by a wall for secure installation. \n\n"..
+"(PREVIEW) Chapter 3 - Custom-Built Structures \n"..
+"Greedy neighbor not willing to let you borrow their roof? Just want to get away from it all and rediscover your roots in the forest? The process to harvest water from your own custom-built structure is nearly identical to that for a pre-existing structure. Only one additional step is required to bring it all together. \nWithout those pesky government regulations telling you what to do, you will need to install your own gutter pipes around the outside perimeter of your roof. These can be placed from above or below as long as there is a floor or wall to support them. \nWatch your step! Thirst will be the least of your problems if you fall.\n\n"..
+"Bigger is (Usually) Better \n"..
+"The larger the roof, the greater the possibilities - up to a point. All drains have a max capacity and any "overflow" will be collected much less effectively. You can build additional drain sections to take full advantage of a large roof but proper spacing is required to avoid harvesting from the same areas. Most homes can be fully supported by 1-2 drains while larger buildings may require 3-4 or more for complete coverage. \nDon't feel intimidated if your home is on the smaller side. Even a one-car garage has enough space to make rain harvesting worthwhile. \n\n"..
+"* CALL NOW *\n"..
+"(502) 555-4321\n\n"..
+"$19.99 x6\n"..
+"Ask for Steve"
 
 }

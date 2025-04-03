@@ -12,6 +12,7 @@ UI_EN = {
     UI_context_menu_FunctionalGutters_ConnectContainer = "Connect"
     UI_context_menu_FunctionalGutters_DisconnectContainer = "Disconnect"
 
+    UI_craft_FunctionalGutters_search_filter = "Gutter"
     UI_craft_FunctionalGutters_MetalPipeDrain_tooltip = "Connects the gutter section to a nearby fluid container. <br>Must be attached to a wall for support."
     UI_craft_FunctionalGutters_MetalPipeVertical_tooltip = "Extends the gutter section up an additional level. <br>Must be attached to a wall and above a drain or vertical pipe for support."
     UI_craft_FunctionalGutters_MetalPipeGutter_tooltip = "Extends the gutter section horizontally while <br>collecting rain water from adjacent floors."
@@ -32,8 +33,8 @@ UI_EN = {
     UI_panel_FunctionalGutters_section_Roof_item_DrainSections = "Drain Sections"
     UI_panel_FunctionalGutters_section_Roof_item_DrainArea = "Drain Area"
     UI_panel_FunctionalGutters_section_Roof_btn = "View Roof"
-    UI_panel_FunctionalGutters_section_Roof_icon_tooltip_success = "Outside and can collect rain"
-    UI_panel_FunctionalGutters_section_Roof_icon_tooltip_error = "Obstructed by roof and can't collect rain"
+    UI_panel_FunctionalGutters_section_Roof_icon_tooltip_success = "Outside and able to collect rain"
+    UI_panel_FunctionalGutters_section_Roof_icon_tooltip_error = "Obstructed by roof and unable collect rain"
 
     UI_panel_FunctionalGutters_section_Collector_item_BaseRainFactor = "Base Rain Factor"
     UI_panel_FunctionalGutters_section_Collector_item_GutterRainFactor = "Gutter Rain Factor"
@@ -42,4 +43,6 @@ UI_EN = {
     UI_panel_FunctionalGutters_section_Collector_icon_tooltip_error = "No collector accessible to drain pipe"
     UI_panel_FunctionalGutters_section_Collector_icon_tooltip_error2 = "Collector can't be filled with tainted water"
     UI_panel_FunctionalGutters_section_Collector_invalid_MissingCollector =  "Gutter Collector"
+    UI_panel_FunctionalGutters_section_Collector_btn_connecting =  "Connecting ..."
+    UI_panel_FunctionalGutters_section_Collector_btn_disconnecting =  "Disconnecting ..."
 }

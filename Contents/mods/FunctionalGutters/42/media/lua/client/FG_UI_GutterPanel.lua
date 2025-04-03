@@ -333,15 +333,7 @@ function FG_UI_GutterPanel:onButton(_btn)
     if _btn.internal=="CLOSE" then
         self:close()
     elseif _btn.internal=="INFO" then
-        -- TODO
-        utils:modPrint("Info button clicked")
         self:openInfoPage()
-        -- self.infoPanel = FG_UI_PrintMediaPage:new(200, 200, self.player)
-        -- self.infoPanel:initialise()
-        -- self.infoPanel:addToUIManager();
-        -- self.infoPanel:setX((getCore():getScreenWidth() / 2) - (self.infoPanel.width / 2));
-        -- self.infoPanel:setY((getCore():getScreenHeight() / 2) - (self.infoPanel.height / 2));
-        -- ISLayoutManager.RegisterWindow('PrintMedia', PrintMediaManager, self)
     elseif _btn.internal=="BUILD" then
         ISEntityUI.OpenBuildWindow(self.player, nil, "*")
         local buildMenu = ISEntityUI.players[self.player:getPlayerNum()].windows["BuildWindow"]
@@ -350,8 +342,9 @@ function FG_UI_GutterPanel:onButton(_btn)
         local recipeFilterPanel = buildMenu.instance.BuildPanel.recipesPanel.recipeFilterPanel
 
         -- NOTE: need to set the filter as well since setting the text here doesn't appear to trigger the filter
-        recipeFilterPanel.entryBox:setText("Gutter") -- todo translate
-        buildMenu.instance.BuildPanel:setRecipeFilter("Gutter") -- todo translate
+        local searchFilter = getText("UI_craft_FunctionalGutters_search_filter")
+        recipeFilterPanel.entryBox:setText(searchFilter)
+        buildMenu.instance.BuildPanel:setRecipeFilter(searchFilter)
 
         local recipeListPanel = buildMenu.instance.BuildPanel.recipesPanel.recipeListPanel.recipeListPanel
         local items = recipeListPanel.items
@@ -379,7 +372,7 @@ function FG_UI_GutterPanel:styleToggleButton()
 
     if not self.collector or not self.primaryCollector then
         self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_ConnectContainer")
-        self.btnToggleConnect.tooltip = "No valid collector in range" -- TODO translate
+        self.btnToggleConnect.tooltip = getText("UI_panel_FunctionalGutters_section_Collector_icon_tooltip_error")
         self.btnToggleConnect:setEnable(false)
         self.disableConnect = true
         return
@@ -425,7 +418,7 @@ function FG_UI_GutterPanel:DoConnectCollector()
     -- NOTE: using collector instead of primaryCollector because we need to provide the object on the same tile as the drain pipe
     -- This will be swapped for primaryCollector inside the method if the object is a multi-tile trough
     if not self:checkCanPlumb() or not self.collector or self.disableConnect then return end
-    self.btnToggleConnect.title = "Connecting..." -- TODO translate
+    self.btnToggleConnect.title = getText("UI_panel_FunctionalGutters_section_Collector_btn_connecting")
 
     if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
@@ -446,7 +439,7 @@ function FG_UI_GutterPanel:DoDisconnectCollector()
     -- NOTE: using collector instead of primaryCollector because we need to provide the object on the same tile as the drain pipe
     -- This will be swapped for primaryCollector inside the method if the object is a multi-tile trough
     if not self:checkCanPlumb() or not self.collector or self.disableConnect then return end
-    self.btnToggleConnect.title = "Disconnecting..." -- TODO translate
+    self.btnToggleConnect.title = getText("UI_panel_FunctionalGutters_section_Collector_btn_disconnecting")
 
     if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
