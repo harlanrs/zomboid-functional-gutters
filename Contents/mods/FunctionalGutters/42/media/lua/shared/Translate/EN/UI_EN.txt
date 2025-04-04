@@ -6,7 +6,7 @@ UI_EN = {
     UI_options_FunctionalGutters_RoofRainFactor_tooltip = "The rain factor for a single roof square defaulting to 1.",
 
     UI_options_FunctionalGutters_RequireWrench = "Require Pipe Wrench",
-    UI_options_FunctionalGutters_RequireWrench_tooltip = "If true, requires a pipe wrench to connect/disconnect containers with a gutter.",
+    UI_options_FunctionalGutters_RequireWrench_tooltip = "If true, requires a pipe wrench to connect/disconnect a container with a gutter drain.",
 
     UI_context_menu_FunctionalGutters_GutterSubMenu = "Gutter Drain"
     UI_context_menu_FunctionalGutters_ConnectContainer = "Connect"
