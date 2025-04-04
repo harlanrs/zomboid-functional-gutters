@@ -173,6 +173,8 @@ enums.pipes = {
 enums.gutterAltBuildMap = {
     gutter_01_7 = "gutter_01_6",
     gutter_01_9 = "gutter_01_5",
+    gutter_01_10 = "gutter_01_8",
+    gutter_01_11 = "gutter_01_4",
 }
 
 local function mapPipesByType(pipeCategory)

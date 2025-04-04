@@ -16,7 +16,7 @@ function FG_UI_GutterInfoPanel:initialise()
     self:reloadInfo()
 end
 
-function FG_UI_GutterInfoPanel:prerender() -- Call before render, it's for harder stuff that need init, ect
+function FG_UI_GutterInfoPanel:prerender()
     ISPanel.prerender(self)
 end
 

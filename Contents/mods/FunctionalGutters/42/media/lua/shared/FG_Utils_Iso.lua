@@ -755,7 +755,6 @@ function isoUtils:findAllDrainsInRadius(square, radius)
             if sq and utils:isDrainPipeSquare(sq) then
                 local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, enums.pipeType.drain)
                 if pipeObject then
-                    utils:modPrint("Found drain pipe: "..tostring(pipeObject:getX())..","..tostring(pipeObject:getY())..","..tostring(pipeObject:getZ()))
                     table_insert(pipeObjects, pipeObject)
                 end
             end

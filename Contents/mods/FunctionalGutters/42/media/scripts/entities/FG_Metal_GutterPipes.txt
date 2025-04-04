@@ -262,6 +262,15 @@ module Base
                     row = gutter_01_8,
                 }
             }
+
+            face S
+            {
+                layer
+                {
+                    row = gutter_01_10,
+                }
+            }
+
         }
         
         component CraftRecipe
@@ -304,6 +313,15 @@ module Base
                     row = gutter_01_4,
                 }
             }
+
+            face S
+            {
+                layer
+                {
+                    row = gutter_01_11,
+                }
+            }
+
         }
         
         component CraftRecipe

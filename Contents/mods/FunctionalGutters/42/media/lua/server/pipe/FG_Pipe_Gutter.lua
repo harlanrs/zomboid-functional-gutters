@@ -44,6 +44,22 @@ function GutterPipeService:onIsValid(buildParams)
         end
         square = getCell():getGridSquare(square:getX() + 1, square:getY(), z)
         pipeDef = enums.pipes[enums.gutterAltBuildMap[tileInfoSprite]]
+    elseif tileInfoSprite == "gutter_01_10" then
+        -- Top-down build helper sprite so grab the 'real' square to check
+        local z = square:getZ() - 1
+        if z < 0 then
+            return false
+        end
+        square = getCell():getGridSquare(square:getX() + 1, square:getY() + 1, z)
+        pipeDef = enums.pipes[enums.gutterAltBuildMap[tileInfoSprite]]
+    elseif tileInfoSprite == "gutter_01_11" then
+        -- Top-down build helper sprite so grab the 'real' square to check
+        local z = square:getZ() - 1
+        if z < 0 then
+            return false
+        end
+        square = getCell():getGridSquare(square:getX() + 1, square:getY() + 1, z)
+        pipeDef = enums.pipes[enums.gutterAltBuildMap[tileInfoSprite]]
     end
 
     if not square then

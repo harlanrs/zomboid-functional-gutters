@@ -25,11 +25,8 @@ function FG_UI_CollectorInfoPanel:createChildren()
 
     self:getIsoObjectTextures()
 
-    local y = 1
-    if self.doTitle then
-        y = y+FONT_HGT_SMALL+UI_BORDER_SPACING
-    end
-
+    -- local y = 1
+    local y = 24 + 2*UI_BORDER_SPACING + 1
     self.innerY = y
 
     local fluidBarW = 0
@@ -46,7 +43,7 @@ function FG_UI_CollectorInfoPanel:createChildren()
 
     self.containerBox = {
         x = UI_BORDER_SPACING+1+64*2 + UI_BORDER_SPACING,
-        y = y,
+        y = self.innerY,
         w = self.width - fluidBarW - UI_BORDER_SPACING*1 - 2,
         h = self.innerHeight,
     }
@@ -93,7 +90,7 @@ function FG_UI_CollectorInfoPanel:prerender()
         self.borderColor = {r=c.r, b=c.b, g=c.g, a=c.a}
         local w = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
         self.containerBox.w = w
-        self.containerBox.h = self.innerHeight -- 80
+        self.containerBox.h = self.innerHeight
         self.containerBox.x = self:getWidth() - w - UI_BORDER_SPACING + 1
         self.containerBox.y = self.innerY
         self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, 0.75, 0, 0, 0)
@@ -110,7 +107,7 @@ function FG_UI_CollectorInfoPanel:prerender()
         local iconH = 24
         local iconX = self.containerBox.x + (self.containerBox.w - iconW) / 2
         local iconY = self.containerBox.y + (self.containerBox.h - iconH) / 2
-        self:drawTextureScaledStatic(self.missingIconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, 1)
+        self:drawTextureScaledStatic(self.missingIconTexture, iconX, iconY, iconW, iconH, 1, 1, 1, .5)
 
         -- "0/1" text to bottom right of container
         local countText = "0/1"
@@ -132,10 +129,9 @@ function FG_UI_CollectorInfoPanel:prerender()
         self:drawRect(self.containerBox.x, self.containerBox.y, self.containerBox.w, self.containerBox.h, 1.0, 0, 0, 0)
     end
 
-    if (not self.owner) or (not instanceof(self.owner, "IsoObject")) then
+    if not self.drainTexture then
         return
     end
-    local ownerOffsetY = self.owner:getRenderYOffset() * Core.getTileScale()
 
     if self.textureList and #self.textureList > 0 then
         local x = UI_BORDER_SPACING+1
@@ -145,7 +141,7 @@ function FG_UI_CollectorInfoPanel:prerender()
             local texture = self.textureList[i].texture
             local offsetY = -self.textureList[i].offsetY
 
-            if self.textureList[i].texture == self.ownerTexture and self.textureList[i].offsetY == ownerOffsetY then
+            if self.collectorTexture and self.textureList[i].texture == self.collectorTexture then
                 self:drawTextureIso(texture, x, y + offsetY, 1)
 
                 if children and #children>0 then
@@ -179,20 +175,21 @@ function FG_UI_CollectorInfoPanel:prerender()
 
     -- Draw after textures to ensure icon is on top
     -- Icon Container
-    local iconContainerW = 24 + 8
-    local iconContainerH = self.containerBox.h
-    local iconContainerX = self.x - UI_BORDER_SPACING
-    local iconContainerY = self.containerBox.y
-    local c = {r=0, g=0, b=0, a=1.0}
+    local iconContainerW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
+    local iconContainerH = 24
+    local iconContainerX = self:getRight() - iconContainerW - 2*UI_BORDER_SPACING + 1
+    local iconContainerY = 1
+    local c = {r=0, g=0, b=0, a=0}
     self:drawRect(iconContainerX, iconContainerY, iconContainerW, iconContainerH, c.a, c.r, c.g, c.b)
-    self:drawTextureScaled(self.gradientTex, iconContainerX, iconContainerY, iconContainerW, iconContainerH, self.gradientAlpha, 1, 1, 1)
-    c = self.borderColor
+    -- self:drawTextureScaled(self.gradientTex, iconContainerX, iconContainerY, iconContainerW, iconContainerH, self.gradientAlpha, 1, 1, 1)
+    -- c = self.borderColor
+    c = {r=0, g=0, b=0, a=0}
     self:drawRectBorder(iconContainerX, iconContainerY, iconContainerW, iconContainerH, c.a, c.r, c.g, c.b)
 
     -- Fluid Icon
-    local iconH = 24
-    local iconX = iconContainerX + 4
-    local iconY = iconContainerY + 4
+    local iconW = 24
+    local iconX = iconContainerX + 8
+    local iconY = iconContainerY + 5
     if self.fluidIconPanel.x ~= iconX or self.fluidIconPanel.y ~= iconY then
         self.fluidIconPanel:setX(iconX)
         self.fluidIconPanel:setY(iconY)
@@ -211,7 +208,7 @@ function FG_UI_CollectorInfoPanel:prerender()
     end
 
     -- Plumb Icon
-    iconY = iconContainerY + (iconContainerH - iconH) / 2
+    iconX = iconContainerX + (iconContainerW - iconW) / 2
     if self.plumbIconPanel.x ~= iconX or self.plumbIconPanel.y ~= iconY then
         self.plumbIconPanel:setX(iconX)
         self.plumbIconPanel:setY(iconY)
@@ -230,7 +227,7 @@ function FG_UI_CollectorInfoPanel:prerender()
     end
 
     -- Collector Icon
-    iconY = iconContainerY + iconContainerH - iconH - 4
+    iconX = iconContainerX + iconContainerW - iconW - 8
     if self.collectorIconPanel.x ~= iconX or self.collectorIconPanel.y ~= iconY then
         self.collectorIconPanel:setX(iconX)
         self.collectorIconPanel:setY(iconY)
@@ -352,30 +349,30 @@ function FG_UI_CollectorInfoPanel:render()
                     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.stored.tag),
                     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.free.tag)
             )
-            local tagx = self.containerBox.x + UI_BORDER_SPACING + 1 + tagWid
-            local valx = tagx + UI_BORDER_SPACING
+            local tagX = self.containerBox.x + UI_BORDER_SPACING + 1 + tagWid
+            local valX = tagX + UI_BORDER_SPACING
 
             y = self.containerBox.y + self.containerBox.h - FONT_HGT_SMALL - UI_BORDER_SPACING - 4
 
             c = self.tagColor
-            self:renderText(self.containerInfo.free.tag, tagx,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
+            self:renderText(self.containerInfo.free.tag, tagX,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
             c = self.textColor
-            self:renderText(self.containerInfo.free.value, valx,y, c.r,c.g,c.b,c.a,UIFont.Small)
+            self:renderText(self.containerInfo.free.value, valX,y, c.r,c.g,c.b,c.a,UIFont.Small)
 
             y = y - BUTTON_HGT
             c = self.tagColor
-            self:renderText(self.containerInfo.stored.tag, tagx,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
+            self:renderText(self.containerInfo.stored.tag, tagX,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
             c = self.textColor
-            self:renderText(self.containerInfo.stored.value, valx,y, c.r,c.g,c.b,c.a,UIFont.Small)
+            self:renderText(self.containerInfo.stored.value, valX,y, c.r,c.g,c.b,c.a,UIFont.Small)
 
             y = y - BUTTON_HGT
             c = self.tagColor
 
-            self:renderText(self.containerInfo.capacity.tag, tagx,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
+            self:renderText(self.containerInfo.capacity.tag, tagX,y, c.r,c.g,c.b,c.a,UIFont.Small, self.drawTextRight)
             c = self.textColor
-            self:renderText(self.containerInfo.capacity.value, valx,y, c.r,c.g,c.b,c.a,UIFont.Small)
+            self:renderText(self.containerInfo.capacity.value, valX,y, c.r,c.g,c.b,c.a,UIFont.Small)
 
-            local valRight = valx + math.max(
+            local valRight = valX + math.max(
                 getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.capacity.value),
                 getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.stored.value),
                 getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.free.value),
@@ -436,14 +433,17 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
     -- Copied from vanilla Fluid Container UI with minor modifications
     self.textureList = {}
 
-    if (not self.owner) or (not instanceof(self.owner, "IsoObject")) or (not self.owner:getTextureName()) then
+    if (not self.gutterDrain) or (not instanceof(self.gutterDrain, "IsoObject")) or (not self.gutterDrain:getTextureName()) then
         return
     end
 
-    self.ownerTexture = getTexture( self.owner:getTextureName() )
-    if not self.ownerTexture then
+    self.collectorTexture = self.collector and getTexture( self.collector:getTextureName() ) or nil
+    self.drainTexture = self.gutterDrain and getTexture( self.gutterDrain:getTextureName() ) or nil
+
+    if not self.drainTexture then
         return
     end
+
     local square = self.gutterDrain:getSquare()
     if not square then return end
 
@@ -453,11 +453,22 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
             table_insert(self.textureList, t)
         end
 
+        local drainTextureTable
+        local collectorTextureTable
+
         for i = 1, square:getObjects():size()-1 do
             local obj = square:getObjects():get(i)
             if obj and obj:getTextureName() and getTexture(obj:getTextureName()) then
-                local t = { texture = getTexture(obj:getTextureName()), offsetY = obj:getRenderYOffset() * Core.getTileScale() }
-                table_insert(self.textureList, t)
+                local objTexture = getTexture(obj:getTextureName())
+                local t = { texture = objTexture, offsetY = obj:getRenderYOffset() * Core.getTileScale() }
+
+                if objTexture == self.drainTexture then
+                    drainTextureTable = t
+                elseif objTexture == self.collectorTexture then
+                    collectorTextureTable = t
+                else
+                    table_insert(self.textureList, t)
+                end
 
                 local sprList = obj:getChildSprites()
                 if sprList and (not instanceof(obj,"IsoBarbecue")) then
@@ -474,6 +485,14 @@ function FG_UI_CollectorInfoPanel:getIsoObjectTextures()
                     end
                 end
             end
+        end
+
+        -- Add drain and collector textures last to ensure layer ordering
+        if drainTextureTable then
+            table_insert(self.textureList, drainTextureTable)
+        end
+        if collectorTextureTable then
+            table_insert(self.textureList, collectorTextureTable)
         end
     end
 
@@ -535,7 +554,7 @@ end
 
 function FG_UI_CollectorInfoPanel:new(x, y, _player, _gutterDrain, _collector)
     local width = 300
-    local height = BUTTON_HGT*5+UI_BORDER_SPACING*5+FONT_HGT_SMALL
+    local height = BUTTON_HGT*6+UI_BORDER_SPACING*6+FONT_HGT_SMALL
     local o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
     self.__index = self

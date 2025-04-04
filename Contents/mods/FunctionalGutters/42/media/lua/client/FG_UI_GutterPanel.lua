@@ -379,6 +379,10 @@ function FG_UI_GutterPanel:styleToggleButton()
     end
 
     if self.canPlumb then
+        self.disableConnect = false
+        self.btnToggleConnect.tooltip = nil
+        self.btnToggleConnect:setEnable(true)
+
         if not utils:getModDataIsGutterConnected(self.primaryCollector) then
             self.btnToggleConnect.title = getText("UI_context_menu_FunctionalGutters_ConnectContainer")
             self.btnToggleConnect:enableAcceptColor()
@@ -391,10 +395,6 @@ function FG_UI_GutterPanel:styleToggleButton()
             self.btnToggleConnect:setBackgroundColorMouseOverRGBA(bgCMO.r, bgCMO.g, bgCMO.b, bgCMO.a)
             self.btnToggleConnect:setBorderRGBA(bC.r, bC.g, bC.b, bC.a)
         end
-
-        self.disableConnect = false
-        self.btnToggleConnect.tooltip = nil
-        self.btnToggleConnect.enabled = true
     else
         self.disableConnect = true
         self.btnToggleConnect:setEnable(false)

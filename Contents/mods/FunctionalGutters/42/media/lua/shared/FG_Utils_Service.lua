@@ -127,7 +127,7 @@ function serviceUtils:getObjectBaseRainFactor(object)
     end
 
     -- Fallback to 0.0 if no base rain factor found
-    utils:modPrint("Base rain factor not found for object: "..tostring(object))
+    -- utils:modPrint("Base rain factor not found for object: "..tostring(object))
     return 0.0
 end
 
@@ -362,16 +362,16 @@ function serviceUtils:calculateGutterSectionTileCount(roofArea, optimalDrainCoun
         -- Set the gutter tile count to the average (max) capacity and calculate remainder as overflow
         gutterTileCount = averageGutterCapacity
         local gutterCapacityOverflow = overflowArea
-        utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
+        -- utils:modPrint("Gutter overflow capacity: "..tostring(gutterCapacityOverflow))
 
         -- Overflow 'tile' is only 25% as effective since the system is overloaded
         local gutterOverflowTileCount = gutterCapacityOverflow * enums.gutterSectionOverflowEfficiency
-        utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
+        -- utils:modPrint("Gutter overflow tile count: "..tostring(gutterOverflowTileCount))
 
         -- Prevent the overflow capacity from exceeding 25% of the average gutter capacity
         local maxOverflowArea = averageGutterCapacity * enums.gutterSectionOverflowEfficiency
         if gutterOverflowTileCount > maxOverflowArea then
-            utils:modPrint("Gutter overflow capacity exceeds max: "..tostring(maxOverflowArea))
+            -- utils:modPrint("Gutter overflow capacity exceeds max: "..tostring(maxOverflowArea))
             gutterOverflowTileCount = maxOverflowArea
         end
 
@@ -466,11 +466,11 @@ function serviceUtils:calculateGutterSection(square)
     gutterSection.tileCount, gutterSection.overflowArea = self:calculateGutterSectionTileCount(gutterSection.roofArea, gutterSection.optimalDrainCount, gutterSection.drainCount, gutterSection.averageGutterCapacity)
     gutterSection.rainFactor = self:calculateGutterSectionRainFactor(gutterSection.tileCount)
 
-    utils:modPrint("Roof area: "..tostring(gutterSection.roofArea))
-    utils:modPrint("Optimal drain count: "..tostring(gutterSection.optimalDrainCount))
-    utils:modPrint("Actual drain count: "..tostring(gutterSection.drainCount))
-    utils:modPrint("Section tile count: "..tostring(gutterSection.tileCount))
-    utils:modPrint("Section rain factor: "..tostring(gutterSection.rainFactor))
+    -- utils:modPrint("Roof area: "..tostring(gutterSection.roofArea))
+    -- utils:modPrint("Optimal drain count: "..tostring(gutterSection.optimalDrainCount))
+    -- utils:modPrint("Actual drain count: "..tostring(gutterSection.drainCount))
+    -- utils:modPrint("Section tile count: "..tostring(gutterSection.tileCount))
+    -- utils:modPrint("Section rain factor: "..tostring(gutterSection.rainFactor))
     return gutterSection
 end
 

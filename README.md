@@ -167,13 +167,11 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 
 ### 1.2 Notes
 TODO Release Priority
-- Move positioning of ui icons bar
-- Add roof section tooltip
-    - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
-- Add all text translations
 - Update README
 
 TODO Medium Priority / Next steps
+- Add roof section tooltip
+    - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
 - Add additional gutter material types
     - clay using inverted clay tiles and clay pipes
 - Allow blacksmithing option for metal gutter

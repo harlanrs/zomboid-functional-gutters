@@ -268,6 +268,14 @@ local function swapAltGutterBuildSprite(square, sprite)
         -- Top-down build helper sprite so replace with the 'real' gutter on the adjacent square below
         square = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ() - 1)
         sprite = enums.gutterAltBuildMap[sprite]
+    elseif sprite == "gutter_01_10" then
+        -- Top-down build helper sprite so replace with the 'real' gutter on the adjacent square below
+        square = getCell():getGridSquare(square:getX() + 1, square:getY() + 1, square:getZ() - 1)
+        sprite = enums.gutterAltBuildMap[sprite]
+    elseif sprite == "gutter_01_11" then
+        -- Top-down build helper sprite so replace with the 'real' gutter on the adjacent square below
+        square = getCell():getGridSquare(square:getX() + 1, square:getY() + 1, square:getZ() - 1)
+        sprite = enums.gutterAltBuildMap[sprite]
     end
 
     return square, sprite
