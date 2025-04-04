@@ -1,14 +1,11 @@
 # Functional Gutters
-Functional Gutters is a mod for the video game `Project Zomboid [B42]` that enables rain collectors and other fluid containers to be connected with a gutter drain pipe for increased efficiency.
-
-This behavior is meant to represent the rain water being funneled from the building's roof through the gutter pipes and into the connected collector.
+Functional Gutters is a mod for the video game `Project Zomboid [B42]` that introduces an entirely new system to the game enabling players to realistically harvest rain water from a building's gutter drain using connected rain collectors and other fluid containers. Players can tap into existing gutters or build their own custom gutter system using a variety of new craftable gutter pipes. The efficiency and effectiveness of the system is influenced by parameters such as by the size of the roof and the configuration of the gutter pipes giving players new survival strategies, new goals, and more functional decorations to personalize their bases.
 
 <br/>
 
 <p align="left">
 <img src="preview.png" alt="Functional Gutters - Poster" width="256"/>
-<img src="no.png" alt="Functional Gutters - No" width="256" />
-<img src="yes.png" alt="Functional Gutters - Yes" width="256" />
+<img src="yes_no.png" alt="Functional Gutters - Yes/No" width="512" />
 </p>
 
 ## FAQ
@@ -38,7 +35,6 @@ This behavior is meant to represent the rain water being funneled from the build
 ## How To Use
 
 1. Place supported collector on the same tile as a gutter drain.
-    - Either tile will work for multi-tile troughs.
 
 2. Open the context menu by right-clicking on the collector.
 
@@ -50,9 +46,9 @@ This behavior is meant to represent the rain water being funneled from the build
 
 ## Options 
 
-#### `Gutter Rain Factor`
+#### `Roof Rain Factor`
 
-The rain factor applied to collectors on gutter tiles which is `1.6` by default. For context, crates are `0.4` and barrels are `0.25` by default. Range goes from `1.0` to `10.0`.
+The rain factor for a single square of roof which defaults to `1.0`. Used as a primary parameter when calculating the rain factor for the gutter system as a whole. Range goes from `0.0` to `2.0`.
 
 ***
 
@@ -91,35 +87,8 @@ If true, prints debug messages to the console and adds an additional context men
 <br/>
 
 <p align="left">
-<img src="containers.png" alt="Functional Gutters - Supported Containers" height="256" />
-<img src="containers_2.png" alt="Functional Gutters - Supported Containers" height="256" />
+<img src="containers.png" alt="Functional Gutters - Supported Containers" height="512" />
 </p>
-
-## Accepted Drainage Sprites
-```
-{
-    -- Mostly used in water towers
-    "industry_02_76",
-    "industry_02_77",
-    "industry_02_78",
-    "industry_02_79",
-
-    -- Vertical pipes with curve bottom
-    "industry_02_236",
-    "industry_02_237",
-    "industry_02_240",
-    "industry_02_241",
-    "industry_02_242",
-    "industry_02_244",
-    "industry_02_245",
-    "industry_02_246",
-    "industry_02_260",
-    "industry_02_261",
-    "industry_02_262",
-    "industry_02_263",
-    -- TODO gotta catch em all
-}
-```
 
 ## Details
 Build 42 introduced a great variety of of new sprites that decorate buildings, however most are purely aesthetic and don't impact any systems in the game. Several buildings on the map use the new industrial pipe sprites to create roof gutter drains which inspired the creation of this mod.
@@ -137,22 +106,7 @@ In the base game, the square rain collector crates have a much greater base rain
 
 Then troughs come in with the highest rain factor (`0.55`) of vanilla items. While this rate might not make as much sense for the skinny wooden troughs, most would probably agree that animal welfare comes before "realism".
 
-
-## TODO / TBD
-* Add any missing drain pipe sprite identifiers
-* Support for variable gutter rain factor that scales with roof size? **<---- Probably Next**
-* Support stacked/multi tier rain collectors with connected pipe?
-* Support manually adding custom sprites to the core gutter list?
-* Buildable gutters?
-* Chainable containers?
-
 <br/>
-
-<img src="hey.png" alt="Functional Gutters - Hey You!" width="256" />
-
-<br/>
-
-Please feel free to suggest ideas or provide missing sprite references that would fit the theme of this mod!
 
 
 ## Changelog 
@@ -163,3 +117,55 @@ Please feel free to suggest ideas or provide missing sprite references that woul
 - Add connect & disconnect plumbing actions 
     - Includes "Require Pipe Wrench" mod option which defaults to True
     - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
+
+### 1.2
+- Add buildable gutter pipes
+    - Supports both pre-existing and player-built structures
+- Use roof size to determine rain factor
+    - Pre-existing structures are assumed to already have gutters so the entire roof's area is used for rain harvesting
+    - Player-built structures require crafted gutter pipes to increase the area available for rain harvesting
+- Add gutter system ui panel
+- Add newspaper classified ad for in-game tutorial
+
+## Next Steps
+### TODO Medium Priority 
+- Update README to better reflect 1.2 updates
+- Add roof section tooltip
+    - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
+- Add additional gutter material types
+    - clay using inverted clay tiles and clay pipes
+- Allow blacksmithing option for metal gutter
+    - would need intermediary craftable pipes as alternate input resource
+    - worth it if still requires welding the pieces together? 
+        - Potentially not an issue if we can get placeables working well allowing us to directly craft the moveable version from the forge
+- Allow picking up & placing pipes
+    - bumped from 1.2 release due to differences in how placement rules work for moveables vs initial building
+- Add ui feedback for specific needs when building pipes
+- Crawl perimeter of vanilla building in drain check instead of radial search
+    - Will need to test with large buildings
+- Prevent connected to containers that can't receive tainted water
+    - include warning
+
+### TODO Low Priority
+- Add depthmask to gutter pipes
+- Trigger reload in gutter ui when player inv changes (for pickup/drop of pipewrench when required)
+- Allow manually switching building 'mode' to custom by adding horizontal gutter pipes to vanilla?
+    - or just enable vertical pipes to connect with horizontal/gutter pipes allowing for snaking up vanilla buildings 
+- Check sections that don't reach top floor to ensure they only access nearby roofs that make sense (vanilla buildings)
+    - currently just assumed to have access to any roof on that level even if it doesn't make sense visually
+    - Only a 'problem' on some vanilla buildings and we already assume existing gutter structures that we are hooking in to so maybe not a problem at all
+- Take roof angle into consideration?
+- Water overlay during storms?
+    - overlaySpriteColor
+    - renderOverlaySprites
+    - will need depthmask defined
+- Drain sound effect during storms? 
+    - https://theindiestone.com/forums/index.php?/topic/70279-help-with-adding-sound-to-function/
+    - https://www.youtube.com/watch?v=FNWgHP9O9tw
+    - https://pzwiki.net/wiki/Sound_(scripts)
+    - Events.OnLoadSoundBanks.Add(doLoadSoundbanks);
+    - shared/SoundBanks/SoundBanks.lua
+    - maybe treat like generator?
+    - WorldSoundManager.instance.addSoundRepeating
+    - (object).addObjectAmbientEmitter
+    - (chunk).addObjectAmbientEmitter

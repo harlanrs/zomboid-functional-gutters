@@ -10,7 +10,7 @@ function FG_TA_DisconnectContainer:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
-	return 40
+	return 120
 end
 
 function FG_TA_DisconnectContainer:new(character, containerObject, wrench)
@@ -52,10 +52,9 @@ end
 function FG_TA_DisconnectContainer:complete()
 	if self.containerObject then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		utils:modPrint("Sending client command disconnectContainer: " .. tostring(args))
-		sendClientCommand(self.character, enums.modName, enums.modCommands.disconnectContainer, args)
+		sendClientCommand(self.character, enums.modName, enums.modCommands.disconnectCollector, args)
 	else
-		utils:modPrint("Failed to disconnect container: " .. tostring(self.containerObject))
+		utils:modPrint("Failed to disconnect collector: " .. tostring(self.containerObject))
 	end
 
 	return true

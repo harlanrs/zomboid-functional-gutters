@@ -10,7 +10,7 @@ function FG_TA_ConnectContainer:getDuration()
 	if self.character:isTimedActionInstant() then
 		return 1
 	end
-	return 40
+	return 120
 end
 
 function FG_TA_ConnectContainer:new(character, containerObject, wrench)
@@ -52,10 +52,9 @@ end
 function FG_TA_ConnectContainer:complete()
 	if self.containerObject then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		utils:modPrint("Sending client command connectContainer: " .. tostring(args))
-		sendClientCommand(self.character, enums.modName, enums.modCommands.connectContainer, args)
+		sendClientCommand(self.character, enums.modName, enums.modCommands.connectCollector, args)
 	else
-		utils:modPrint("Failed to connect container: " .. tostring(self.containerObject))
+		utils:modPrint("Failed to connect collector: " .. tostring(self.containerObject))
 	end
 
 	return true

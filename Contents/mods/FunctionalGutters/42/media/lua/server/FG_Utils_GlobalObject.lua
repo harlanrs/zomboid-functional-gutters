@@ -5,8 +5,10 @@ local troughUtils = require("FG_Utils_Trough")
 
 local globalObjectUtils = {}
 
-local localFeedingTroughDef = FeedingTroughDef
+-- TODO use FeedingTroughDef to clean up replaceExistingTrough
+-- local localFeedingTroughDef = FeedingTroughDef
 
+---@param square IsoGridSquare
 function globalObjectUtils:removeExistingLuaObject(square)
     local troughSystem = SFeedingTroughSystem.instance
 	local luaObject = troughSystem:getLuaObjectOnSquare(square)
@@ -15,7 +17,9 @@ function globalObjectUtils:removeExistingLuaObject(square)
 	end
 end
 
--- TODO integrate FeedingTroughDef
+---Copied from MOFeedingTrough with minor tweaks
+---@param isoObject IsoObject
+---@return IsoFeedingTrough
 function globalObjectUtils:replaceExistingTrough(isoObject)
     utils:modPrint('Upgrading IsoObject to IsoFeedingTrough: '..tostring(isoObject))
     local square = isoObject:getSquare()
@@ -53,59 +57,21 @@ function globalObjectUtils:replaceExistingTrough(isoObject)
     return isoObject
 end
 
-function globalObjectUtils:loadTrough(isoObject)
-    if not troughUtils:isTroughObject(isoObject) then
-        isoObject = self:replaceExistingTrough(isoObject)
+-----@param object IsoFeedingTrough|IsoObject -- commented out type def since typing wasn't following full context and throwing a warning
+---@return IsoFeedingTrough
+function globalObjectUtils:loadTrough(object)
+    if not troughUtils:isTroughObject(object) then
+        object = self:replaceExistingTrough(object)
     end
 
     -- Load the IsoFeedingTrough object into the global objects system
-    utils:modPrint("Loading IsoFeedingTrough into global trough system: "..tostring(isoObject))
-    SFeedingTroughSystem.instance:loadIsoObject(isoObject)
-    return isoObject
+    utils:modPrint("Loading IsoFeedingTrough into global trough system: "..tostring(object))
+    SFeedingTroughSystem.instance:loadIsoObject(object)
+    return object
 end
 
--- TODO fixme
-function globalObjectUtils:upgradeTroughToGlobalObject(primaryTrough)
-    -- Use a single isoObject trough to upgrade full trough context to IsoFeedingTrough with global object references
-    -- NOTE: param needs to be the primaryTrough not the secondaryTrough
-    local troughSprite = primaryTrough:getSprite()
-    local troughSpriteName = troughSprite:getName()
-    local troughSquare = primaryTrough:getSquare()
-
-    for i,def in pairs(localFeedingTroughDef) do
-        if def.sprite1 == troughSpriteName or def.spriteNorth1 == troughSpriteName then
-            -- Upgrade the primary trough IsoObject -> IsoFeedingTrough w/ global object
-            local north = def.spriteNorth1 == troughSpriteName
-            troughSquare:transmitRemoveItemFromSquare(primaryTrough)
-            SFeedingTroughSystem.instance:addTrough(troughSquare, def, north, false)
-
-            if def.sprite2 then
-                local x, y, z = utils:getSquare2Pos(troughSquare, north)
-                local secondarySquare = getCell():getGridSquare(x, y, z)
-                if not secondarySquare then
-                    utils:modPrint("Secondary square not found for getSquare2Pos: "..tostring(x)..","..tostring(y)..","..tostring(z))
-                    return false
-                end
-
-                local secondaryTrough = utils:getSpecificIsoObjectFromSquare(secondarySquare, def.sprite2)
-                if not secondaryTrough then
-                    utils:modPrint("Secondary trough not found on square: "..tostring(secondarySquare:getX())..","..tostring(secondarySquare:getY())..","..tostring(secondarySquare:getZ()))
-                    return false
-                end
-
-                -- Upgrade the secondary trough IsoObject -> IsoFeedingTrough w/ global object
-                secondarySquare:transmitRemoveItemFromSquare(secondaryTrough);
-                SFeedingTroughSystem.instance:addTrough(secondarySquare, def, north, true)
-            end
-
-            return true
-        end
-    end
-
-    utils:modPrint("Trough sprite name not found in FeedingTroughDef: "..tostring(troughSpriteName))
-    return false
-end
-
+---@param troughObject IsoFeedingTrough|IsoObject
+---@return IsoFeedingTrough|nil primaryTrough, IsoFeedingTrough|nil secondaryTrough
 function globalObjectUtils:loadFullTrough(troughObject)
     local objectSpriteName = troughObject:getSpriteName()
     if not troughUtils:isTroughSprite(objectSpriteName) then return nil end
@@ -113,7 +79,7 @@ function globalObjectUtils:loadFullTrough(troughObject)
     -- Ignore if this is already a global trough object
     if troughUtils:isTroughObject(troughObject) then return nil end
 
-    local primaryTrough = troughUtils:getPrimaryTroughFromDef(troughObject)
+    local primaryTrough = troughUtils:getPrimaryTrough(troughObject)
     if not primaryTrough then
         -- Primary through hasn't been placed yet
         return nil
@@ -121,19 +87,19 @@ function globalObjectUtils:loadFullTrough(troughObject)
 
     -- If single tile primary trough, load it
     if troughUtils:isSingleTileTroughFromSprite(objectSpriteName) then
-        return self:loadTrough(primaryTrough)
+        return self:loadTrough(primaryTrough), nil
     end
 
-    local secondaryTrough = troughUtils:getSecondaryTroughFromDef(troughObject)
+    local secondaryTrough = troughUtils:getSecondaryTrough(troughObject)
     if not secondaryTrough then
         -- Secondary through hasn't been placed yet
         return nil
     end
 
     primaryTrough = self:loadTrough(primaryTrough)
-    self:loadTrough(secondaryTrough)
+    secondaryTrough = self:loadTrough(secondaryTrough)
 
-    return primaryTrough
+    return primaryTrough, secondaryTrough
 end
 
 return globalObjectUtils
