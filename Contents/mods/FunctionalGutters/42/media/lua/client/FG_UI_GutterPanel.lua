@@ -2,7 +2,6 @@ require "ISUI/ISPanelJoypad"
 
 require "FG_UI_GutterInfoPanel"
 require "FG_UI_CollectorInfoPanel"
-require "FG_UI_PrintMediaPage"
 
 local utils = require("FG_Utils")
 local options = require("FG_Options")
