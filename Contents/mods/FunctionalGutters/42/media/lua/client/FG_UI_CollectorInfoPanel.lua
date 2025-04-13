@@ -25,7 +25,6 @@ function FG_UI_CollectorInfoPanel:createChildren()
 
     self:getIsoObjectTextures()
 
-    -- local y = 1
     local y = 24 + 2*UI_BORDER_SPACING + 1
     self.innerY = y
 
@@ -264,21 +263,23 @@ function FG_UI_CollectorInfoPanel:renderCollectorInfo()
     --     getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
     -- )
 
-    local x = self.width - (3 * UI_BORDER_SPACING) - 2
     local y = self.containerBox.y + self.containerBox.h + UI_BORDER_SPACING
-    local tagX = x
-    local valX = tagX + UI_BORDER_SPACING
+    local valX = self:getRight() - UI_BORDER_SPACING - 1 - getTextManager():MeasureStringX(UIFont.Small, '0.00')
+    local tagX = valX - UI_BORDER_SPACING - getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.baseRainFactor.tag)
 
-    local c = self.tagColor
-    self:renderText(self.containerInfo.baseRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
-    c = self.textColor
+    local c = self.textColor
     self:renderText(self.containerInfo.baseRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
 
-    y = y + BUTTON_HGT
     c = self.tagColor
-    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.containerInfo.baseRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+
+    y = y + BUTTON_HGT
     c = self.isGutterConnected and self.goodColor or self.textColor
     self:renderText(self.containerInfo.totalRainFactor.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+
+    c = self.tagColor
+    tagX = valX - UI_BORDER_SPACING - getTextManager():MeasureStringX(UIFont.Small, self.containerInfo.totalRainFactor.tag)
+    self:renderText(self.containerInfo.totalRainFactor.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small)
 end
 
 function FG_UI_CollectorInfoPanel:render()
@@ -380,7 +381,8 @@ function FG_UI_CollectorInfoPanel:render()
             )
 
             self.containerBox.w = math.max(valRight - self.containerBox.x, containerNameRight - self.containerBox.x) + UI_BORDER_SPACING + 1
-            self.fluidBar:setX(self.containerBox.x + self.containerBox.w + UI_BORDER_SPACING)
+            self.fluidBar:setX(self:getRight() - self.fluidBar:getWidth() - UI_BORDER_SPACING - 1)
+            self.containerBox.x = self.fluidBar:getX() - self.containerBox.w - UI_BORDER_SPACING - 1
         end
 
         self:renderCollectorInfo()
@@ -503,6 +505,14 @@ function FG_UI_CollectorInfoPanel:hasValidContainer()
     if self.container then
         --check if iso still has square
         return ISFluidUtil.validateContainer(self.container)
+    end
+end
+
+function FG_UI_CollectorInfoPanel:update()
+    -- Ensure panel height matches content
+    local h = self.innerHeight + 24 + 3*UI_BORDER_SPACING + BUTTON_HGT * 4
+    if self.height ~= h then
+        self.height = h
     end
 end
 

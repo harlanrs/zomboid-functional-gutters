@@ -50,9 +50,14 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     end
 
     local tagWid = math.max(
-            getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.drain.tag),
-            getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.vertical.tag),
-            getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.gutter.tag)
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.drain.tag),
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.vertical.tag),
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.gutter.tag)
+    )
+    local valWid = math.max(
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.drain.value),
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.vertical.value),
+        getTextManager():MeasureStringX(UIFont.Small, self.pipeInfo.gutter.value)
     )
     local tagX = UI_BORDER_SPACING + 1 + tagWid
     local valX = tagX + UI_BORDER_SPACING
@@ -74,6 +79,11 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     self:renderText(self.pipeInfo.gutter.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
     self:renderText(self.pipeInfo.gutter.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+
+    local pipeSectionWidth = tagWid + valWid + UI_BORDER_SPACING * 3 + 1
+    if pipeSectionWidth > self.maxSectionWidth then
+        self.maxSectionWidth = pipeSectionWidth
+    end
 end
 
 function FG_UI_GutterInfoPanel:renderRoofInfo()
@@ -113,6 +123,11 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
         getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.gutterTileCount.tag),
         getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.drainCount.tag)
     )
+    local valWid = math.max(
+        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.area.value),
+        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.gutterTileCount.value),
+        getTextManager():MeasureStringX(UIFont.Small, self.roofInfo.drainCount.value)
+    )
     local tagX = x + tagWid
     local valX = tagX + UI_BORDER_SPACING
 
@@ -134,6 +149,16 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     self:renderText(self.roofInfo.gutterTileCount.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
     self:renderText(self.roofInfo.gutterTileCount.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+
+    local roofSectionWidth = tagWid + valWid + UI_BORDER_SPACING * 3 + 1
+    if roofSectionWidth > self.maxSectionWidth then
+        self.maxSectionWidth = roofSectionWidth
+    end
+
+    local roofSectionHeight = y + UI_BORDER_SPACING * 2 + BUTTON_HGT * 2
+    if roofSectionHeight > self.maxSectionHeight then
+        self.maxSectionHeight = roofSectionHeight
+    end
 end
 
 function FG_UI_GutterInfoPanel:render() -- Use to render text and other
@@ -174,7 +199,8 @@ end
 
 
 function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
-    local btnW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
+    -- local btnW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
+    local btnW = self.maxSectionWidth
     local btnX = UI_BORDER_SPACING + 1
     local btnY = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT
     local btnPipesText = getText("UI_panel_FunctionalGutters_section_Pipes_btn")
@@ -192,9 +218,23 @@ function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
 end
 
 function FG_UI_GutterInfoPanel:update()
-    local w = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
-    self.btnPipes:setWidth(w)
-    self.btnRoof:setWidth(w)
+    local sectionWidth = self.maxSectionWidth > self.minSectionWidth and self.maxSectionWidth or self.minSectionWidth
+    self.btnPipes:setWidth(sectionWidth)
+    self.btnRoof:setWidth(sectionWidth)
+
+    local w = sectionWidth * 2 + UI_BORDER_SPACING * 3
+    self:setWidth(w)
+
+    local sectionHeight = self.maxSectionHeight > self.minSectionHeight and self.maxSectionHeight or self.minSectionHeight
+    self:setHeight(sectionHeight + UI_BORDER_SPACING)
+
+    local btnY = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT
+    self.btnRoof:setY(btnY)
+    self.btnPipes:setY(btnY)
+
+    local btnX = UI_BORDER_SPACING + 1
+    self.btnRoof:setX(btnX)
+    self.btnPipes:setX(self:getRight() - UI_BORDER_SPACING * 2 - self.btnPipes:getWidth())
 end
 
 function FG_UI_GutterInfoPanel:highlightGutterObject(square, highlight)
@@ -330,6 +370,12 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     o.btnRoof = nil
     o.disableBtnPipes = false
     o.disableBtnRoof = false
+
+    o.minSectionWidth = (width - UI_BORDER_SPACING) / 2
+    o.maxSectionWidth = o.minSectionWidth
+
+    o.minSectionHeight = height
+    o.maxSectionHeight = o.minSectionHeight
 
     o.pipeInfo = {
         [enums.pipeType.drain] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Drain")..": ", value = "0", cache = 0 },
