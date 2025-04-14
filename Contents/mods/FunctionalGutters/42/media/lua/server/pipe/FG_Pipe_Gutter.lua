@@ -21,6 +21,29 @@ function GutterPipeService:onCreate(object)
     local modData = object:getModData()
     modData["need:Base.BlowTorch"] = nil
     modData["need:Base.WeldingRods"] = nil
+
+    -- Swap IsoThumpable object for IsoObject
+    -- NOTE: dismantle will not use "need:" mod data since object is no longer an IsoThumpable
+    local sprite = object:getSprite()
+    local sq = object:getSquare();
+    local index = object:getObjectIndex()
+    local javaObject = IsoObject.new(sq:getCell(), sq, sprite)
+    local entityScript = utils:getObjectEntityScript(object)
+    if entityScript then
+        local gameEntityScript = entityScript
+        local isFirstTimeCreated = true
+        GameEntityFactory.CreateIsoObjectEntity(javaObject, gameEntityScript, isFirstTimeCreated)
+    end
+
+    if object:getSquare() ~= nil then
+        object:removeFromWorld();
+        object:removeFromSquare();
+        object:setSquare(nil);
+    end
+
+    sq:AddSpecialObject(javaObject, index)
+
+    return { replaceObject = true, object = javaObject };
 end
 
 function GutterPipeService:onIsValid(buildParams)

@@ -1,7 +1,7 @@
 version=1
 id=3439305933
 title=[B42] Functional Gutters
-description=Realistically harvest rain water from a building's roof by connecting a container to the gutter's drain. 
+description=Realistically harvest rain water from a building's roof by connecting a container to the gutter's drain.
 description=
 description=Tap into existing gutters or build your own custom gutter system using a variety of new craftable gutter pipes.
 description=
@@ -68,5 +68,5 @@ description=[url=https://github.com/harlanrs/zomboid-functional-gutters] View on
 description=
 description=Workshop ID: 3439305933
 description=Mod ID: FunctionalGutters
-tags=Build 42;Balance;Realistic
+tags=Build 42;Balance;Realistic;Building
 visibility=public

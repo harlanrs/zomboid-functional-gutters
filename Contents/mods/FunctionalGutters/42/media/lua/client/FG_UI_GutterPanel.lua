@@ -2,7 +2,6 @@ require "ISUI/ISPanelJoypad"
 
 require "FG_UI_GutterInfoPanel"
 require "FG_UI_CollectorInfoPanel"
-require "FG_UI_PrintMediaPage"
 
 local utils = require("FG_Utils")
 local options = require("FG_Options")
@@ -15,6 +14,7 @@ FG_UI_GutterPanel.cheatSkill = false
 FG_UI_GutterPanel.cheatTransfer = false
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
+local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
 local GOOD_COLOR = getCore():getGoodHighlitedColor()
@@ -89,14 +89,6 @@ function FG_UI_GutterPanel:addCollectorInfoPanel()
     self.collectorPanel:noBackground()
     self.collectorPanel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0}
     self:addChild(self.collectorPanel)
-
-    if self.collectorPanel.itemDropBox then
-        self.collectorPanel.itemDropBox.isLocked = true
-        self.collectorPanel.itemDropBox.doInvalidHighlight = false
-        if self.owner then
-            self.collectorPanel.itemDropBox:setStoredItem( self.owner )
-        end
-    end
 end
 
 function FG_UI_GutterPanel:addGutterInfoPanel()
@@ -118,7 +110,9 @@ function FG_UI_GutterPanel:createChildren()
     local closeW = 20
     local closeH = 20
     local closeX = self:getRight() - closeW
-    local closeY = UI_BORDER_SPACING+1
+    local baseY = UI_BORDER_SPACING + 1
+    local titleBuffer = FONT_HGT_MEDIUM > closeH and (FONT_HGT_MEDIUM - closeH) / 2 or 0
+    local closeY = baseY + titleBuffer
     self.btnClose = ISButton:new(closeX, closeY, closeW, closeH, "X", self, FG_UI_GutterPanel.onButton)
     self.btnClose.internal = "CLOSE"
     self.btnClose:initialise()
@@ -128,7 +122,7 @@ function FG_UI_GutterPanel:createChildren()
     local infoW = 20
     local infoH = 20
     local infoX = closeX - UI_BORDER_SPACING - infoW
-    local infoY = UI_BORDER_SPACING+1
+    local infoY = closeY
     self.btnInfo = ISButton:new(infoX, infoY, infoW, infoH, "", self, FG_UI_GutterPanel.onButton)
     self.btnInfo.internal = "INFO"
     self.btnInfo.borderColor.a = 0.0
@@ -141,7 +135,7 @@ function FG_UI_GutterPanel:createChildren()
     local buildW = 20
     local buildH = 20
     local buildX = infoX - UI_BORDER_SPACING - buildW
-    local buildY = UI_BORDER_SPACING+1
+    local buildY = closeY
     self.btnBuild = ISButton:new(buildX, buildY, buildW, buildH, "", self, FG_UI_GutterPanel.onButton)
     self.btnBuild.internal = "BUILD"
     self.btnBuild.borderColor.a = 0.0
@@ -220,22 +214,46 @@ function FG_UI_GutterPanel:validatePanel()
 end
 
 function FG_UI_GutterPanel:alignElements()
-    local childPanelW = 300
-    local mainPanelW = 300 + (2 * UI_BORDER_SPACING)
-    if self.width > mainPanelW then
+    -- Ensure the width of parent panel fits the largest child panel
+    -- Sync all child panels to match the largest child panel width
+    local childPanelWidth = 300
+    local largestChildPanelW = self.gutterPanel.width
+    if self.collectorPanel.width > largestChildPanelW then
+        largestChildPanelW = self.collectorPanel.width
+    end
+
+    if largestChildPanelW > childPanelWidth then
+        childPanelWidth = largestChildPanelW
+    end
+
+    if self.gutterPanel.width ~= childPanelWidth then
+        self.gutterPanel:setWidth(childPanelWidth)
+    end
+
+    if self.collectorPanel.width ~= childPanelWidth then
+        self.collectorPanel:setWidth(childPanelWidth)
+    end
+
+    local mainPanelW = childPanelWidth + (2 * UI_BORDER_SPACING)
+    if self.width ~= mainPanelW then
         self:setWidth(mainPanelW)
     end
 
-    if self.gutterPanel.width > childPanelW then
-        self.gutterPanel.width = childPanelW
+    -- Align collector panel to reflect changing height of gutter panel
+    local collectorPanelY = self.gutterPanel:getBottom() + UI_BORDER_SPACING
+    self.collectorPanel:setY(collectorPanelY)
+
+    -- Set total heigh of main panel to reflect the height of all child panels
+    local panelHeight = self.gutterPanel.height + self.collectorPanel.height + self.btnToggleConnect.height + (3 * UI_BORDER_SPACING)
+    if self.height ~= panelHeight then
+        self:setHeight(panelHeight)
     end
 
-    if self.collectorPanel.width > childPanelW then
-        self.collectorPanel.width = childPanelW
-    end
+    self.btnToggleConnect:setWidth(childPanelWidth)
+    self.btnToggleConnect:setY(self.collectorPanel:getBottom() + UI_BORDER_SPACING)
 
-    self.btnToggleConnect:setWidth(childPanelW)
-    local closeX = childPanelW - UI_BORDER_SPACING - 1
+    -- TODO align these icons with the panel title
+    local closeX = childPanelWidth - UI_BORDER_SPACING - 1
     self.btnClose:setX(closeX)
     self.btnInfo:setX(self.btnClose.x - UI_BORDER_SPACING - 20)
     self.btnBuild:setX(self.btnInfo.x - UI_BORDER_SPACING - 20)
@@ -278,9 +296,6 @@ function FG_UI_GutterPanel:close()
     -- Cleanup panels
     self.gutterPanel:close()
     self.collectorPanel:close()
-    -- if self.infoPanel then
-    --     self.infoPanel:close()
-    -- end
 
     self:setVisible(false)
     self:removeFromUIManager()
