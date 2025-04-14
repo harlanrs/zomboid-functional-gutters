@@ -110,7 +110,6 @@ function FG_UI_GutterPanel:createChildren()
     local closeW = 20
     local closeH = 20
     local closeX = self:getRight() - closeW
-    -- local closeY = UI_BORDER_SPACING+1
     local baseY = UI_BORDER_SPACING + 1
     local titleBuffer = FONT_HGT_MEDIUM > closeH and (FONT_HGT_MEDIUM - closeH) / 2 or 0
     local closeY = baseY + titleBuffer

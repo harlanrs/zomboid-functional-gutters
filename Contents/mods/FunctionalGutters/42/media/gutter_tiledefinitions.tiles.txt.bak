@@ -64,18 +64,6 @@ tileset
         xy = 3,1
         IsGutterPipe = 
     }
-    // gutter_01_12
-    tile
-    {
-        xy = 4,1
-        IsGutterPipe = 
-    }
-    // gutter_01_13
-    tile
-    {
-        xy = 5,1
-        IsGutterPipe = 
-    }
 }
 tileset
 {
