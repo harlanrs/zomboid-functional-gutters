@@ -676,15 +676,10 @@ function isoUtils:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building
                         -- TODO check if this is the best way to determine if a square is part of a room as there are some holes
                         -- maybe just check the square directly below for being inside or outside? if outside then ignore it
                         local downSquare = getCell():getGridSquare(squareX, squareY, roofZ - 1)
-                        if not downSquare:isOutside() then
+                        if downSquare and not downSquare:isOutside() then
                             roofArea = roofArea + 1
                             roofSquares[roofSquare:getID()] = roofSquare
                         end
-
-                        -- if metaGrid:getRoomAt(squareX, squareY, minZ) then
-                        --     roofArea = roofArea + 1
-                        --     roofSquares[roofSquare:getID()] = roofSquare
-                        -- end
                     else
                         roofArea = roofArea + 1
                         roofSquares[roofSquare:getID()] = roofSquare
