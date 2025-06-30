@@ -43,6 +43,15 @@ Functional Gutters is a mod for the video game `Project Zomboid [B42]` that intr
 
 4. Enjoy the benefits of a fully functional rain collector system.
 
+### Pre-Existing Structures
+Pre-existing structures already have roof gutters meaning you won't have to build your own. To tap into these roof gutters, you will either need to find a building with an existing drain pipe or build a new drain pipe.
+
+On its own a drain pipe will reach the next level above. Additional vertical pipes can be built on top of the drain pipe to access roofs on higher floor levels.
+
+### Player-Built Structures
+Unlike pre-existing structures, player-built structures will require horizontal gutter pipes to expand the size of the roof's area being covered by the drain pipe. Each gutter pipe can collect rain from up to 4 grid-squares from its attachment point in a line. A roof square will be considered valid if it has a floor, isn't covered by a roof, and isn't occupied by an item such as a rain collector.
+
+Use the "View Pipes" and "View Roof" buttons in the gutter ui panel to help visualize the connected pipes and covered roof area.
 
 ## Options 
 
@@ -87,24 +96,8 @@ If true, prints debug messages to the console and adds an additional context men
 <br/>
 
 <p align="left">
-<img src="containers.png" alt="Functional Gutters - Supported Containers" height="512" />
+<img src="containers.png" alt="Functional Gutters - Supported Containers" />
 </p>
-
-## Details
-Build 42 introduced a great variety of of new sprites that decorate buildings, however most are purely aesthetic and don't impact any systems in the game. Several buildings on the map use the new industrial pipe sprites to create roof gutter drains which inspired the creation of this mod.
-
-This mod allows these new gutter sprites to serve a functional purpose by increasing the amount of rain water collected for any rain collectors placed on the same grid square (and connected).
-
-The increased rain factor is controlled by the mod option `GutterRainFactor` and can be changed through the mod options menu. This value defaults to `1.6` (4x the base value of crates `0.4`, over 6x the base value of barrels `0.25`, and over 3x the base value of troughs `0.55`) and can be customized in the mod's options panel to a value between `1.0` and `10.0`.
-
-When a supported collector entity is built or placed on a square, the mod compares all object sprites in the square against a mod-managed list of gutter sprites. If the newly-placed collector shares a square with one of the "approved" sprites, it is allowed to be connected to the gutter. The connect action set the object's rain factor to that of the mod's `GutterRainFactor`. The disconnect action changes the object's rain factor back to its default.
-
-
-### Fun Fact
-
-In the base game, the square rain collector crates have a much greater base rain factor (`0.4`) compared with the circular rain collector barrels (`0.25`) meaning they will collect rain much faster. This makes some sense as the crate's square opening covers a larger surface area than the barrel's circular opening but these details aren't ever surfaced to the player. 
-
-Then troughs come in with the highest rain factor (`0.55`) of vanilla items. While this rate might not make as much sense for the skinny wooden troughs, most would probably agree that animal welfare comes before "realism".
 
 <br/>
 

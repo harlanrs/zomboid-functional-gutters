@@ -32,7 +32,6 @@ description=[list]
 description=  [*]This mod relies on systems introduced in build `42.4+` and will not function in build `41`.
 description=[/list]
 description=
-description=
 description=[h2]How To Use[/h2]
 description=[olist]
 description=  [*]Build/place supported collector on the same tile as a gutter drain. Either tile works for multi-tile troughs.
@@ -40,6 +39,24 @@ description=  [*]Open the context menu by right-clicking on the collector.
 description=  [*]Find the [b]"Gutter Drain"[/b] submenu and select the [b]"Connect"[/b] option. Requires a pipe wrench unless turned off in mod settings.
 description=  [*]Enjoy the benefits of a highly-efficient rain collector system.
 description=[/olist]
+description=
+description=[h3]Pre-Existing Structures[/h3]
+
+description=Pre-existing structures already have roof gutters meaning you won't have to build your own. To tap into these roof gutters, you will either need to find a building with an existing drain pipe or build a new drain pipe. 
+
+description=
+
+description=On its own a drain pipe will reach the next level above. Additional vertical pipes can be built on top of the drain pipe to access roofs on higher floor levels.
+
+description=
+
+description=[h3]Player-Built Structures[/h3]
+
+description=Unlike pre-existing structures, player-built structures will require horizontal gutter pipes to expand the size of the roof's area being covered by the drain pipe. Each gutter pipe can collect rain from up to 4 grid-squares from its attachment point in a line. A roof square will be considered valid if it has a floor, isn't covered by a roof, and isn't occupied by an item such as a rain collector. 
+
+description=
+
+description=Use the "View Pipes" and "View Roof" buttons in the gutter ui panel to help visualize the connected pipes and covered roof area.
 description=
 description=[h2]Mod Settings[/h2]
 description=Options -> Mods -> Functional Gutters
@@ -68,5 +85,5 @@ description=[url=https://github.com/harlanrs/zomboid-functional-gutters] View on
 description=
 description=Workshop ID: 3439305933
 description=Mod ID: FunctionalGutters
-tags=Build 42;Balance;Realistic;Building
+tags=Build 42;Balance;Building;Realistic
 visibility=public

@@ -13,7 +13,8 @@ function GutterPipeService:isObjectType(object)
     return utils:isGutterPipe(object)
 end
 
-function GutterPipeService:onCreate(object)
+function GutterPipeService:onCreate(createParams)
+    local object = createParams.thumpable
     utils:modPrint("Gutter pipe on create func: "..tostring(object))
     -- Bug in vanilla atm where tools that are 'drained' when building an iso thumpable object are added to the object's mod data
     -- The issue is that the consumed build inputs added to the object's mod data are also used to determine what items can be returned on scrap

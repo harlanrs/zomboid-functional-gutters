@@ -10,7 +10,7 @@ function BasePipeServiceInterface:isObjectType(object)
     return utils:isAnyPipeType(object)
 end
 
-function BasePipeServiceInterface:onCreate(object)
+function BasePipeServiceInterface:onCreate(createParams)
 end
 
 function BasePipeServiceInterface:onIsValid(buildParams)

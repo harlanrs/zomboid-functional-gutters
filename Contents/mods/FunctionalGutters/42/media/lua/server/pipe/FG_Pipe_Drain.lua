@@ -13,7 +13,8 @@ function DrainPipeService:isObjectType(object)
     return utils:isDrainPipe(object)
 end
 
-function DrainPipeService:onCreate(object)
+function DrainPipeService:onCreate(createParams)
+    local object = createParams.thumpable
     utils:modPrint("Drain pipe on create func: "..tostring(object))
     -- Bug in vanilla atm where tools that are 'drained' when building an iso thumpable object are added to the object's mod data
     -- The issue is that the consumed build inputs added to the object's mod data are also used to determine what items can be returned on scrap

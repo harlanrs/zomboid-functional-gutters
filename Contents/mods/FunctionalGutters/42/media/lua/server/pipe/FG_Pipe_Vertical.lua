@@ -13,7 +13,8 @@ function VerticalPipeService:isObjectType(object)
     return utils:isVerticalPipe(object)
 end
 
-function VerticalPipeService:onCreate(object)
+function VerticalPipeService:onCreate(createParams)
+    local object = createParams.thumpable
     utils:modPrint("Vertical pipe on create func: "..tostring(object))
     -- Bug in vanilla atm where tools that are 'drained' when building an iso thumpable object are added to the object's mod data
     -- The issue is that the consumed build inputs added to the object's mod data are also used to determine what items can be returned on scrap
