@@ -450,6 +450,16 @@ function utils:parseObjectCommandArgs(args)
     return nil
 end
 
+---@param dict table<any, any>
+---@return integer
+function utils:getDictSize(dict)
+    local count = 0
+    for _ in pairs(dict) do
+        count = count + 1
+    end
+    return count
+end
+
 local function checkDebugMode()
     debugMode = options:getDebug()
 end

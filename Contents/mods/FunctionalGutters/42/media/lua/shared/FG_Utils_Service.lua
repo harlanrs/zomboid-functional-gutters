@@ -87,6 +87,7 @@ function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     end
 
     if troughUtils:isTrough(collectorObject) then
+        -- TODO REDO - will need to iterate through all connected troughs to find the drain pipe square
         -- Check if the other trough object is located on a square with a drain pipe
         local otherTroughObject = troughUtils:getOtherTroughObject(collectorObject)
         if not otherTroughObject then
@@ -200,50 +201,7 @@ function serviceUtils:getLocalDrainPipes(square, radius)
         return nil
     end
 
-    -- Determine if square has a pre-built building or is a player-built structure
-    local squareBuilding = isoUtils:getAttachedBuilding(square)
-
-    local maxLevel = utils:getModDataMaxLevel(square)
-
-    -- Reduce the list of drain pipes to only those relevant to the building mode
-    local associatedDrainPipes = table.newarray()
-    for i=1, #drainPipes do
-        local drainPipe = drainPipes[i]
-        local drainBuilding = isoUtils:getAttachedBuilding(drainPipe:getSquare())
-        if squareBuilding then
-            -- Vanilla building mode
-            -- Check if the drain pipe is attached to the same building
-            if drainBuilding and drainBuilding:getID() == squareBuilding:getID() then
-                -- Check if drains on the same building are getting water from the same level
-                if maxLevel then
-                    local drainPipeSquare = drainPipe:getSquare()
-                    local pipeMaxLevel = utils:getModDataMaxLevel(drainPipeSquare)
-                    if pipeMaxLevel then
-                        if pipeMaxLevel == maxLevel then
-                            -- Add the drain pipe to the list of associated pipes
-                            table_insert(associatedDrainPipes, drainPipe)
-                        end
-                    else
-                        -- If the drain pipe doesn't have a max level, go ahead an add it to the list of associated pipes
-                        -- Would rather over estimate than under estimate
-                        table_insert(associatedDrainPipes, drainPipe)
-                    end
-                else
-                    -- If for some reason the maxLevel is nil, go ahead an add it to the list of associated pipes
-                    -- Would rather over estimate than under estimate
-                    table_insert(associatedDrainPipes, drainPipe)
-                end
-            end
-        else
-            -- Custom building mode
-            -- Check if the drain is not attached to any building
-            if not drainBuilding then
-                table_insert(associatedDrainPipes, drainPipe)
-            end
-        end
-    end
-
-    return associatedDrainPipes
+    return drainPipes
 end
 
 ---@param square IsoGridSquare
@@ -301,10 +259,187 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     return drainPipes
 end
 
----@param square IsoGridSquare
+
+---@param primaryPipeMap table<IsoObject>
+---@param candidatePipeMap table<IsoObject>
+---@return boolean
+function serviceUtils:hasSharedGutterPipes(primaryPipeMap, candidatePipeMap)
+    -- Check if the candidate drain pipe shares any pipes with the primary drain pipe
+    for pipeType, primaryPipes in pairs(primaryPipeMap) do
+        -- Check each pipe category 
+        local candidateTypePipes = candidatePipeMap[pipeType]
+        for _, primaryPipe in pairs(primaryPipes) do
+            if candidateTypePipes[primaryPipe] then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+---@param primaryDrainPipe IsoObject
+---@param drainPipes table<IsoObject>
+---@return table<IsoObject> relatedDrains
+function serviceUtils:filterGutterDrainsByFloodFill(primaryDrainPipe, drainPipes)
+    -- Filter the list of drain pipes by flood fill
+    -- This is a more complex check that will take into account the connectedness of the drain pipes
+    -- and their relationship to the primary drain pipe
+    -- Map all pipes and roof squares for each drain
+    local drainPipeMap = {}
+    local drainRoofMap = {}
+    for _, candidateDrain in ipairs(drainPipes) do
+        local candidateId = candidateDrain:getEntityNetID()
+        local candidateSquare = candidateDrain:getSquare()
+
+        -- TODO allow primaryPipeMap and primaryRoofMap to be passed in optionally
+        drainPipeMap[candidateId] = isoUtils:crawlGutterSystem(candidateSquare)
+        local _, drainRoofSquares, _ = isoUtils:getGutterRoofArea(candidateSquare, drainPipeMap[candidateId])
+        drainRoofMap[candidateId] = drainRoofSquares
+    end
+
+    -- Cross-check each drain's pipeMap & roofMap for shared tiles
+    local visited = {}
+    local relatedDrains = {}
+    local queue = {primaryDrainPipe} -- Start with the primary drain pipe
+    while #queue > 0 do
+        local currentDrain = table.remove(queue, 1)
+        local drainId = currentDrain:getEntityNetID()
+
+        -- Skip if already visited
+        if not visited[drainId] then
+            visited[drainId] = true
+            table.insert(relatedDrains, currentDrain)
+
+            -- Get the pipe network for this drain
+            local pipeMap = drainPipeMap[drainId]
+            local roofMap = drainRoofMap[drainId]
+
+            -- Find all other drains connected through this network
+            -- NOTE: implicit self-check since currentDrain already added to visited
+            for _, candidateDrain in ipairs(drainPipes) do
+                local candidateId = candidateDrain:getEntityNetID()
+                if not visited[candidateId] then
+
+                    local candidatePipeMap = drainPipeMap[candidateId]
+                    local candidateRoofMap = drainRoofMap[candidateId]
+
+                    -- Check for shared pipes
+                    local hasSharedPipe = false
+                    for candidatePipeSquareId, _ in pairs(candidatePipeMap._all) do
+                        if pipeMap[candidatePipeSquareId] then
+                            -- Both drain systems share a pipe square
+                            hasSharedPipe = true
+                            table.insert(queue, candidateDrain)
+                            break
+                        end
+                    end
+
+                    -- Check for shared roof tiles
+                    if not hasSharedPipe then
+                        for candidateRoofSquareId, _ in pairs(candidateRoofMap) do
+                            if roofMap[candidateRoofSquareId] then
+                                -- Both drain systems share a roof tile
+                                table.insert(queue, candidateDrain)
+                                break
+                            end
+                        end
+
+                    end
+                end
+            end
+        end
+    end
+
+    return relatedDrains
+end
+
+---@param sourceDrainPipeSquare IsoGridSquare
+---@return table<IsoObject>|nil drainPipes
+function serviceUtils:getAssociatedGutterDrains(sourceDrainPipeSquare)
+    local localDrainPipes = self:getLocalDrainPipes3D(sourceDrainPipeSquare, enums.defaultDrainPipeSearchRadius, enums.defaultDrainPipeSearchHeight)
+    if not localDrainPipes then
+        return nil
+    end
+
+    -- Filter round 1 - use simple checks to reduce the list of drain pipes to those most likely to be 'related':
+    -- 1. filter by connected status (assume non-connected gutters are 'closed' and not collecting water)
+    -- 2. filter by building type 'vanilla' vs 'custom' (assume custom only relates to custom and vanilla only relates to vanilla)
+    -- 3.A if vanilla:
+    --     * filter by shared building id (assume different buildings are not related)
+    --     * filter by shared max level (assume if same max level then using same roof tiles)
+    -- 3.B if custom:
+    --  NOTE: use more complex checks to reduce the list of drain pipes to those that are 'related'
+    --      * filter by shared pipes
+    --      * filter by shared roof tiles
+
+    -- Determine if square has a pre-built building or is a player-built structure
+    local squareBuilding = isoUtils:getAttachedBuilding(sourceDrainPipeSquare)
+    local maxLevel = utils:getModDataMaxLevel(sourceDrainPipeSquare)
+
+    -- Reduce the list of drain pipes to only those relevant to the building mode
+    -- Note: more involved filters are applied externally
+    local associatedDrainPipes = table.newarray()
+    for i=1, #localDrainPipes do
+        local drainPipe = localDrainPipes[i]
+
+        -- 1. Filter by connected status
+        -- NOTE: pass through atm
+        local isDrainConnected = true -- utils:getModDataIsGutterConnected(drainPipe)
+        if isDrainConnected then
+            -- 2. Filter by building type
+            local drainBuilding = isoUtils:getAttachedBuilding(drainPipe:getSquare())
+            if squareBuilding then
+                -- 3.A Vanilla building mode
+                -- Check if the drain pipe is attached to the same building
+                if drainBuilding and drainBuilding:getID() == squareBuilding:getID() then
+                    -- Check if drains on the same building are getting water from the same level
+                    if maxLevel then
+                        local drainPipeSquare = drainPipe:getSquare()
+                        local pipeMaxLevel = utils:getModDataMaxLevel(drainPipeSquare)
+                        if pipeMaxLevel then
+                            if pipeMaxLevel == maxLevel then
+                                -- Add the drain pipe to the list of associated pipes
+                                table_insert(associatedDrainPipes, drainPipe)
+                            end
+                        else
+                            -- If the drain pipe doesn't have a max level, go ahead an add it to the list of associated pipes
+                            -- Would rather over estimate than under estimate
+                            table_insert(associatedDrainPipes, drainPipe)
+                        end
+                    else
+                        -- If for some reason the maxLevel is nil, go ahead an add it to the list of associated pipes
+                        -- Would rather over estimate than under estimate
+                        table_insert(associatedDrainPipes, drainPipe)
+                    end
+                end
+            else
+                -- 3.B Custom building mode
+                -- Check if the drain is not attached to any building
+                if not drainBuilding then
+                    table_insert(associatedDrainPipes, drainPipe)
+                end
+            end
+        end
+    end
+
+    -- TODO 3.B flood fill for custom drains
+    if not squareBuilding then
+        local _, primaryDrainPipe, _, _ = utils:getSpriteCategoryMemberOnTile(sourceDrainPipeSquare, enums.pipeType.drain)
+        if primaryDrainPipe then
+            utils:modPrint("Custom building mode detected. Performing flood fill for associated gutter drains.")
+            return self:filterGutterDrainsByFloodFill(primaryDrainPipe, associatedDrainPipes)
+        end
+    end
+
+    return associatedDrainPipes
+end
+
+-- TODO pass in primaryPipeMap
+---@param sourceDrainPipeSquare IsoGridSquare
 ---@return integer drainCount
-function serviceUtils:getActualGutterDrainCount(square)
-    local drainPipes = self:getLocalDrainPipes3D(square, enums.defaultDrainPipeSearchRadius, enums.defaultDrainPipeSearchHeight)
+function serviceUtils:getAssociatedGutterDrainCount(sourceDrainPipeSquare)
+    local drainPipes = self:getAssociatedGutterDrains(sourceDrainPipeSquare)
     if not drainPipes then
         return 0
     end
@@ -401,7 +536,7 @@ function serviceUtils:calculateGutterSectionRainFactor(gutterTileCount)
 end
 
 ---@param square IsoGridSquare
----@return table|nil gutterSection
+---@return GutterSection|nil gutterSection
 function serviceUtils:calculateGutterSection(square)
     -- Notes:
     -- 1 tile is 1 meter squared
@@ -420,6 +555,7 @@ function serviceUtils:calculateGutterSection(square)
 
     -- Rain intensity is already factored into base game systems so we need to balance the generated rain factor to be useful but not trivial or too powerful
     -- Realistically a roof gutter system would produce nearly an entire rain barrel's worth of water (600l) in just a few hours when considering the area of the roof
+    ---@type GutterSection
     local gutterSection = {
         roofArea = 0,
         tileCount = 0,
@@ -462,7 +598,7 @@ function serviceUtils:calculateGutterSection(square)
 
     gutterSection.averageGutterCapacity = self:getAverageGutterCapacity()
     gutterSection.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSection.roofArea, gutterSection.averageGutterCapacity)
-    gutterSection.drainCount = self:getActualGutterDrainCount(square)
+    gutterSection.drainCount = self:getAssociatedGutterDrainCount(square)
     gutterSection.tileCount, gutterSection.overflowArea = self:calculateGutterSectionTileCount(gutterSection.roofArea, gutterSection.optimalDrainCount, gutterSection.drainCount, gutterSection.averageGutterCapacity)
     gutterSection.rainFactor = self:calculateGutterSectionRainFactor(gutterSection.tileCount)
 

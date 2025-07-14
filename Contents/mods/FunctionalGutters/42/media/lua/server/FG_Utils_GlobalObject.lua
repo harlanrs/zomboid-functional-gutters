@@ -5,9 +5,6 @@ local troughUtils = require("FG_Utils_Trough")
 
 local globalObjectUtils = {}
 
--- TODO use FeedingTroughDef to clean up replaceExistingTrough
--- local localFeedingTroughDef = FeedingTroughDef
-
 ---@param square IsoGridSquare
 function globalObjectUtils:removeExistingLuaObject(square)
     local troughSystem = SFeedingTroughSystem.instance
@@ -22,38 +19,22 @@ end
 ---@return IsoFeedingTrough
 function globalObjectUtils:replaceExistingTrough(isoObject)
     utils:modPrint('Upgrading IsoObject to IsoFeedingTrough: '..tostring(isoObject))
-    local square = isoObject:getSquare()
-    local spriteName = isoObject:getSprite():getName()
-    local index = isoObject:getObjectIndex()
-    self:removeExistingLuaObject(square)
-    square:transmitRemoveItemFromSquare(isoObject)
-    local north = true;
-    if "location_farm_accesories_01_14" == spriteName or "location_farm_accesories_01_4" == spriteName or "location_farm_accesories_01_5" == spriteName or "location_farm_accesories_01_34" == spriteName or "location_farm_accesories_01_35" == spriteName then
-        north = false;
-    end
-    isoObject = IsoFeedingTrough.new(square, spriteName, nil)
-    isoObject:setNorth(north);
-    if "location_farm_accesories_01_5" == spriteName then
-        isoObject:setLinkedX(square:getX());
-        isoObject:setLinkedY(square:getY() + 1);
-    end
-    if "location_farm_accesories_01_6" == spriteName then
-        isoObject:setLinkedX(square:getX() + 1);
-        isoObject:setLinkedY(square:getY());
-    end
-    if "location_farm_accesories_01_32" == spriteName then
-        isoObject:setLinkedX(square:getX() + 1);
-        isoObject:setLinkedY(square:getY());
-    end
-    if "location_farm_accesories_01_35" == spriteName then
-        isoObject:setLinkedX(square:getX());
-        isoObject:setLinkedY(square:getY() + 1);
-    end
-    isoObject:initWithDef();
-    square:AddSpecialObject(isoObject, index)
-    isoObject:transmitCompleteItemToClients()
 
-    isoObject:checkOverlayFull();
+    local square = isoObject:getSquare()
+	local spriteName = isoObject:getSprite():getName()
+	local index = isoObject:getObjectIndex()
+    local isNorth = troughUtils:isTroughSpriteNorth(spriteName)
+
+	self:removeExistingLuaObject(square)
+
+	square:transmitRemoveItemFromSquare(isoObject)
+	isoObject = IsoFeedingTrough.new(square, spriteName, nil)
+	isoObject:setNorth(isNorth);
+	isoObject:initWithDef()
+	square:AddSpecialObject(isoObject, index)
+	isoObject:transmitCompleteItemToClients()
+	isoObject:checkOverlayFull();
+
     return isoObject
 end
 
@@ -70,6 +51,7 @@ function globalObjectUtils:loadTrough(object)
     return object
 end
 
+-- TODO REDO support any amount of secondary troughs now that triple & quad troughs exist
 ---@param troughObject IsoFeedingTrough|IsoObject
 ---@return IsoFeedingTrough|nil primaryTrough, IsoFeedingTrough|nil secondaryTrough
 function globalObjectUtils:loadFullTrough(troughObject)
@@ -79,6 +61,7 @@ function globalObjectUtils:loadFullTrough(troughObject)
     -- Ignore if this is already a global trough object
     if troughUtils:isTroughObject(troughObject) then return nil end
 
+    -- TODO REDO response won't work for non-loaded troughs
     local primaryTrough = troughUtils:getPrimaryTrough(troughObject)
     if not primaryTrough then
         -- Primary through hasn't been placed yet

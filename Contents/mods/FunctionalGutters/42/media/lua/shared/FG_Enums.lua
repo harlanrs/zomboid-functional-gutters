@@ -3,6 +3,7 @@ local enums = {}
 enums.modName = "FunctionalGutters"
 enums.modDisplayName = "Functional Gutters"
 
+---@enum PipeType
 enums.pipeType = {
     drain = "drain",
     vertical = "vertical",
@@ -10,11 +11,13 @@ enums.pipeType = {
     gutter = "gutter",
 }
 
+---@enum CollectorType
 enums.collectorType = {
     fluidContainer = "fluidContainer",
     trough = "trough",
 }
 
+---@enum BuildingType
 enums.buildingType = {
     vanilla = "vanilla",
     custom = "custom",
@@ -218,25 +221,48 @@ enums.pipeAtlas.position[IsoDirections.NE] = mapPipesByPosition(IsoDirections.NE
 enums.pipeAtlas.position[IsoDirections.SW] = mapPipesByPosition(IsoDirections.SW)
 enums.pipeAtlas.position[IsoDirections.SE] = mapPipesByPosition(IsoDirections.SE)
 
+-- TODO REDO
 -- TODO auto source from FeedingTroughDef?
 -- NOTE: 'accessories' is misspelled in sprite names
-enums.troughSprites = table.newarray(
-    "location_farm_accesories_01_4", -- Wood Double West
-    "location_farm_accesories_01_5", -- Wood Double West
-    "location_farm_accesories_01_6", -- Wood Double North
-    "location_farm_accesories_01_7", -- Wood Double North
-    "location_farm_accesories_01_14", -- Wood Single West
-    "location_farm_accesories_01_15", -- Wood Single North
-    "location_farm_accesories_01_34", -- Metal Double West
-    "location_farm_accesories_01_35", -- Metal Double West
-    "location_farm_accesories_01_32", -- Metal Double North
-    "location_farm_accesories_01_33" -- Metal Double North
-)
+enums.troughSprites = table.newarray()
+-- enums.troughSprites = table.newarray(
+--     "location_farm_accesories_01_4", -- Wood Double West
+--     "location_farm_accesories_01_5", -- Wood Double West
+--     "location_farm_accesories_01_6", -- Wood Double North
+--     "location_farm_accesories_01_7", -- Wood Double North
+--     "location_farm_accesories_01_14", -- Wood Single West
+--     "location_farm_accesories_01_15", -- Wood Single North
+--     "location_farm_accesories_01_34", -- Metal Double West
+--     "location_farm_accesories_01_35", -- Metal Double West
+--     "location_farm_accesories_01_32", -- Metal Double North
+--     "location_farm_accesories_01_33" -- Metal Double North
+-- )
 
-enums.smallTroughSprites = table.newarray(
-    "location_farm_accesories_01_14", -- Wood Single West
-    "location_farm_accesories_01_15" -- Wood Single North
-)
+enums.smallTroughSprites = table.newarray()
+-- enums.smallTroughSprites = table.newarray(
+--     "location_farm_accesories_01_14", -- Wood Single West
+--     "location_farm_accesories_01_15" -- Wood Single North
+-- )
+
+enums.primaryTroughSprites = table.newarray()
+enums.northTroughSprites = table.newarray()
+
+-- TODO do we need getters since these aren't local variables?
+function enums:getTroughSprites()
+    return self.troughSprites
+end
+
+function enums:getSmallTroughSprites()
+    return self.smallTroughSprites
+end
+
+function enums:getPrimaryTroughSprites()
+    return self.troughSprites
+end
+
+function enums:getNorthTroughSprites()
+    return self.northTroughSprites
+end
 
 enums.woodenPoleSprite = "walls_exterior_wooden_01_27"
 
@@ -282,7 +308,7 @@ enums.modEvents = {
 
 enums.troughBaseRainFactor = 0.55
 enums.maxRoofCrawlSteps = 4
-enums.maxGutterCrawlSteps = 36
+enums.maxGutterCrawlSteps = 48
 enums.maxBuildingBoundCrawlSteps = 25
 enums.defaultDrainPipeSearchRadius = 16
 enums.defaultDrainPipeSearchHeight = 1
@@ -308,3 +334,33 @@ enums.textures.icon = {
 }
 
 return enums
+
+-- Map of pipe type to list of squares containing a pipe of that type for a connected gutter system
+---@alias GutterPipeMap 
+---|{
+---[PipeType.drain]: table<string, IsoGridSquare>,
+---[PipeType.vertical]: table<string, IsoGridSquare>,
+---[PipeType.gutter]: table<string, IsoGridSquare>,
+---["_all"]: table<string, IsoGridSquare>,
+---["_count"]: integer,
+---["_drain_count"]: integer,
+---["_vertical_count"]: integer,
+---["_gutter_count"]: integer } 
+
+
+-- Map of square ID to IsoGridSquare for a connected roof system
+---@alias GutterRoofMap table<string, IsoGridSquare> 
+---@alias GutterSection
+---|{ 
+---["roofArea"]: integer, 
+---["tileCount"]: integer, 
+---["optimalDrainCount"]: integer, 
+---["drainCount"]: integer, 
+---["rainFactor"]: number, 
+---["pipeMap"]: GutterPipeMap|nil, 
+---["roofMap"]: GutterRoofMap|nil, 
+---["buildingType"]: BuildingType|nil, 
+---["maxLevel"]: integer|nil, 
+---["averageGutterCapacity"]: integer, 
+---["overflowArea"]: integer, 
+---["overflowEfficiency"]: number }

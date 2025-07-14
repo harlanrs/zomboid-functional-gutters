@@ -45,23 +45,26 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
 end
 
 local function loadTroughGlobalObject(object)
-    -- Wrap load full trough function to trigger event if trough is on a drain pipe square
-    local primaryTrough, secondaryTrough = globalObjectUtils:loadFullTrough(object)
-    if not primaryTrough then
-        return nil
-    end
+    -- TODO REDO convert secondaryTrough to list of troughs
+    return nil
 
-    local primaryTroughSquare = primaryTrough:getSquare()
-    if utils:isDrainPipeSquare(primaryTroughSquare) then
-        -- Primary trough is on drain pipe square
-        triggerEvent(enums.modEvents.OnGutterTileUpdate, primaryTroughSquare)
-    elseif secondaryTrough then
-        local secondaryTroughSquare = secondaryTrough:getSquare()
-        if utils:isDrainPipeSquare(secondaryTroughSquare) then
-            -- Secondary trough is on drain pipe square
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, secondaryTroughSquare)
-        end
-    end
+    -- -- Wrap load full trough function to trigger event if trough is on a drain pipe square
+    -- local primaryTrough, secondaryTrough = globalObjectUtils:loadFullTrough(object)
+    -- if not primaryTrough then
+    --     return nil
+    -- end
+
+    -- local primaryTroughSquare = primaryTrough:getSquare()
+    -- if utils:isDrainPipeSquare(primaryTroughSquare) then
+    --     -- Primary trough is on drain pipe square
+    --     triggerEvent(enums.modEvents.OnGutterTileUpdate, primaryTroughSquare)
+    -- elseif secondaryTrough then
+    --     local secondaryTroughSquare = secondaryTrough:getSquare()
+    --     if utils:isDrainPipeSquare(secondaryTroughSquare) then
+    --         -- Secondary trough is on drain pipe square
+    --         triggerEvent(enums.modEvents.OnGutterTileUpdate, secondaryTroughSquare)
+    --     end
+    -- end
 end
 
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
@@ -95,6 +98,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         -- Trough was built, check if it is multi-tile
         local troughObject = utils:getSpecificIsoObjectFromSquare(square, sprite)
         if troughObject then
+            -- TODO REDO
             -- TODO eventually use generic sprite grid instead of trough-specific to support other multi-tile objects
             local otherTroughObject = troughUtils:getOtherTroughObject(troughObject)
             if otherTroughObject then
@@ -300,3 +304,5 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
+
+-- TODO REDO generate list of trough sprites from FeedingTroughDef on game start
