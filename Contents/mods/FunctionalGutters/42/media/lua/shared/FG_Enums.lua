@@ -310,6 +310,7 @@ enums.troughBaseRainFactor = 0.55
 enums.maxRoofCrawlSteps = 4
 enums.maxGutterCrawlSteps = 48
 enums.maxBuildingBoundCrawlSteps = 25
+enums.maxRoofArea = 500 -- Max roof area in tiles
 enums.defaultDrainPipeSearchRadius = 16
 enums.defaultDrainPipeSearchHeight = 1
 enums.gutterSectionPerimeterLength = 9
