@@ -450,7 +450,7 @@ function utils:parseObjectCommandArgs(args)
     return nil
 end
 
----@param dict table<any, any>
+---@param dict {[any]: any}
 ---@return integer
 function utils:getDictSize(dict)
     local count = 0

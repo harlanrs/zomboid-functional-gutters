@@ -6,6 +6,7 @@ local isoUtils = {}
 local localIsoDirections = IsoDirections
 local localIsoFlagType = IsoFlagType
 local table_insert = table.insert
+local table_contains = luautils.tableContains
 
 
 ---@param square IsoGridSquare
@@ -229,150 +230,231 @@ function isoUtils:getBuildingFloorArea(buildingDef, z)
     return area
 end
 
+-- TODO remove after validating new crawlGutterSquare function
+-- ---@param square IsoGridSquare
+-- ---@param squareProps PropertyContainer
+-- ---@param gutterPipeMap GutterPipeMap
+-- ---@param prevDir IsoDirections|nil
+-- ---@param crawlSteps integer|nil
+-- ---@return IsoGridSquare|nil
+-- function isoUtils:crawlHorizontalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
+--     if not square then return nil end
+
+--     local hasGutterPipe = utils:isGutterPipeSquare(square, squareProps)
+--     if not hasGutterPipe then
+--         return nil
+--     end
+
+--     if not crawlSteps then crawlSteps = 0 end
+--     crawlSteps = crawlSteps + 1
+--     if crawlSteps > enums.maxGutterCrawlSteps then
+--         -- Shouldn't hit unless player builds a large system with more gutter objects
+--         -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+--         utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
+--         return square
+--     end
+
+--     -- Try following gutter pipes north, south, east, west
+--     local _, squareGutter, spriteName, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
+--     if squareGutter then
+--         local squareID = square:getID()
+--         gutterPipeMap[enums.pipeType.gutter][squareID] = square
+--         gutterPipeMap._all[squareID] = square
+--         gutterPipeMap._gutter_count = gutterPipeMap._gutter_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
+
+--         local spriteDef = enums.pipes[spriteName]
+--         if spriteDef.position == localIsoDirections.N or spriteDef.position == localIsoDirections.NW then
+--             -- Check west
+--             if prevDir ~= localIsoDirections.E then
+--                 local westSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
+--                 self:crawlGutterSquare(westSquare, gutterPipeMap, localIsoDirections.W, crawlSteps)
+--             end
+
+--             -- Check east
+--             if prevDir ~= localIsoDirections.W then
+--                 local eastSquare = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ())
+--                 self:crawlGutterSquare(eastSquare, gutterPipeMap, localIsoDirections.E, crawlSteps)
+--             end
+--         end
+
+--         if spriteDef.position == localIsoDirections.W or spriteDef.position == localIsoDirections.NW then
+--             -- Check north
+--             if prevDir ~= localIsoDirections.S then
+--                 local northSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
+--                 self:crawlGutterSquare(northSquare, gutterPipeMap, localIsoDirections.N, crawlSteps)
+--             end
+
+--             -- Check south
+--             if prevDir ~= localIsoDirections.N then
+--                 local southSquare = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ())
+--                 self:crawlGutterSquare(southSquare, gutterPipeMap, localIsoDirections.S, crawlSteps)
+--             end
+--         end
+--     end
+
+--     -- TODO rethink response now that we check forked paths and won't have a singular final square
+--     return square
+-- end
+
+-- TODO remove after validating new crawlGutterSquare function
+-- ---@param square IsoGridSquare
+-- ---@param squareProps PropertyContainer
+-- ---@param gutterPipeMap GutterPipeMap
+-- ---@param prevDir IsoDirections|nil
+-- ---@param crawlSteps integer|nil
+-- ---@return IsoGridSquare|nil
+-- function isoUtils:crawlVerticalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
+--     if not square then return nil end
+
+--     local hasDrainPipe = utils:isDrainPipeSquare(square, squareProps)
+--     local hasVerticalPipe = utils:isVerticalPipeSquare(square, squareProps)
+--     if not hasVerticalPipe and not hasDrainPipe then
+--         return nil
+--     end
+
+--     if not crawlSteps then crawlSteps = 0 end
+--     crawlSteps = crawlSteps + 1
+--     if crawlSteps > enums.maxGutterCrawlSteps then
+--         -- Shouldn't hit unless player builds a large system with more gutter objects
+--         -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+--         utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
+--         return square
+--     end
+
+--     local squareID = square:getID()
+--     if hasDrainPipe then
+--         gutterPipeMap[enums.pipeType.drain][squareID] = square
+--         gutterPipeMap._drain_count = gutterPipeMap._drain_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
+--     end
+--     if hasVerticalPipe then
+--         gutterPipeMap[enums.pipeType.vertical][squareID] = square
+--         gutterPipeMap._vertical_count = gutterPipeMap._vertical_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
+--     end
+
+--     gutterPipeMap._all[squareID] = square
+
+--     -- Following vertical pipes up z levels
+--     local nextSquare = getCell():getGridSquare(square:getX(), square:getY(), square:getZ() + 1)
+--     local crawlUp = self:crawlGutterSquare(nextSquare, gutterPipeMap, nil, crawlSteps) -- TODO up dir?
+--     if crawlUp then
+--         return crawlUp
+--     end
+
+--     -- TODO rethink response now that we check forked paths and won't have a singular final square
+--     return square
+-- end
+
+-- TODO remove after validating new crawlGutterSquare function
+-- ---@param square IsoGridSquare
+-- ---@param gutterPipeMap GutterPipeMap
+-- ---@param prevDir IsoDirections|nil
+-- ---@param crawlSteps integer|nil
+-- ---@return IsoGridSquare|nil
+-- function isoUtils:crawlGutterSquare(square, gutterPipeMap, prevDir, crawlSteps)
+--     if not square then return nil end
+
+--     local squareProps = square:getProperties()
+--     if not utils:isAnyPipeSquare(square, squareProps) then
+--         return nil
+--     elseif not prevDir and not utils:isVerticalPipeSquare(square, squareProps) and not utils:isDrainPipeSquare(square, squareProps) then
+--         -- When no prevDir (coming up from below), ensure a vertical pipe exists before crawling
+--         -- This is to prevent horizontal/gutter pipes from being included when there is no vertical pipe to connect them
+--         -- TODO provide "up"/"down" prevDir if we want to reverse crawl and navigate top-down
+--         return nil
+--     end
+
+--     if not crawlSteps then crawlSteps = 0 end
+--     crawlSteps = crawlSteps + 1
+--     if crawlSteps > enums.maxGutterCrawlSteps then
+--         -- Shouldn't hit unless player builds a large system with more gutter objects
+--         -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+--         utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
+--         return square
+--     end
+
+--     self:crawlHorizontalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
+--     self:crawlVerticalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
+
+--     -- TODO rethink response now that we check forked paths and won't have a singular final square
+--     return square
+-- end
+
 ---@param square IsoGridSquare
----@param squareProps PropertyContainer
----@param gutterPipeMap GutterPipeMap
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlHorizontalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
-    if not square then return nil end
+---@param pipeMap GutterPipeMap
+---@return table<string, IsoGridSquare>|nil
+function isoUtils:crawlGutterSquare(square, pipeMap)
+    local squareProps = square:getProperties()
 
     local hasGutterPipe = utils:isGutterPipeSquare(square, squareProps)
-    if not hasGutterPipe then
-        return nil
-    end
-
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
-
-    -- Try following gutter pipes north, south, east, west
-    local _, squareGutter, spriteName, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
-    if squareGutter then
-        local squareID = square:getID()
-        gutterPipeMap[enums.pipeType.gutter][squareID] = square
-        gutterPipeMap._all[squareID] = square
-        gutterPipeMap._gutter_count = gutterPipeMap._gutter_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
-
-        local spriteDef = enums.pipes[spriteName]
-        if spriteDef.position == localIsoDirections.N or spriteDef.position == localIsoDirections.NW then
-            -- Check west
-            if prevDir ~= localIsoDirections.E then
-                local westSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
-                self:crawlGutterSquare(westSquare, gutterPipeMap, localIsoDirections.W, crawlSteps)
-            end
-
-            -- Check east
-            if prevDir ~= localIsoDirections.W then
-                local eastSquare = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ())
-                self:crawlGutterSquare(eastSquare, gutterPipeMap, localIsoDirections.E, crawlSteps)
-            end
-        end
-
-        if spriteDef.position == localIsoDirections.W or spriteDef.position == localIsoDirections.NW then
-            -- Check north
-            if prevDir ~= localIsoDirections.S then
-                local northSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
-                self:crawlGutterSquare(northSquare, gutterPipeMap, localIsoDirections.N, crawlSteps)
-            end
-
-            -- Check south
-            if prevDir ~= localIsoDirections.N then
-                local southSquare = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ())
-                self:crawlGutterSquare(southSquare, gutterPipeMap, localIsoDirections.S, crawlSteps)
-            end
-        end
-    end
-
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
-end
-
----@param square IsoGridSquare
----@param squareProps PropertyContainer
----@param gutterPipeMap GutterPipeMap
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlVerticalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
-    if not square then return nil end
-
-    local hasDrainPipe = utils:isDrainPipeSquare(square, squareProps)
     local hasVerticalPipe = utils:isVerticalPipeSquare(square, squareProps)
-    if not hasVerticalPipe and not hasDrainPipe then
+    local hasDrainPipe = utils:isDrainPipeSquare(square, squareProps)
+    -- local hasHorizontalPipe = utils:isHorizontalPipeSquare(square, squareProps) -- NOTE: horizontal pipes don't currently exist beyond gutters
+
+    if not hasGutterPipe and not hasVerticalPipe and not hasDrainPipe then
         return nil
     end
 
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
-
+    ---@type table<string, IsoGridSquare>
+    local neighborSquares = {}
     local squareID = square:getID()
+    local rootCell = square:getCell()
+    local rootX, rootY, rootZ = square:getX(), square:getY(), square:getZ()
+
     if hasDrainPipe then
-        gutterPipeMap[enums.pipeType.drain][squareID] = square
-        gutterPipeMap._drain_count = gutterPipeMap._drain_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
+        -- Record in drain pipe map
+        pipeMap[enums.pipeType.drain][squareID] = square
+
+        -- Drain pipes only connect to other pipes above
+        local topSquare = rootCell:getGridSquare(rootX, rootY, rootZ + 1)
+        if topSquare then
+            neighborSquares[topSquare:getID()] = topSquare
+        end
     end
+
     if hasVerticalPipe then
-        gutterPipeMap[enums.pipeType.vertical][squareID] = square
-        gutterPipeMap._vertical_count = gutterPipeMap._vertical_count + 1 -- NOTE: bit hacky but useful to not have to dynamically check the size of the dictionary in ui
+        -- Record in vertical pipe map
+        pipeMap[enums.pipeType.vertical][squareID] = square
+
+        -- Vertical pipes only connect to other pipes above and below
+        local topSquare = rootCell:getGridSquare(rootX, rootY, rootZ + 1)
+        if topSquare then
+            neighborSquares[topSquare:getID()] = topSquare
+        end
+
+        local bottomSquare = rootCell:getGridSquare(rootX, rootY, rootZ - 1)
+        if bottomSquare then
+            neighborSquares[bottomSquare:getID()] = bottomSquare
+        end
     end
 
-    gutterPipeMap._all[squareID] = square
+    if hasGutterPipe then
+        -- Record in gutter pipe map
+        pipeMap[enums.pipeType.gutter][squareID] = square
 
-    -- Following vertical pipes up z levels
-    local nextSquare = getCell():getGridSquare(square:getX(), square:getY(), square:getZ() + 1)
-    local crawlUp = self:crawlGutterSquare(nextSquare, gutterPipeMap, nil, crawlSteps) -- TODO up dir?
-    if crawlUp then
-        return crawlUp
+        -- Gutter pipes connect to other pipes in the same z level 
+        -- TODO verify above once we allow gutters to connect/support vertical pipes on next z level
+        local northSquare = rootCell:getGridSquare(rootX, rootY - 1, rootZ)
+        if northSquare then
+            neighborSquares[northSquare:getID()] = northSquare
+        end
+
+        local southSquare = rootCell:getGridSquare(rootX, rootY + 1, rootZ)
+        if southSquare then
+            neighborSquares[southSquare:getID()] = southSquare
+        end
+
+        local eastSquare = rootCell:getGridSquare(rootX + 1, rootY, rootZ)
+        if eastSquare then
+            neighborSquares[eastSquare:getID()] = eastSquare
+        end
+
+        local westSquare = rootCell:getGridSquare(rootX - 1, rootY, rootZ)
+        if westSquare then
+            neighborSquares[westSquare:getID()] = westSquare
+        end
     end
 
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
-end
-
----@param square IsoGridSquare
----@param gutterPipeMap GutterPipeMap
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlGutterSquare(square, gutterPipeMap, prevDir, crawlSteps)
-    if not square then return nil end
-
-    local squareProps = square:getProperties()
-    if not utils:isAnyPipeSquare(square, squareProps) then
-        return nil
-    elseif not prevDir and not utils:isVerticalPipeSquare(square, squareProps) and not utils:isDrainPipeSquare(square, squareProps) then
-        -- When no prevDir (coming up from below), ensure a vertical pipe exists before crawling
-        -- This is to prevent horizontal/gutter pipes from being included when there is no vertical pipe to connect them
-        -- TODO provide "up"/"down" prevDir if we want to reverse crawl and navigate top-down
-        return nil
-    end
-
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
-
-    self:crawlHorizontalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
-    self:crawlVerticalPipes(square, squareProps, gutterPipeMap, prevDir, crawlSteps)
-
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
+    return neighborSquares
 end
 
 ---@param square IsoGridSquare
@@ -424,10 +506,32 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     return square
 end
 
--- TODO rename to crawlGutterPipes so that "system" can be used for the entire gutter system including roofs and meta data
----@param square IsoGridSquare
+-- TODO remove after validating new crawlGutterPipes flood fill crawler
+-- ---@param square IsoGridSquare
+-- ---@return GutterPipeMap gutterPipeMap
+-- function isoUtils:crawlGutterSystem(square)
+--     ---@type GutterPipeMap
+--     local gutterPipeMap = {
+--         [enums.pipeType.drain] = {},
+--         [enums.pipeType.vertical] = {},
+--         [enums.pipeType.gutter] = {},
+--         _all = {}, -- All squares that are part of the gutter system
+--         _count = 0, -- Total count of squares in the gutter system
+--         _drain_count = 0, -- Count of drain squares
+--         _vertical_count = 0, -- Count of vertical squares
+--         _gutter_count = 0, -- Count of gutter squares
+--     }
+--     local crawlSteps = 0
+--     self:crawlGutterSquare(square, gutterPipeMap, nil, crawlSteps)
+
+--     gutterPipeMap._count = utils:getDictSize(gutterPipeMap._all)
+
+--     return gutterPipeMap
+-- end
+
+---@param startSquare IsoGridSquare
 ---@return GutterPipeMap gutterPipeMap
-function isoUtils:crawlGutterSystem(square)
+function isoUtils:crawlGutterPipes(startSquare)
     ---@type GutterPipeMap
     local gutterPipeMap = {
         [enums.pipeType.drain] = {},
@@ -440,9 +544,48 @@ function isoUtils:crawlGutterSystem(square)
         _gutter_count = 0, -- Count of gutter squares
     }
     local crawlSteps = 0
-    self:crawlGutterSquare(square, gutterPipeMap, nil, crawlSteps)
+    local visited = {}
+    local queue = {startSquare}
 
+    -- NOTE: deep nesting if because no 'continue' in lua 5.2
+    while #queue > 0 do
+        local square = table.remove(queue, 1)
+        if square then
+            local squareID = square:getID()
+            if not visited[squareID] then
+                -- Mark square as visited
+                visited[squareID] = true
+
+                -- NOTE: crawl fn returns nil if square doesn't have any pipes
+                local nextSquares = self:crawlGutterSquare(square, gutterPipeMap)
+                if nextSquares ~= nil then
+                    -- Update meta
+                    crawlSteps = crawlSteps + 1
+                    gutterPipeMap._all[squareID] = square
+
+                    -- Add the next squares to the queue if they haven't been visited yet and don't already exist in the queue
+                    for _, nextSquare in pairs(nextSquares) do
+                        if not visited[nextSquare:getID()] and not table_contains(queue, nextSquare) then
+                            table_insert(queue, nextSquare)
+                        end
+                    end
+                end
+            end
+        end
+
+        if crawlSteps > enums.maxGutterCrawlSteps then
+            -- Shouldn't hit unless player builds a large system with more gutter objects
+            -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+            utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
+            break
+        end
+    end
+
+    -- Calculate metadata now that we have all the squares
     gutterPipeMap._count = utils:getDictSize(gutterPipeMap._all)
+    gutterPipeMap._drain_count = utils:getDictSize(gutterPipeMap[enums.pipeType.drain]) -- Ignore type hint warning
+    gutterPipeMap._vertical_count = utils:getDictSize(gutterPipeMap[enums.pipeType.vertical]) -- Ignore type hint warning
+    gutterPipeMap._gutter_count = utils:getDictSize(gutterPipeMap[enums.pipeType.gutter]) -- Ignore type hint warning
 
     return gutterPipeMap
 end
