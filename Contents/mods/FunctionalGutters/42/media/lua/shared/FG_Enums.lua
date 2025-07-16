@@ -204,6 +204,7 @@ local function mapPipesByPosition(position)
     return positionPipes
 end
 
+-- TODO rename to pipeSpriteAtlas?
 enums.pipeAtlas = {}
 enums.pipeAtlas.type = {}
 enums.pipeAtlas.type[enums.pipeType.drain] = mapPipesByType(enums.pipeType.drain)
@@ -221,33 +222,12 @@ enums.pipeAtlas.position[IsoDirections.NE] = mapPipesByPosition(IsoDirections.NE
 enums.pipeAtlas.position[IsoDirections.SW] = mapPipesByPosition(IsoDirections.SW)
 enums.pipeAtlas.position[IsoDirections.SE] = mapPipesByPosition(IsoDirections.SE)
 
--- TODO REDO
--- TODO auto source from FeedingTroughDef?
--- NOTE: 'accessories' is misspelled in sprite names
+-- NOTE: filled using vanilla trough definitions after init event
 enums.troughSprites = table.newarray()
--- enums.troughSprites = table.newarray(
---     "location_farm_accesories_01_4", -- Wood Double West
---     "location_farm_accesories_01_5", -- Wood Double West
---     "location_farm_accesories_01_6", -- Wood Double North
---     "location_farm_accesories_01_7", -- Wood Double North
---     "location_farm_accesories_01_14", -- Wood Single West
---     "location_farm_accesories_01_15", -- Wood Single North
---     "location_farm_accesories_01_34", -- Metal Double West
---     "location_farm_accesories_01_35", -- Metal Double West
---     "location_farm_accesories_01_32", -- Metal Double North
---     "location_farm_accesories_01_33" -- Metal Double North
--- )
-
 enums.smallTroughSprites = table.newarray()
--- enums.smallTroughSprites = table.newarray(
---     "location_farm_accesories_01_14", -- Wood Single West
---     "location_farm_accesories_01_15" -- Wood Single North
--- )
-
 enums.primaryTroughSprites = table.newarray()
 enums.northTroughSprites = table.newarray()
 
--- TODO do we need getters since these aren't local variables?
 function enums:getTroughSprites()
     return self.troughSprites
 end
@@ -351,6 +331,7 @@ return enums
 
 -- Map of square ID to IsoGridSquare for a connected roof system
 ---@alias GutterRoofMap table<string, IsoGridSquare> 
+
 ---@alias GutterSection
 ---|{ 
 ---["roofArea"]: integer, 

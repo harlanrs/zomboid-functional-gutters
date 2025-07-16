@@ -182,9 +182,11 @@ function isoUtils:getAdjacentBuilding(square, directions)
 
     for i=1, #directions do
         local adjacentSquare = square:getAdjacentSquare(directions[i])
-        local adjacentBuilding = adjacentSquare:getBuilding()
-        if adjacentBuilding then
-            return adjacentBuilding
+        if adjacentSquare then
+            local adjacentBuilding = adjacentSquare:getBuilding()
+            if adjacentBuilding then
+                return adjacentBuilding
+            end
         end
     end
 
