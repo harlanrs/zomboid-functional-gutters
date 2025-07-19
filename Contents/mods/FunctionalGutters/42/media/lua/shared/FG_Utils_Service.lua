@@ -87,7 +87,7 @@ function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     end
 
     if troughUtils:isTrough(collectorObject) then
-        -- TODO REDO - will need to iterate through all connected troughs to find the drain pipe square
+        -- TODO MULTI - will need to iterate through all connected troughs to find the drain pipe square
         -- Check if the other trough object is located on a square with a drain pipe
         local otherTroughObject = troughUtils:getOtherTroughObject(collectorObject)
         if not otherTroughObject then

@@ -235,7 +235,7 @@ function troughUtils:getSecondaryTrough(troughObject)
     return nil
 end
 
--- TODO REDO
+-- TODO MULTI - will need support for 3+ tile troughs
 ---@param troughObject IsoFeedingTrough|IsoObject
 ---@return IsoFeedingTrough|IsoObject|nil otherTrough
 function troughUtils:getOtherTroughObject(troughObject)
