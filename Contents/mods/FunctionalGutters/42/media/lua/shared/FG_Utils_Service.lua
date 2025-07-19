@@ -28,7 +28,7 @@ function serviceUtils:isValidCollectorObject(object)
         return false
     end
 
-    return troughUtils:isTrough(object) or self:isFluidContainerObject(object)
+    return troughUtils:isTroughObject(object) or self:isFluidContainerObject(object)
 end
 
 ---@param object IsoObject
