@@ -518,7 +518,7 @@ function FG_UI_GutterPanel:reloadInfo()
     end
 
     self.gutterSection = serviceUtils:calculateGutterSection(self.gutterSquare)
-    if not self.gutterSection then
+    if not self.gutterSection or not self.gutterSection.pipeMap then
         self:close()
         return
     end

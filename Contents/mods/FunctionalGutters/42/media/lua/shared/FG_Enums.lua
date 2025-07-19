@@ -204,7 +204,6 @@ local function mapPipesByPosition(position)
     return positionPipes
 end
 
--- TODO rename to pipeSpriteAtlas?
 enums.pipeAtlas = {}
 enums.pipeAtlas.type = {}
 enums.pipeAtlas.type[enums.pipeType.drain] = mapPipesByType(enums.pipeType.drain)
@@ -213,10 +212,10 @@ enums.pipeAtlas.type[enums.pipeType.horizontal] = mapPipesByType(enums.pipeType.
 enums.pipeAtlas.type[enums.pipeType.gutter] = mapPipesByType(enums.pipeType.gutter)
 
 enums.pipeAtlas.position = {}
-enums.pipeAtlas.position[IsoDirections.N] = mapPipesByPosition(IsoDirections.NW)
-enums.pipeAtlas.position[IsoDirections.S] = mapPipesByPosition(IsoDirections.SE)
-enums.pipeAtlas.position[IsoDirections.E] = mapPipesByPosition(IsoDirections.NE)
-enums.pipeAtlas.position[IsoDirections.W] = mapPipesByPosition(IsoDirections.SW)
+enums.pipeAtlas.position[IsoDirections.N] = mapPipesByPosition(IsoDirections.N)
+enums.pipeAtlas.position[IsoDirections.S] = mapPipesByPosition(IsoDirections.S)
+enums.pipeAtlas.position[IsoDirections.E] = mapPipesByPosition(IsoDirections.E)
+enums.pipeAtlas.position[IsoDirections.W] = mapPipesByPosition(IsoDirections.W)
 enums.pipeAtlas.position[IsoDirections.NW] = mapPipesByPosition(IsoDirections.NW)
 enums.pipeAtlas.position[IsoDirections.NE] = mapPipesByPosition(IsoDirections.NE)
 enums.pipeAtlas.position[IsoDirections.SW] = mapPipesByPosition(IsoDirections.SW)
@@ -314,23 +313,29 @@ enums.textures.icon = {
     collectorOff = "media/ui/FG_Collector_Icon_Off.png",
 }
 
-return enums
+---@alias PipeTypeMap 
+---|{ 
+---squares: table<string, IsoGridSquare>, 
+---count: integer, 
+---maxZ: integer }
 
 -- Map of pipe type to list of squares containing a pipe of that type for a connected gutter system
 ---@alias GutterPipeMap 
 ---|{
----[PipeType.drain]: table<string, IsoGridSquare>,
----[PipeType.vertical]: table<string, IsoGridSquare>,
----[PipeType.gutter]: table<string, IsoGridSquare>,
----["_all"]: table<string, IsoGridSquare>,
----["_count"]: integer,
----["_drain_count"]: integer,
----["_vertical_count"]: integer,
----["_gutter_count"]: integer } 
-
+---[PipeType.drain]: PipeTypeMap,
+---[PipeType.vertical]: PipeTypeMap,
+---[PipeType.gutter]: PipeTypeMap,
+---all: PipeTypeMap } 
 
 -- Map of square ID to IsoGridSquare for a connected roof system
----@alias GutterRoofMap table<string, IsoGridSquare> 
+---@alias GutterRoofMap 
+---|{ 
+---squares: table<string, IsoGridSquare>, 
+---count: integer, 
+---maxZ: integer }
+
+-- Map of object ID to IsoObject for all drains from connected or overlapping gutter systems
+---@alias AssociatedDrainMap table<string, IsoObject> 
 
 ---@alias GutterSection
 ---|{ 
@@ -342,7 +347,10 @@ return enums
 ---["pipeMap"]: GutterPipeMap|nil, 
 ---["roofMap"]: GutterRoofMap|nil, 
 ---["buildingType"]: BuildingType|nil, 
+---["drains"]: AssociatedDrainMap|nil, 
 ---["maxLevel"]: integer|nil, 
 ---["averageGutterCapacity"]: integer, 
 ---["overflowArea"]: integer, 
 ---["overflowEfficiency"]: number }
+
+return enums

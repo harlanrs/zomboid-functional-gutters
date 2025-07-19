@@ -68,7 +68,7 @@ function DrainPipeService:onIsValid(buildParams)
     end
 
     -- Requires no existing drain pipe within x tiles (with caveat)
-    local closeDrainPipe = isoUtils:findPipeInRadius(square, 6, enums.pipeType.drain)
+    local closeDrainPipe = isoUtils:findPipeInRadius(square, 3, enums.pipeType.drain)
     if closeDrainPipe then
         -- Check if drain pipe in on the same pre-made building as the selected drain square
         -- Allows for placing drains closer together when they are part of different nearby buildings
