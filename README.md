@@ -120,6 +120,17 @@ If true, prints debug messages to the console and adds an additional context men
 - Add gutter system ui panel
 - Add newspaper classified ad for in-game tutorial
 
+### 1.3
+- Much improved pipe & roof mapping
+    - Previously for pre-existing structures: all gutter systems on the same building were considered 'associated'
+    - Previously for player-built structures: all gutter systems in the vicinity were considered 'associated'
+    - Now: only gutter systems with connected pipes or overlapping roofs are 'associated'
+- Reduced the radius of the restriction zone when building a new drain near existing drains from 6 to 3 
+    - Originally was a stop-gap solution to prevent some unbalanced/unrealistic edge case setups
+    - Decreased now as the new mapping systems solves most of the avenues for abuse
+    - Might decrease or remove completely in future updates
+- Updates to match changes in vanilla animal trough definitions from 42.10
+
 ## Next Steps
 ### TODO Medium Priority 
 - Update README to better reflect 1.2 updates

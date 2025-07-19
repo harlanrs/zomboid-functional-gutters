@@ -4,7 +4,6 @@ local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local serviceUtils = require("FG_Utils_Service")
 local troughUtils = require("FG_Utils_Trough")
-local globalObjectUtils = require("FG_Utils_GlobalObject")
 local gutterService = require("FG_Service")
 
 local GutterServerManager = {}
@@ -44,26 +43,6 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
     end
 end
 
-local function loadTroughGlobalObject(object)
-    -- Wrap load full trough function to trigger event if trough is on a drain pipe square
-    local primaryTrough, secondaryTrough = globalObjectUtils:loadFullTrough(object)
-    if not primaryTrough then
-        return nil
-    end
-
-    local primaryTroughSquare = primaryTrough:getSquare()
-    if utils:isDrainPipeSquare(primaryTroughSquare) then
-        -- Primary trough is on drain pipe square
-        triggerEvent(enums.modEvents.OnGutterTileUpdate, primaryTroughSquare)
-    elseif secondaryTrough then
-        local secondaryTroughSquare = secondaryTrough:getSquare()
-        if utils:isDrainPipeSquare(secondaryTroughSquare) then
-            -- Secondary trough is on drain pipe square
-            triggerEvent(enums.modEvents.OnGutterTileUpdate, secondaryTroughSquare)
-        end
-    end
-end
-
 function GutterServerManager.OnIsoObjectBuilt(square, sprite)
     -- React to the creation of a new iso object on a tile
     local checkDrainPipes = false
@@ -95,7 +74,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         -- Trough was built, check if it is multi-tile
         local troughObject = utils:getSpecificIsoObjectFromSquare(square, sprite)
         if troughObject then
-            -- TODO eventually use generic sprite grid instead of trough-specific to support other multi-tile objects
+            -- TODO MULTI - eventually use generic sprite grid instead of trough-specific to support other multi-tile objects
             local otherTroughObject = troughUtils:getOtherTroughObject(troughObject)
             if otherTroughObject then
                 -- Check if other trough object is on a drain pipe square
@@ -158,9 +137,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         end
     end
 
-    if loadTroughGlobalObject(placedObject) then
-        -- Trough was placed and converted to a global object
-    elseif utils:getModDataIsGutterConnected(placedObject) then
+    if utils:getModDataIsGutterConnected(placedObject) then
         -- Can't properly clean up all object types on pickup so have to check here for placement
         gutterService:disconnectCollector(placedObject)
     end

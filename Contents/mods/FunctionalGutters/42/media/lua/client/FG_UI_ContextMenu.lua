@@ -10,7 +10,8 @@ end
 
 local function AddGutterSystemPanelOption(player, context, drainObject)
     local playerObject = getSpecificPlayer(player)
-    context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, DoOpenGutterPanel, drainObject)
+    local option = context:addOption(getText("UI_context_menu_FunctionalGutters_GutterSubMenu"), playerObject, DoOpenGutterPanel, drainObject)
+    option.iconTexture = getTexture("media/ui/FG_Plumb_Icon.png")
 end
 
 local function AddGutterSystemContext(player, context, worldobjects, test)

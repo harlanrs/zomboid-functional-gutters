@@ -41,21 +41,13 @@ description=  [*]Enjoy the benefits of a highly-efficient rain collector system.
 description=[/olist]
 description=
 description=[h3]Pre-Existing Structures[/h3]
-
-description=Pre-existing structures already have roof gutters meaning you won't have to build your own. To tap into these roof gutters, you will either need to find a building with an existing drain pipe or build a new drain pipe. 
-
+description=Pre-existing structures already have roof gutters meaning you won't have to build your own. To tap into these roof gutters, you will either need to find a building with an existing drain pipe or build a new drain pipe.
 description=
-
 description=On its own a drain pipe will reach the next level above. Additional vertical pipes can be built on top of the drain pipe to access roofs on higher floor levels.
-
 description=
-
 description=[h3]Player-Built Structures[/h3]
-
-description=Unlike pre-existing structures, player-built structures will require horizontal gutter pipes to expand the size of the roof's area being covered by the drain pipe. Each gutter pipe can collect rain from up to 4 grid-squares from its attachment point in a line. A roof square will be considered valid if it has a floor, isn't covered by a roof, and isn't occupied by an item such as a rain collector. 
-
+description=Unlike pre-existing structures, player-built structures will require horizontal gutter pipes to expand the size of the roof's area being covered by the drain pipe. Each gutter pipe can collect rain from up to 4 grid-squares from its attachment point in a line. A roof square will be considered valid if it has a floor, isn't covered by a roof, and isn't occupied by an item such as a rain collector.
 description=
-
 description=Use the "View Pipes" and "View Roof" buttons in the gutter ui panel to help visualize the connected pipes and covered roof area.
 description=
 description=[h2]Mod Settings[/h2]

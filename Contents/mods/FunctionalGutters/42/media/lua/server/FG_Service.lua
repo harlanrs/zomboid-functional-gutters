@@ -75,7 +75,7 @@ function gutterService:connectCollector(collectorObject)
     end
 
     local gutterSection = serviceUtils:calculateGutterSection(square)
-    if not gutterSection then
+    if not gutterSection or not gutterSection.pipeMap then
         utils:modPrint("No gutter section found for square: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
         return
     end

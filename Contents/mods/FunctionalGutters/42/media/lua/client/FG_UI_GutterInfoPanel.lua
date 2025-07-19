@@ -27,23 +27,24 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
     local c = self.textColor
     self:renderText(getText("UI_panel_FunctionalGutters_section_Pipes_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
-    if not self.gutterSection or not self.gutterSection.pipeMap == nil then
+    if not self.gutterSection or not self.gutterSection.pipeMap then
         return
     end
+
     local pipeMap = self.gutterSection.pipeMap
-    local drainCount = #pipeMap[enums.pipeType.drain]
+    local drainCount = pipeMap[enums.pipeType.drain].count
     if self.pipeInfo.drain.cache~=drainCount then
         self.pipeInfo.drain.cache = drainCount
         self.pipeInfo.drain.value = tostring(drainCount)
     end
 
-    local verticalCount = #pipeMap[enums.pipeType.vertical]
+    local verticalCount = pipeMap[enums.pipeType.vertical].count
     if self.pipeInfo.vertical.cache~=verticalCount then
         self.pipeInfo.vertical.cache = verticalCount
         self.pipeInfo.vertical.value = tostring(verticalCount)
     end
 
-    local gutterCount = #pipeMap[enums.pipeType.gutter]
+    local gutterCount = pipeMap[enums.pipeType.gutter].count
     if self.pipeInfo.gutter.cache~=gutterCount then
         self.pipeInfo.gutter.cache = gutterCount
         self.pipeInfo.gutter.value = tostring(gutterCount)
@@ -293,19 +294,22 @@ end
 function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
     if not self.gutterSection.pipeMap then return end
 
-    for _, pipeTypeSquares in pairs(self.gutterSection.pipeMap) do
-        for i=1, #pipeTypeSquares do
-            local pipeSquare = pipeTypeSquares[i]
-            self:highlightGutterObject(pipeSquare, highlight)
-        end
+    if not self.gutterSection.pipeMap.all then
+        utils:modPrint("No gutter pipe map found for section: "..tostring(self.gutterSection))
+        return
     end
+
+    for _, pipeSquare in pairs(self.gutterSection.pipeMap.all.squares) do
+        self:highlightGutterObject(pipeSquare, highlight)
+    end
+
     self.gutterHighlight = highlight
 end
 
 function FG_UI_GutterInfoPanel:highlightRoofArea(highlight)
     if not self.gutterSection.roofMap then return end
 
-    for _, roofSquare in pairs(self.gutterSection.roofMap) do
+    for _, roofSquare in pairs(self.gutterSection.roofMap.squares) do
         self:highlightCoveredRoof(roofSquare, highlight)
     end
     self.roofAreaHighlight = highlight
@@ -346,6 +350,13 @@ function FG_UI_GutterInfoPanel:reloadInfo()
     self.square = self.gutterDrain:getSquare()
 end
 
+---@param x integer
+---@param y integer
+---@param width integer
+---@param height integer
+---@param gutter IsoObject
+---@param gutterSection GutterSection
+---@return ISPanel
 function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     local o = {}
     o = ISPanel:new(x, y, width, height)
@@ -361,7 +372,10 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
     o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
 
+    ---@type IsoObject
     o.gutterDrain = gutter
+
+    ---@type GutterSection
     o.gutterSection = gutterSection
 
     o.gutterHighlight = false

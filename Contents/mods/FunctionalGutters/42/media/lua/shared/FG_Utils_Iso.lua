@@ -182,9 +182,11 @@ function isoUtils:getAdjacentBuilding(square, directions)
 
     for i=1, #directions do
         local adjacentSquare = square:getAdjacentSquare(directions[i])
-        local adjacentBuilding = adjacentSquare:getBuilding()
-        if adjacentBuilding then
-            return adjacentBuilding
+        if adjacentSquare then
+            local adjacentBuilding = adjacentSquare:getBuilding()
+            if adjacentBuilding then
+                return adjacentBuilding
+            end
         end
     end
 
@@ -229,160 +231,129 @@ function isoUtils:getBuildingFloorArea(buildingDef, z)
 end
 
 ---@param square IsoGridSquare
----@param squareProps PropertyContainer
----@param gutterSystemMap table
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlHorizontalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
-    if not square then return nil end
+---@param pipeMap GutterPipeMap
+---@return table<string, IsoGridSquare>|nil
+function isoUtils:crawlGutterSquare(square, pipeMap)
+    local squareProps = square:getProperties()
 
     local hasGutterPipe = utils:isGutterPipeSquare(square, squareProps)
-    if not hasGutterPipe then
-        return nil
-    end
-
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
-
-    -- Try following gutter pipes north, south, east, west
-    local _, squareGutter, spriteName, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.gutter)
-    if squareGutter then
-        table_insert(gutterSystemMap[enums.pipeType.gutter], square)
-
-        local spriteDef = enums.pipes[spriteName]
-        if spriteDef.position == localIsoDirections.N or spriteDef.position == localIsoDirections.NW then
-            local crawlWest = nil
-            local crawlEast = nil
-
-            -- Check west
-            if prevDir ~= localIsoDirections.E then
-                local westSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
-                crawlWest = self:crawlGutterSquare(westSquare, gutterSystemMap, localIsoDirections.W, crawlSteps)
-            end
-
-            -- Check east
-            if prevDir ~= localIsoDirections.W then
-                local eastSquare = getCell():getGridSquare(square:getX() + 1, square:getY(), square:getZ())
-                crawlEast = self:crawlGutterSquare(eastSquare, gutterSystemMap, localIsoDirections.E, crawlSteps)
-            end
-        end
-
-        if spriteDef.position == localIsoDirections.W or spriteDef.position == localIsoDirections.NW then
-            local crawlNorth = nil
-            local crawlSouth = nil
-
-            -- Check north
-            if prevDir ~= localIsoDirections.S then
-                local northSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
-                crawlNorth = self:crawlGutterSquare(northSquare, gutterSystemMap, localIsoDirections.N, crawlSteps)
-            end
-
-            -- Check south
-            if prevDir ~= localIsoDirections.N then
-                local southSquare = getCell():getGridSquare(square:getX(), square:getY() + 1, square:getZ())
-                crawlSouth = self:crawlGutterSquare(southSquare, gutterSystemMap, localIsoDirections.S, crawlSteps)
-            end
-        end
-    end
-
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
-end
-
----@param square IsoGridSquare
----@param squareProps PropertyContainer
----@param gutterSystemMap table
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
-    if not square then return nil end
-
-    local hasDrainPipe = utils:isDrainPipeSquare(square, squareProps)
     local hasVerticalPipe = utils:isVerticalPipeSquare(square, squareProps)
-    if not hasVerticalPipe and not hasDrainPipe then
+    local hasDrainPipe = utils:isDrainPipeSquare(square, squareProps)
+    -- local hasHorizontalPipe = utils:isHorizontalPipeSquare(square, squareProps) -- NOTE: horizontal pipes don't currently exist beyond gutters
+
+    if not hasGutterPipe and not hasVerticalPipe and not hasDrainPipe then
         return nil
     end
 
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
+    ---@type table<string, IsoGridSquare>
+    local neighborSquares = {}
+    local squareID = square:getID()
+    local rootCell = square:getCell()
+    local rootX, rootY, rootZ = square:getX(), square:getY(), square:getZ()
 
     if hasDrainPipe then
-        table_insert(gutterSystemMap[enums.pipeType.drain], square)
+        -- Record in drain pipe map
+        local drainMap = pipeMap[enums.pipeType.drain]
+        if not drainMap.squares[squareID] then
+            drainMap.squares[squareID] = square
+            drainMap.count = drainMap.count + 1
+
+            if rootZ > drainMap.maxZ then
+                drainMap.maxZ = rootZ
+            end
+        end
+
+        -- Drain pipes only connect to other pipes above
+        local topSquare = rootCell:getGridSquare(rootX, rootY, rootZ + 1)
+        if topSquare then
+            neighborSquares[topSquare:getID()] = topSquare
+        end
     end
+
     if hasVerticalPipe then
-        table_insert(gutterSystemMap[enums.pipeType.vertical], square)
+        -- Record in vertical pipe map
+        local verticalMap = pipeMap[enums.pipeType.vertical]
+        if not verticalMap.squares[squareID] then
+            verticalMap.squares[squareID] = square
+            verticalMap.count = verticalMap.count + 1
+
+            if rootZ > verticalMap.maxZ then
+                verticalMap.maxZ = rootZ
+            end
+        end
+
+        -- Vertical pipes only connect to other pipes above and below
+        local topSquare = rootCell:getGridSquare(rootX, rootY, rootZ + 1)
+        if topSquare then
+            neighborSquares[topSquare:getID()] = topSquare
+        end
+
+        local bottomSquare = rootCell:getGridSquare(rootX, rootY, rootZ - 1)
+        if bottomSquare then
+            neighborSquares[bottomSquare:getID()] = bottomSquare
+        end
     end
 
-    -- Following vertical pipes up z levels
-    local nextSquare = getCell():getGridSquare(square:getX(), square:getY(), square:getZ() + 1)
-    local crawlUp = self:crawlGutterSquare(nextSquare, gutterSystemMap, nil, crawlSteps) -- TODO up dir?
-    if crawlUp then
-        return crawlUp
+    if hasGutterPipe then
+        -- Record in gutter pipe map
+        local gutterMap = pipeMap[enums.pipeType.gutter]
+        if not gutterMap.squares[squareID] then
+            gutterMap.squares[squareID] = square
+            gutterMap.count = gutterMap.count + 1
+
+            if rootZ > gutterMap.maxZ then
+                gutterMap.maxZ = rootZ
+            end
+        end
+
+        -- Gutter pipes connect to other pipes in the same z level 
+        -- TODO verify above once we allow gutters to connect/support vertical pipes on next z level
+        local northSquare = rootCell:getGridSquare(rootX, rootY - 1, rootZ)
+        if northSquare then
+            neighborSquares[northSquare:getID()] = northSquare
+        end
+
+        local southSquare = rootCell:getGridSquare(rootX, rootY + 1, rootZ)
+        if southSquare then
+            neighborSquares[southSquare:getID()] = southSquare
+        end
+
+        local eastSquare = rootCell:getGridSquare(rootX + 1, rootY, rootZ)
+        if eastSquare then
+            neighborSquares[eastSquare:getID()] = eastSquare
+        end
+
+        local westSquare = rootCell:getGridSquare(rootX - 1, rootY, rootZ)
+        if westSquare then
+            neighborSquares[westSquare:getID()] = westSquare
+        end
     end
 
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
+    if not pipeMap.all.squares[squareID] then
+        -- Add square to all squares map
+        pipeMap.all.squares[squareID] = square
+        pipeMap.all.count = pipeMap.all.count + 1
+
+        if rootZ > pipeMap.all.maxZ then
+             pipeMap.all.maxZ = rootZ
+        end
+    end
+
+    return neighborSquares
 end
 
 ---@param square IsoGridSquare
----@param gutterSystemMap table
----@param prevDir IsoDirections|nil
----@param crawlSteps integer|nil
----@return IsoGridSquare|nil
-function isoUtils:crawlGutterSquare(square, gutterSystemMap, prevDir, crawlSteps)
-    if not square then return nil end
-
-    local squareProps = square:getProperties()
-    if not utils:isAnyPipeSquare(square, squareProps) then
-        return nil
-    elseif not prevDir and not utils:isVerticalPipeSquare(square, squareProps) and not utils:isDrainPipeSquare(square, squareProps) then
-        -- When no prevDir (coming up from below), ensure a vertical pipe exists before crawling
-        -- This is to prevent horizontal/gutter pipes from being included when there is no vertical pipe to connect them
-        -- TODO provide "up"/"down" prevDir if we want to reverse crawl and navigate top-down
-        return nil
-    end
-
-    if not crawlSteps then crawlSteps = 0 end
-    crawlSteps = crawlSteps + 1
-    if crawlSteps > enums.maxGutterCrawlSteps then
-        -- Shouldn't hit unless player builds a large system with more gutter objects
-        -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-        utils:modPrint("Crawl steps exceeded "..tostring(enums.maxGutterCrawlSteps))
-        return square
-    end
-
-    self:crawlHorizontalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
-    self:crawlVerticalPipes(square, squareProps, gutterSystemMap, prevDir, crawlSteps)
-
-    -- TODO rethink response now that we check forked paths and won't have a singular final square
-    return square
-end
-
----@param square IsoGridSquare
----@param roofMap table
+---@param roofMap GutterRoofMap
 ---@param dir IsoDirections|nil
 ---@param crawlSteps integer|nil
 ---@return IsoGridSquare|nil
-function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps)
+function isoUtils:crawlCustomBuildingRoofSquare(square, roofMap, dir, crawlSteps)
     if not square then
         utils:modPrint("No square found")
         return nil
     end
 
+    local squareZ = square:getZ()
     local squareModData = square:getModData()
     local isValidPlayerBuiltFloor = self:isValidPlayerBuiltFloor(square)
     if not isValidPlayerBuiltFloor then
@@ -393,7 +364,15 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
         end
     else
         -- Add square to roof map
-        roofMap[square:getID()] = square
+        local squareID = square:getID()
+        if not roofMap.squares[squareID] then
+            roofMap.squares[squareID] = square
+            roofMap.count = roofMap.count + 1
+
+            if squareZ > roofMap.maxZ then
+                roofMap.maxZ = squareZ
+            end
+        end
 
         -- Add/sync the square's mod data
         squareModData[enums.modDataKey.isRoofSquare] = true
@@ -408,11 +387,11 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     -- Crawl to the next square
     local nextSquare
     if dir == IsoDirections.N then
-        nextSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, square:getZ())
+        nextSquare = getCell():getGridSquare(square:getX(), square:getY() - 1, squareZ)
     else
-        nextSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), square:getZ())
+        nextSquare = getCell():getGridSquare(square:getX() - 1, square:getY(), squareZ)
     end
-    local crawlNext = self:crawlPlayerBuildingRoofSquare(nextSquare, roofMap, dir, crawlSteps) -- TODO up dir?
+    local crawlNext = self:crawlCustomBuildingRoofSquare(nextSquare, roofMap, dir, crawlSteps) -- TODO up dir?
     if crawlNext then
         return crawlNext
     end
@@ -421,42 +400,100 @@ function isoUtils:crawlPlayerBuildingRoofSquare(square, roofMap, dir, crawlSteps
     return square
 end
 
----@param square any
----@return table pipeMap
-function isoUtils:crawlGutterSystem(square)
-    local gutterSystemMap = {
-        [enums.pipeType.drain] = table.newarray(),
-        [enums.pipeType.vertical] = table.newarray(),
-        [enums.pipeType.gutter] = table.newarray()
+---@param startSquare IsoGridSquare
+---@return GutterPipeMap gutterPipeMap
+function isoUtils:crawlGutterPipes(startSquare)
+    ---@type GutterPipeMap
+    local gutterPipeMap = {
+        [enums.pipeType.drain] = {
+            squares = {},
+            count = 0,
+            maxZ = 0
+        },
+        [enums.pipeType.vertical] = {
+            squares = {},
+            count = 0,
+            maxZ = 0
+        },
+        [enums.pipeType.gutter] = {
+            squares = {},
+            count = 0,
+            maxZ = 0
+        },
+        all = {
+            squares = {},
+            count = 0,
+            maxZ = 0
+        },
     }
     local crawlSteps = 0
-    self:crawlGutterSquare(square, gutterSystemMap, nil, crawlSteps)
-    return gutterSystemMap
-end
+    local visited = {}
+    local queue = {startSquare}
+    local queued = {[startSquare:getID()] = true} -- Track queued squares to avoid duplicates
 
----@param square any
----@param pipeMap table
----@return boolean
-function isoUtils:isSquareInGutterPipeMap(square, pipeMap)
-    for _, pipeSquares in pairs(pipeMap) do
-        for i=1, #pipeSquares do
-            local gutterSquare = pipeSquares[i]
-            if square:getID() == gutterSquare:getID() then
-                return true
+    -- NOTE: deep nesting if because no 'continue' in lua 5.2
+    while #queue > 0 do
+        local square = table.remove(queue, 1) -- Remove from queue list
+        if square then
+            local squareID = square:getID()
+            queued[squareID] = nil -- Remove from queued ref dict
+            if not visited[squareID] then
+                -- Mark square as visited
+                visited[squareID] = true
+
+                -- NOTE: crawl fn returns nil if square doesn't have any pipes
+                local nextSquares = self:crawlGutterSquare(square, gutterPipeMap)
+                if nextSquares ~= nil then
+                    -- Update meta
+                    crawlSteps = crawlSteps + 1
+
+                    -- Add the next squares to the queue if they haven't been visited yet and don't already exist in the queue
+                    for _, nextSquare in pairs(nextSquares) do
+                        local nextSquareID = nextSquare:getID()
+                        if not visited[nextSquareID] and not queued[nextSquareID] then
+                            table_insert(queue, nextSquare)
+                        end
+                    end
+                end
             end
         end
+
+        if crawlSteps > enums.maxGutterCrawlSteps then
+            -- Shouldn't hit unless player builds a large system with more gutter objects
+            -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
+            utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
+            break
+        end
+    end
+
+    return gutterPipeMap
+end
+
+---@param square IsoGridSquare
+---@param pipeMap GutterPipeMap
+---@return boolean
+function isoUtils:isSquareInGutterPipeMap(square, pipeMap)
+    local squareID = square:getID()
+
+    if pipeMap.all.squares[squareID] then
+        return true
     end
 
     return false
 end
 
----@param pipeMap table
----@return table<IsoGridSquare>
-function isoUtils:getPlayerBuildingRoofSquares(pipeMap)
-    local validRoofSquares = {}
+---@param pipeMap GutterPipeMap
+---@return GutterRoofMap roofMap
+function isoUtils:crawlCustomBuildingRoof(pipeMap)
+    ---@type GutterRoofMap
+    local roofMap = {
+        squares = {},
+        count = 0,
+        maxZ = 0
+    }
 
-    for i=1, #pipeMap[enums.pipeType.gutter] do
-        local gutterSquare = pipeMap[enums.pipeType.gutter][i]
+    local gutterMap = pipeMap[enums.pipeType.gutter]
+    for _, gutterSquare in pairs(gutterMap.squares) do
         local _, _, spriteName, _ = utils:getSpriteCategoryMemberOnTile(gutterSquare, enums.pipeType.gutter)
         if not spriteName then
             -- Shouldn't happen but check just in case
@@ -472,7 +509,7 @@ function isoUtils:getPlayerBuildingRoofSquares(pipeMap)
             local attachedRoofX = gutterSquare:getX()
             local attachedRoofY = gutterSquare:getY() - 1
             local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
-            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofSquares, IsoDirections.N, squareCrawlSteps)
+            self:crawlCustomBuildingRoofSquare(attachedRoofSquare, roofMap, IsoDirections.N, squareCrawlSteps)
         end
 
         if spriteDef.position == IsoDirections.W or fullCornerSprite then
@@ -480,28 +517,22 @@ function isoUtils:getPlayerBuildingRoofSquares(pipeMap)
             local attachedRoofX = gutterSquare:getX() - 1
             local attachedRoofY = gutterSquare:getY()
             local attachedRoofSquare = getCell():getGridSquare(attachedRoofX, attachedRoofY, gutterSquare:getZ() + 1)
-            self:crawlPlayerBuildingRoofSquare(attachedRoofSquare, validRoofSquares, IsoDirections.W, squareCrawlSteps)
+            self:crawlCustomBuildingRoofSquare(attachedRoofSquare, roofMap, IsoDirections.W, squareCrawlSteps)
         end
     end
 
-    return validRoofSquares
+    return roofMap
 end
 
----@param pipeMap table
----@return integer roofArea, table<IsoGridSquare> roofSquares
-function isoUtils:getPlayerBuildingRoofArea(square, pipeMap)
+---@param square IsoGridSquare
+---@param pipeMap GutterPipeMap|nil
+---@return GutterRoofMap roofMap
+function isoUtils:getCustomBuildingRoofMap(square, pipeMap)
     if not pipeMap then
-        pipeMap = self:crawlGutterSystem(square)
+        pipeMap = self:crawlGutterPipes(square)
     end
 
-    local roofSquares = self:getPlayerBuildingRoofSquares(pipeMap)
-
-    local totalArea = 0
-    for k, v in pairs(roofSquares) do
-        totalArea = totalArea + 1
-    end
-
-    return totalArea, roofSquares
+    return self:crawlCustomBuildingRoof(pipeMap)
 end
 
 ---@param square IsoGridSquare
@@ -529,6 +560,7 @@ function isoUtils:findGutterTopLevel(square)
 end
 
 ---@param square IsoGridSquare
+---@return IsoBuilding|nil
 function isoUtils:getAttachedBuilding(square)
     -- Check square directly
     local squareBuilding = square:getBuilding()
@@ -540,186 +572,191 @@ function isoUtils:getAttachedBuilding(square)
     return self:getAdjacentBuilding(square)
 end
 
----@param pipeMap table
-function isoUtils:getGutterTopLevel(pipeMap)
-    local topLevel = 0
-    for pipeType, pipeSquares in pairs(pipeMap) do
-        if pipeType == enums.pipeType.drain or pipeType == enums.pipeType.vertical then
-            -- Only check vertical or drain pipes
-            for i=1, #pipeSquares do
-                local gutterSquare = pipeSquares[i]
-                local squareZ = gutterSquare:getZ()
-                if squareZ > topLevel then
-                    topLevel = squareZ
-                end
-            end
-        end
-    end
+---@param pipeMap GutterPipeMap
+---@param roofZ integer
+---@return table<string, IsoGridSquare> roofSeedSquares
+function isoUtils:findGutterRoofSeedSquares(pipeMap, roofZ)
+    -- Find all 'neighbor' squares for pipes that collect from roofZ level
+    -- NOTE: roofZ is the level above the gutter z level
+    local roofSeedSquares = {}
 
-    return topLevel
-end
-
----@param buildingDef BuildingDef
----@param zLevel integer
----@return table<IsoGridSquare> floorSquares
-function isoUtils:getVanillaBuildingFloorSquares(buildingDef, zLevel)
-    local floorSquares = {}
-    local buildingDefRooms = buildingDef:getRooms()
-    for i=0, buildingDefRooms:size() - 1 do
-        local roomDef  = buildingDefRooms:get(i)
-        local roomZ = roomDef:getZ()
-        if roomZ == zLevel then
-            if roomDef:isEmptyOutside() then
-                -- Ignore empty outside rooms
-                utils:modPrint("Room is empty outside: "..tostring(roomDef:getID()))
-            else
-                local isoRoom = roomDef:getIsoRoom()
-                if isoRoom then
-                    local roomSquares = isoRoom:getSquares()
-                    for j=0, roomSquares:size() - 1 do
-                        local square = roomSquares:get(j)
-                        floorSquares[square:getID()] = square
-                    end
-                end
-            end
-        end
-    end
-
-    return floorSquares
-end
-
----@param square IsoGridSquare
----@param pipeMap table
----@param building IsoBuilding
----@return integer roofArea, table<IsoGridSquare> roofSquares
-function isoUtils:getVanillaBuildingRoofAreaFromFloors(square, pipeMap, building)
-    -- NOTE: not used atm because building bounds strategy is more accurate for a broader set of configurations
-    if not pipeMap then
-        pipeMap = self:crawlGutterSystem(square)
-    end
-
-    local topGutterFloor = self:getGutterTopLevel(pipeMap)
-    local buildingDef = building:getDef()
-    local floorSquares = self:getVanillaBuildingFloorSquares(buildingDef, topGutterFloor)
-    local maxZ = buildingDef:getMaxLevel()
-    local roofArea = 0
-    local roofSquares = {}
-
-    for _, floorSquare in pairs(floorSquares) do
-        local squareX = floorSquare:getX()
-        local squareY = floorSquare:getY()
-        local squareZ = floorSquare:getZ()
-        local roofSquare = getCell():getGridSquare(squareX, squareY, squareZ + 1)
-        if squareZ == maxZ then
-            -- If the square is at the max level, then we can assume the square above is a valid roof
-            roofArea = roofArea + 1
-            roofSquares[roofSquare:getID()] = roofSquare
-        else
-            -- Otherwise check if the square above is valid
-            if self:isValidRoofSquare(roofSquare) then
-                roofArea = roofArea + 1
-                roofSquares[roofSquare:getID()] = roofSquare
-            end
-        end
-    end
-
-    return roofArea, roofSquares
-end
-
----@param square IsoGridSquare
----@param pipeMap table
----@param building IsoBuilding
----@return integer roofArea, table<IsoGridSquare> roofSquares
-function isoUtils:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building)
-    -- NOTE: "bounds" strategy is generally more accurate for a broader set of configurations compared to "rooms" strategy 
-    -- but might be less performant for buildings that generate a large bounding rect compared to what space is actually occupied by the structure
-    if not pipeMap then
-        pipeMap = self:crawlGutterSystem(square)
-    end
-
-    local topGutterFloor = self:getGutterTopLevel(pipeMap)
-    local buildingDef = building:getDef()
-    local buildingBounds = {
-        x = buildingDef:getX(),
-        y = buildingDef:getY(),
-        x2 = buildingDef:getX2(),
-        y2 = buildingDef:getY2(),
-        w = buildingDef:getW(),
-        h = buildingDef:getH(),
+    local neighborDirections = {
+        localIsoDirections.N,
+        localIsoDirections.S,
+        localIsoDirections.E,
+        localIsoDirections.W,
+        localIsoDirections.NE,
+        localIsoDirections.NW
     }
-    local buildingDefId = buildingDef:getID() -- NOTE: different from IsoBuilding ID
-    local maxZ = buildingDef:getMaxLevel()
-    local minZ = buildingDef:getMinLevel()
-    local roofZ = topGutterFloor > maxZ and maxZ + 1 or topGutterFloor + 1
-    local roofArea = 0
-    local roofSquares = {}
 
-    local startX = buildingBounds.x
-    local startY = buildingBounds.y
-    local metaGrid = getWorld():getMetaGrid()
-    for x = 0, buildingBounds.w do
-        for y = 0, buildingBounds.h do
-            local squareX = startX + x
-            local squareY = startY + y
-
-            -- Verify square is 'associated' with the building
-            -- Roof squares are not in the bounds of the IsoBuilding but will still be associated with it from a meta grid perspective
-            -- Additionally, building bounds might intersect or overlap so we need to ensure roofs from other buildings are not included
-            local associatedBuilding = metaGrid:getAssociatedBuildingAt(squareX, squareY)
-            if associatedBuilding and associatedBuilding:getID() == buildingDefId then
-                local roofSquare = getCell():getGridSquare(squareX, squareY, roofZ)
-                -- Check if the square is valid to be considered a roof square
-                if roofSquare and self:isValidRoofSquare(roofSquare) then
-                    -- If the square doesn't have a floor, it might still be a valid roof but requires additional checks
-                    if not roofSquare:getFloor() then
-                        -- Verify the square is associated with a room on the min z level of the building (generally the 'ground' floor has the largest area of rooms)
-                        -- TODO check if this is the best way to determine if a square is part of a room as there are some holes
-                        -- maybe just check the square directly below for being inside or outside? if outside then ignore it
-                        local downSquare = getCell():getGridSquare(squareX, squareY, roofZ - 1)
-                        if downSquare and not downSquare:isOutside() then
-                            roofArea = roofArea + 1
-                            roofSquares[roofSquare:getID()] = roofSquare
-                        end
-                    else
-                        roofArea = roofArea + 1
-                        roofSquares[roofSquare:getID()] = roofSquare
+    for _, pipeSquare in pairs(pipeMap.all.squares) do
+        if pipeSquare:getZ() + 1 == roofZ then
+            -- Check if the square is valid for starting the flood fill
+            local aboveSquare = getCell():getGridSquare(pipeSquare:getX(), pipeSquare:getY(), roofZ)
+            if aboveSquare then
+                for _, direction in ipairs(neighborDirections) do
+                    local neighborSquare = aboveSquare:getAdjacentSquare(direction)
+                    if neighborSquare then
+                        roofSeedSquares[neighborSquare:getID()] = neighborSquare
                     end
                 end
             end
-
-            -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
-            if y >= enums.maxBuildingBoundCrawlSteps then break end
         end
-
-        -- Don't crawl the entirety of extremely large buildings (25x25 = 625 squares)
-        if x >= enums.maxBuildingBoundCrawlSteps then break end
     end
 
-    return roofArea, roofSquares
+    return roofSeedSquares
 end
 
 ---@param square IsoGridSquare
----@param pipeMap table
----@return integer roofArea, table<IsoGridSquare> roofSquares, "vanilla"|"custom" buildingType
-function isoUtils:getGutterRoofArea(square, pipeMap)
+---@return table<IsoGridSquare>
+function isoUtils:findRoofNeighborSquares(square)
+    -- Find all neighbors of the square at the specified roof level
+    local roofNeighborSquares = {}
+    local neighborDirections = {
+        localIsoDirections.N,
+        localIsoDirections.S,
+        localIsoDirections.E,
+        localIsoDirections.W,
+    }
+
+    for _, direction in ipairs(neighborDirections) do
+        local neighborSquare = square:getAdjacentSquare(direction)
+        if neighborSquare then
+            table_insert(roofNeighborSquares, neighborSquare)
+        end
+    end
+
+    return roofNeighborSquares
+end
+
+---@param square IsoGridSquare
+---@param buildingDefId integer
+---@return boolean
+function isoUtils:isValidVanillaRoofSquare(square, buildingDefId)
+    -- Verify square is 'associated' with the building
+    -- Roof squares are not in the bounds of the IsoBuilding but will still be associated with it from a meta grid perspective
+    -- Additionally, building bounds might intersect or overlap so we need to ensure roofs from other buildings are not included
+    if not square then
+        return false
+    end
+
+    local squareX = square:getX()
+    local squareY = square:getY()
+    local squareZ = square:getZ()
+    local metaGrid = getWorld():getMetaGrid()
+    local associatedBuilding = metaGrid:getAssociatedBuildingAt(squareX, squareY)
+    if associatedBuilding and associatedBuilding:getID() == buildingDefId then
+        -- Check if the square is valid to be considered a roof square
+        if self:isValidRoofSquare(square) then
+            -- If the square doesn't have a floor, it might still be a valid roof but requires additional checks
+            if not square:getFloor() then
+                -- Verify the square is associated with a room on the min z level of the building (generally the 'ground' floor has the largest area of rooms)
+                -- TODO check if this is the best way to determine if a square is part of a room as there are some holes
+                -- maybe just check the square directly below for being inside or outside? if outside then ignore it
+                local downSquare = getCell():getGridSquare(squareX, squareY, squareZ - 1)
+                if downSquare and not downSquare:isOutside() then
+                    return true
+                end
+            else
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+---@param square IsoGridSquare
+---@param pipeMap GutterPipeMap|nil
+---@param building IsoBuilding
+---@return GutterRoofMap roofMap
+function isoUtils:getVanillaBuildingRoofMap(square, pipeMap, building)
+    if not pipeMap then
+        pipeMap = self:crawlGutterPipes(square)
+    end
+
+    local topGutterFloor = pipeMap.all.maxZ
+    local buildingDef = building:getDef()
+    local buildingDefId = buildingDef:getID()
+    local maxZ = buildingDef:getMaxLevel()
+    local roofZ = topGutterFloor > maxZ and maxZ + 1 or topGutterFloor + 1
+
+    -- Initialize flood fill
+    ---@type GutterRoofMap
+    local roofMap = {
+        squares = {},
+        count = 0,
+        maxZ = roofZ
+    }
+    local visited = {}
+    local queue = {}
+    local queued = {}
+
+    -- Find starting point(s) around the roof-level pipes
+    local seedSquares = self:findGutterRoofSeedSquares(pipeMap, roofZ)
+    for seedSquareID, seedSquare in pairs(seedSquares) do
+        table.insert(queue, seedSquare)
+        queued[seedSquareID] = true
+    end
+
+    -- Flood fill to find connected roof area
+    while #queue > 0 do
+        local queuedSquare = table.remove(queue, 1)
+        local queuedSquareId = queuedSquare:getID()
+
+        if not visited[queuedSquareId] then
+            visited[queuedSquareId] = true
+            queued[queuedSquareId] = nil -- Remove from queued ref dict
+
+            -- Validate square belongs to building and is valid roof
+            if self:isValidVanillaRoofSquare(queuedSquare, buildingDefId) then
+                roofMap.squares[queuedSquareId] = queuedSquare
+                roofMap.count = roofMap.count + 1
+
+                -- Add neighbors to queue
+                local neighbors = self:findRoofNeighborSquares(queuedSquare)
+                for _, neighbor in ipairs(neighbors) do
+                    local neighborSquareId = neighbor:getID()
+                    if not visited[neighborSquareId] and not queued[neighborSquareId] then
+                        table_insert(queue, neighbor)
+                        queued[neighborSquareId] = true
+                    end
+                end
+            end
+        end
+
+        -- Safety limit to stop on huge roofs
+        if roofMap.count > enums.maxRoofArea then
+            utils:modPrint("Roof flood fill exceeded maximum area")
+            break
+        end
+    end
+
+    return roofMap
+end
+
+---@param square IsoGridSquare
+---@param pipeMap GutterPipeMap
+---@return GutterRoofMap roofMap, BuildingType buildingType
+function isoUtils:getGutterRoofMap(square, pipeMap)
     local building = self:getAttachedBuilding(square)
-    local roofArea, roofSquares, buildingType
+    local roofMap, buildingType
     if building then
         -- Vanilla building mode
         buildingType = enums.buildingType.vanilla
-        roofArea, roofSquares = self:getVanillaBuildingRoofAreaFromBounds(square, pipeMap, building)
+        roofMap = self:getVanillaBuildingRoofMap(square, pipeMap, building)
     else
         -- Custom building mode
         buildingType = enums.buildingType.custom
-        roofArea, roofSquares = self:getPlayerBuildingRoofArea(square, pipeMap)
+        roofMap = self:getCustomBuildingRoofMap(square, pipeMap)
     end
 
-    return roofArea, roofSquares, buildingType
+    return roofMap, buildingType
 end
 
 ---@param square IsoGridSquare
 ---@param radius integer
----@param pipeType "drain"|"vertical"|"gutter"
+---@param pipeType PipeType
 ---@return IsoObject|nil
 function isoUtils:findPipeInRadius(square, radius, pipeType)
     local sx,sy,sz = square:getX(), square:getY(), square:getZ();
