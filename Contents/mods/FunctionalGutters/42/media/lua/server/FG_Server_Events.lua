@@ -35,10 +35,10 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
     if module == enums.modName and GutterCommands[command] then
         local argStr = ''
         args = args or {}
-        for k,v in pairs(args) do
-            argStr = argStr..' '..k..'='..tostring(v)
+        for k, v in pairs(args) do
+            argStr = argStr .. ' ' .. k .. '=' .. tostring(v)
         end
-        utils:modPrint('Server received '..module..' '..command..' '..tostring(player)..argStr)
+        utils:modPrint('Server received ' .. module .. ' ' .. command .. ' ' .. tostring(player) .. argStr)
         GutterCommands[command](args)
     end
 end
@@ -92,7 +92,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
         -- Seek all nearby drain pipes to update the rain factor
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
-            for i=1, #drainPipes do
+            for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]
                 local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
@@ -146,7 +146,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
         -- Seek all nearby drain pipes to update the rain factor
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
-            for i=1, #drainPipes do
+            for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]
                 local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
@@ -218,7 +218,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
         -- Seek all nearby drain pipes to update the rain factor
         local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
         if drainPipes then
-            for i=1, #drainPipes do
+            for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]
                 local connectedCollector = serviceUtils:getConnectedCollectorFromSquare(drainPipe:getSquare())
                 if connectedCollector then
@@ -277,3 +277,5 @@ Events.OnObjectAdded.Add(GutterServerManager.OnIsoObjectPlaced)
 Events.OnTileRemoved.Add(GutterServerManager.OnIsoObjectRemoved)
 
 Events.OnClientCommand.Add(GutterServerManager.OnClientCommand)
+
+return GutterCommands

@@ -1,8 +1,8 @@
 require "TimedActions/ISBaseTimedAction"
 
-local enums = require("FG_Enums")
 local options = require("FG_Options")
 local utils = require("FG_Utils")
+local serverCommands = nil -- will be set on server/game start
 
 FG_TA_ConnectContainer = ISBaseTimedAction:derive("FG_TA_ConnectContainer");
 
@@ -50,12 +50,22 @@ function FG_TA_ConnectContainer:perform()
 end
 
 function FG_TA_ConnectContainer:complete()
-	if self.containerObject then
+	if self.containerObject and serverCommands then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		sendClientCommand(self.character, enums.modName, enums.modCommands.connectCollector, args)
+		serverCommands.connectCollector(args)
 	else
 		utils:modPrint("Failed to connect collector: " .. tostring(self.containerObject))
 	end
 
 	return true
 end
+
+Events.OnServerStarted.Add(function()
+	-- For mutli-player games
+	serverCommands = require("FG_Server_Events")
+end)
+
+Events.OnGameStart.Add(function()
+	-- For single-player games
+	serverCommands = require("FG_Server_Events")
+end)

@@ -23,6 +23,7 @@ gutterService.pipeServiceMap = {
     [enums.pipeType.horizontal] = nil,
 }
 
+--- @param collectorObject IsoObject|IsoFeedingTrough
 function gutterService:getCollectorService(collectorObject)
     -- Filter out IsoWorldInventoryObjects for now
     if serviceUtils:isWorldInventoryObject(collectorObject) then
@@ -36,32 +37,34 @@ function gutterService:getCollectorService(collectorObject)
         return FluidContainerService
     end
 
-    utils:modPrint("No collector service interface found for object: "..tostring(collectorObject))
+    utils:modPrint("No collector service interface found for object: " .. tostring(collectorObject))
     return nil
 end
 
 function gutterService:getPipeService(pipeObject)
     local objectSprite = pipeObject:getSpriteName()
     if not objectSprite then
-        utils:modPrint("No sprite name found for object: "..tostring(pipeObject))
+        utils:modPrint("No sprite name found for object: " .. tostring(pipeObject))
         return nil
     end
 
     local pipeType = utils:getSpriteCategory(objectSprite)
     if not pipeType then
-        utils:modPrint("No pipe type not found for object: "..tostring(pipeObject))
+        utils:modPrint("No pipe type not found for object: " .. tostring(pipeObject))
         return nil
     end
 
     local pipeService = self.pipeServiceMap[pipeType]
     if not pipeService then
-        utils:modPrint("No pipe service interface found for object: "..tostring(objectSprite).." with type: "..tostring(pipeType))
+        utils:modPrint("No pipe service interface found for object: " ..
+            tostring(objectSprite) .. " with type: " .. tostring(pipeType))
         return nil
     end
 
     return pipeService
 end
 
+--- @param collectorObject IsoObject|IsoFeedingTrough
 function gutterService:connectCollector(collectorObject)
     local containerService = self:getCollectorService(collectorObject)
     if not containerService then
@@ -70,13 +73,14 @@ function gutterService:connectCollector(collectorObject)
 
     local square = serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     if not square then
-        utils:modPrint("No drain pipe square found for collector: "..tostring(collectorObject))
+        utils:modPrint("No drain pipe square found for collector: " .. tostring(collectorObject))
         return
     end
 
     local gutterSection = serviceUtils:calculateGutterSection(square)
     if not gutterSection or not gutterSection.pipeMap then
-        utils:modPrint("No gutter section found for square: "..tostring(square:getX())..", "..tostring(square:getY())..", "..tostring(square:getZ()))
+        utils:modPrint("No gutter section found for square: " ..
+            tostring(square:getX()) .. ", " .. tostring(square:getY()) .. ", " .. tostring(square:getZ()))
         return
     end
 
@@ -84,8 +88,12 @@ function gutterService:connectCollector(collectorObject)
     if success then
         serviceUtils:handlePostCollectorConnected(square)
     end
+
+    collectorObject:sync()
+    collectorObject:transmitModData()
 end
 
+--- @param collectorObject IsoObject|IsoFeedingTrough
 function gutterService:disconnectCollector(collectorObject)
     local containerService = self:getCollectorService(collectorObject)
     if not containerService then
@@ -93,6 +101,9 @@ function gutterService:disconnectCollector(collectorObject)
     end
 
     containerService:disconnectCollector(collectorObject)
+
+    collectorObject:sync()
+    collectorObject:transmitModData()
 end
 
 return gutterService

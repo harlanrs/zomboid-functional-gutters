@@ -2,12 +2,19 @@ require "TimedActions/ISBaseTimedAction"
 
 FG_TA_OpenGutterPanel = ISBaseTimedAction:derive("FG_TA_OpenGutterPanel")
 
+function FG_TA_OpenGutterPanel:getDuration()
+	if self.character:isTimedActionInstant() then
+		return 1
+	end
+	return 10
+end
+
 function FG_TA_OpenGutterPanel:isValid()
-    if not self.gutterDrain then
+	if not self.gutterDrain then
 		return false
 	end
 
-    return true
+	return true
 end
 
 function FG_TA_OpenGutterPanel:update()
@@ -31,10 +38,9 @@ end
 function FG_TA_OpenGutterPanel:new(character, _gutterDrain, _panelClass, isSource)
 	local o = ISBaseTimedAction.new(self, character)
 
-	o.gutterDrain = _gutterDrain;
-	o.panelClass = _panelClass;
-	o.source = isSource;
-	o.maxTime = 10;
-	if o.character:isTimedActionInstant() then o.maxTime = 1; end
+	o.gutterDrain = _gutterDrain
+	o.panelClass = _panelClass
+	o.source = isSource
+	o.maxTime = o:getDuration()
 	return o
 end
