@@ -66,7 +66,7 @@ function serviceUtils:getConnectedCollectorFromSquare(square)
         local object = objects:get(i)
         local collectorObject = self:getPrimaryCollector(object)
         if collectorObject and utils:getModDataIsGutterConnected(collectorObject) then
-            -- Usually object & collectorObject are the same but for cases where multi-tile trough's secondary object is on the drain pipe square 
+            -- Usually object & collectorObject are the same but for cases where multi-tile trough's secondary object is on the drain pipe square
             -- we want to return the object that is considered 'primary' for interacting with the proper fluid container
             return collectorObject
         end
@@ -74,7 +74,7 @@ function serviceUtils:getConnectedCollectorFromSquare(square)
     return nil
 end
 
----@param collectorObject IsoObject 
+---@param collectorObject IsoObject
 ---@return IsoGridSquare|nil drainSquare
 function serviceUtils:getDrainPipeSquareFromCollector(collectorObject)
     local square = collectorObject:getSquare()
@@ -151,6 +151,8 @@ function serviceUtils:handlePostCollectorConnected(square)
                 spider:setName("Itsy Betsy")
             end
         end
+
+        drainPipe:sync()
     end
 end
 
@@ -222,15 +224,15 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
 
     local x = square:getX()
     local y = square:getY()
-    local z =  square:getZ()
-    for i=1, zRadius + 1 do
+    local z = square:getZ()
+    for i = 1, zRadius + 1 do
         -- Check up zRadius levels
         local upZ = z + i
         local upSquare = square:getCell():getGridSquare(x, y, upZ)
         if upSquare then
             local zDrainPipes = self:getLocalDrainPipes(upSquare, radius)
             if zDrainPipes then
-                for iter=1, #zDrainPipes do
+                for iter = 1, #zDrainPipes do
                     table_insert(drainPipes, zDrainPipes[iter])
                 end
             end
@@ -239,7 +241,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
 
     if z > 0 then
         -- Check down zRadius levels
-        for i=1, zRadius do
+        for i = 1, zRadius do
             local downZ = z - i
             if downZ < 0 then
                 break
@@ -248,7 +250,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
             if downSquare then
                 local zDrainPipes = self:getLocalDrainPipes(downSquare, radius)
                 if zDrainPipes then
-                    for iter=1, #zDrainPipes do
+                    for iter = 1, #zDrainPipes do
                         table_insert(drainPipes, zDrainPipes[iter])
                     end
                 end
@@ -306,7 +308,7 @@ function serviceUtils:filterGutterDrainsBySharedComponents(primaryDrainPipe, dra
     -- Cross-check each drain's pipeMap & roofMap for shared tiles
     local visited = {}
     local relatedDrains = {}
-    local queue = {primaryDrainPipe} -- Start with the primary drain pipe
+    local queue = { primaryDrainPipe } -- Start with the primary drain pipe
     while #queue > 0 do
         local currentDrain = table.remove(queue, 1)
         local drainId = currentDrain:getEntityNetID()
@@ -329,7 +331,6 @@ function serviceUtils:filterGutterDrainsBySharedComponents(primaryDrainPipe, dra
             for _, candidateDrain in pairs(drainPipes) do
                 local candidateDrainId = candidateDrain:getEntityNetID()
                 if not visited[candidateDrainId] then
-
                     local candidatePipeMap = drainPipeMap[candidateDrainId]
                     local candidateRoofMap = drainRoofMap[candidateDrainId]
 
@@ -364,7 +365,6 @@ function serviceUtils:filterGutterDrainsBySharedComponents(primaryDrainPipe, dra
 
     return relatedDrains
 end
-
 
 ---@param primaryDrainPipe IsoObject
 ---@param drainPipes table<string,IsoObject>
@@ -429,7 +429,7 @@ end
 function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap, sourceRoofMap)
     local _, sourceDrainPipe, _, _ = utils:getSpriteCategoryMemberOnTile(sourceDrainSquare, enums.pipeType.drain)
     if not sourceDrainPipe then
-        utils:modPrint("No drain pipe found on square: "..tostring(sourceDrainSquare))
+        utils:modPrint("No drain pipe found on square: " .. tostring(sourceDrainSquare))
         return nil
     end
 
@@ -446,7 +446,8 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
     end
 
     -- Get all drains in 3d radius
-    local localDrainPipes = self:getLocalDrainPipes3D(sourceDrainSquare, enums.defaultDrainPipeSearchRadius, enums.defaultDrainPipeSearchHeight)
+    local localDrainPipes = self:getLocalDrainPipes3D(sourceDrainSquare, enums.defaultDrainPipeSearchRadius,
+        enums.defaultDrainPipeSearchHeight)
     if not localDrainPipes then
         return nil
     end
@@ -471,7 +472,8 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
     local primaryBuilding = isoUtils:getAttachedBuilding(sourceDrainSquare)
 
     -- Reduce the list of drain pipes to only those relevant to the building mode
-    local associatedBuildingDrainMap = self:filterGutterDrainsByBuildingType(sourceDrainPipe, neighborDrainMap, primaryBuilding)
+    local associatedBuildingDrainMap = self:filterGutterDrainsByBuildingType(sourceDrainPipe, neighborDrainMap,
+        primaryBuilding)
 
     -- Return early if no non-sibling drains leftover after filter round 1
     if utils:getDictSize(associatedBuildingDrainMap) == 0 then
@@ -480,7 +482,8 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
 
     -- If custom building type, apply more complex checks for shared pipes and roof tiles across the associated drain pipes
     if not primaryBuilding then
-        associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe, associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
+        associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
+            associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
     end
 
     -- Combine the sibling drains with the leftover associated drains
@@ -525,7 +528,8 @@ end
 ---@param actualDrainCount integer
 ---@param averageGutterCapacity integer|nil
 ---@return number gutterTileCount, number overflowArea
-function serviceUtils:calculateGutterSectionTileCount(roofArea, optimalDrainCount, actualDrainCount, averageGutterCapacity)
+function serviceUtils:calculateGutterSectionTileCount(roofArea, optimalDrainCount, actualDrainCount,
+                                                      averageGutterCapacity)
     -- Divides up the area of the roof into sections for each estimated gutter drain and calculates the effective tiles covered by each section
     -- Ex: 70 tile roof with 2 gutter capacity would have 35 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
     -- Ex: 110 tile roof with 4 estimated gutters would have 27.5 tiles covered by each gutter despite a single gutter being able to cover up to 40 tiles
@@ -581,12 +585,12 @@ function serviceUtils:calculateGutterSection(square)
     -- 1 tile is 1 meter squared
     -- 1 millimeter (mm) of rain means 1 liter of water falling on every square meter of area
 
-    -- Drizzle: Less than 2 mm/hr 
-    -- Light Rain: 2-4 mm/hr 
-    -- Moderate Rain: 4-7.6 mm/hr 
-    -- Heavy Rain: Greater than 7.6 mm/hr 
+    -- Drizzle: Less than 2 mm/hr
+    -- Light Rain: 2-4 mm/hr
+    -- Moderate Rain: 4-7.6 mm/hr
+    -- Heavy Rain: Greater than 7.6 mm/hr
 
-    -- Unadjusted that means for 1 tile: 
+    -- Unadjusted that means for 1 tile:
     -- 1-2 liters of water per hour for a slight drizzle
     -- 2-4 liters of water per hour for light rain
     -- 4-7.6 liters of water per hour for moderate rain
@@ -614,7 +618,7 @@ function serviceUtils:calculateGutterSection(square)
     if not utils:isDrainPipeSquare(square) then
         -- Check most likely already occurred in externally but just in case
         -- Drain pipes are essentially the main 'nodes' in a gutter system so have to start from their specific squares
-        utils:modPrint("Square is not a drain pipe: "..tostring(square))
+        utils:modPrint("Square is not a drain pipe: " .. tostring(square))
         return nil
     end
 
@@ -624,11 +628,14 @@ function serviceUtils:calculateGutterSection(square)
     gutterSection.maxLevel = gutterSection.roofMap.maxZ -- TODO if no roof squares, need to handle that case
 
     gutterSection.drains = self:getAssociatedGutterDrains(square, gutterSection.pipeMap, gutterSection.roofMap)
-    gutterSection.drainCount = gutterSection.drains and utils:getDictSize(gutterSection.drains) or 0 -- NOTE: shouldn't ever be 0 since we already validate drain exists earlier in this function
+    gutterSection.drainCount = gutterSection.drains and utils:getDictSize(gutterSection.drains) or
+        0 -- NOTE: shouldn't ever be 0 since we already validate drain exists earlier in this function
 
     gutterSection.averageGutterCapacity = self:getAverageGutterCapacity()
-    gutterSection.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSection.roofArea, gutterSection.averageGutterCapacity)
-    gutterSection.tileCount, gutterSection.overflowArea = self:calculateGutterSectionTileCount(gutterSection.roofArea, gutterSection.optimalDrainCount, gutterSection.drainCount, gutterSection.averageGutterCapacity)
+    gutterSection.optimalDrainCount = self:getEstimatedGutterDrainCount(gutterSection.roofArea,
+        gutterSection.averageGutterCapacity)
+    gutterSection.tileCount, gutterSection.overflowArea = self:calculateGutterSectionTileCount(gutterSection.roofArea,
+        gutterSection.optimalDrainCount, gutterSection.drainCount, gutterSection.averageGutterCapacity)
     gutterSection.rainFactor = self:calculateGutterSectionRainFactor(gutterSection.tileCount)
 
     -- Persist some data on the square for quick checks

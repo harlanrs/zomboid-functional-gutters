@@ -9,7 +9,7 @@ local localIsoObjectType = IsoObjectType
 ---@param message string
 function utils:modPrint(message)
     if debugMode then
-        print("["..enums.modName.."] --------------------------------> "..message)
+        print("[" .. enums.modName .. "] --------------------------------> " .. message)
     end
 end
 
@@ -177,7 +177,7 @@ end
 ---@param loadedModData table|nil
 ---@return boolean|nil
 function utils:getModDataDrainCleared(object, loadedModData)
-    return self:getModDataKeyValue(object,  enums.modDataKey.drainCleared, loadedModData)
+    return self:getModDataKeyValue(object, enums.modDataKey.drainCleared, loadedModData)
 end
 
 ---@param square IsoGridSquare
@@ -229,7 +229,8 @@ function utils:checkProp(square, propName, props)
     if not props then
         props = square:getProperties()
     end
-    return props:Is(propName)
+
+    return props:has(propName)
 end
 
 ---@param square IsoGridSquare
@@ -260,7 +261,8 @@ function utils:isAnyPipeSquare(square, props)
     if not props then
         props = square:getProperties()
     end
-    return self:isDrainPipeSquare(square, props) or self:isVerticalPipeSquare(square, props) or self:isGutterPipeSquare(square, props)
+    return self:isDrainPipeSquare(square, props) or self:isVerticalPipeSquare(square, props) or
+        self:isGutterPipeSquare(square, props)
 end
 
 ---@param object IsoObject
@@ -290,13 +292,13 @@ function utils:getObjectScriptRainFactor(object)
     -- Get the base rain factor from the object's GameEntityScript
     local entityScript = self:getObjectEntityScript(object)
     if not entityScript then
-        self:modPrint("Entity script not found: "..tostring(object))
+        self:modPrint("Entity script not found: " .. tostring(object))
         return nil
     end
 
     local fluidContainerScript = entityScript:getComponentScriptFor(ComponentType.FluidContainer)
     if not fluidContainerScript then
-        self:modPrint("Fluid container script not found: "..tostring(entityScript))
+        self:modPrint("Fluid container script not found: " .. tostring(entityScript))
         return nil
     end
 
@@ -309,18 +311,23 @@ local function predicateNotBroken(item)
     return not item:isBroken()
 end
 
+---NOTE: containsTypeEvalRecurse doesn't yet use ItemKey like getFirstTypeEvalRecurse does
 ---@param playerInv ItemContainer
 ---@param itemName string
+---@param itemTag ItemTag
 ---@return boolean
-function utils:playerHasItem(playerInv, itemName)
-    return playerInv:containsTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:containsTagEvalRecurse(itemName, predicateNotBroken)
+function utils:playerHasItem(playerInv, itemName, itemTag)
+    return playerInv:containsTypeEvalRecurse(itemName, predicateNotBroken) or
+        playerInv:containsTagEvalRecurse(itemTag, predicateNotBroken)
 end
 
 ---@param playerInv ItemContainer
----@param itemName string
+---@param itemKey ItemKey
+---@param itemTag ItemTag
 ---@return InventoryItem|nil item
-function utils:playerGetItem(playerInv, itemName)
-    return playerInv:getFirstTypeEvalRecurse(itemName, predicateNotBroken) or playerInv:getFirstTagEvalRecurse(itemName, predicateNotBroken)
+function utils:playerGetItem(playerInv, itemKey, itemTag)
+    return playerInv:getFirstTypeEvalRecurse(itemKey, predicateNotBroken) or
+        playerInv:getFirstTagEvalRecurse(itemTag, predicateNotBroken)
 end
 
 ---@param object IsoObject|IsoGridSquare
@@ -330,7 +337,7 @@ function utils:patchModData(object, replace)
     if not object:hasModData() then return end
 
     local objectModData = object:getModData()
-    for internalKey,oldKey in pairs(enums.oldModDataKey) do
+    for internalKey, oldKey in pairs(enums.oldModDataKey) do
         if objectModData[oldKey] then
             if replace then
                 -- Copy the old key's value over to the new key
@@ -362,7 +369,8 @@ end
 ---@param square IsoGridSquare
 ---@return boolean
 function utils:hasRoofProp(square)
-    return square:Has(localIsoObjectType.WestRoofB) or square:Has(localIsoObjectType.WestRoofM) or square:Has(localIsoObjectType.WestRoofT)
+    return square:has(localIsoObjectType.WestRoofB) or square:has(localIsoObjectType.WestRoofM) or
+        square:has(localIsoObjectType.WestRoofT)
 end
 
 ---@param object IsoObject

@@ -83,17 +83,17 @@ function FG_UI_GutterPanel:initialise()
 end
 
 function FG_UI_GutterPanel:addCollectorInfoPanel()
-    local x, y = UI_BORDER_SPACING+1, self.gutterPanel:getBottom() + UI_BORDER_SPACING
+    local x, y = UI_BORDER_SPACING + 1, self.gutterPanel:getBottom() + UI_BORDER_SPACING
     self.collectorPanel = FG_UI_CollectorInfoPanel:new(x, y, self.player, self.gutterDrain, self.collector)
     self.collectorPanel:initialise()
     self.collectorPanel:noBackground()
-    self.collectorPanel.borderOuterColor = {r=0.4, g=0.4, b=0.4, a=0}
+    self.collectorPanel.borderOuterColor = { r = 0.4, g = 0.4, b = 0.4, a = 0 }
     self:addChild(self.collectorPanel)
 end
 
 function FG_UI_GutterPanel:addGutterInfoPanel()
-    local x = UI_BORDER_SPACING+1
-    local y = UI_BORDER_SPACING+1 + BUTTON_HGT + UI_BORDER_SPACING
+    local x = UI_BORDER_SPACING + 1
+    local y = UI_BORDER_SPACING + 1 + BUTTON_HGT + UI_BORDER_SPACING
     self.gutterPanel = FG_UI_GutterInfoPanel:new(x, y, 300, 150, self.gutterDrain, self.gutterSection)
     self:addChild(self.gutterPanel)
 end
@@ -126,8 +126,8 @@ function FG_UI_GutterPanel:createChildren()
     self.btnInfo = ISButton:new(infoX, infoY, infoW, infoH, "", self, FG_UI_GutterPanel.onButton)
     self.btnInfo.internal = "INFO"
     self.btnInfo.borderColor.a = 0.0
-	self.btnInfo.backgroundColor.a = 0
-	self.btnInfo.backgroundColorMouseOver.a = 0
+    self.btnInfo.backgroundColor.a = 0
+    self.btnInfo.backgroundColorMouseOver.a = 0
     self.btnInfo:setImage(self.btnInfoTexture)
     self.btnInfo:initialise()
     self:addChild(self.btnInfo)
@@ -139,24 +139,25 @@ function FG_UI_GutterPanel:createChildren()
     self.btnBuild = ISButton:new(buildX, buildY, buildW, buildH, "", self, FG_UI_GutterPanel.onButton)
     self.btnBuild.internal = "BUILD"
     self.btnBuild.borderColor.a = 0.0
-	self.btnBuild.backgroundColor.a = 0
-	self.btnBuild.backgroundColorMouseOver.a = 0
+    self.btnBuild.backgroundColor.a = 0
+    self.btnBuild.backgroundColorMouseOver.a = 0
     self.btnBuild.forcedWidthImage = 12
     self.btnBuild.forcedHeightImage = 12
     self.btnBuild:setImage(self.btnBuildTexture)
     self.btnBuild:initialise()
     self:addChild(self.btnBuild)
 
-    local toggleX = UI_BORDER_SPACING+1
+    local toggleX = UI_BORDER_SPACING + 1
     local toggleY = self.collectorPanel:getBottom() + UI_BORDER_SPACING
     local toggleW = self.collectorPanel:getWidth()
-    self.btnToggleConnect = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self, FG_UI_GutterPanel.onButton)
+    self.btnToggleConnect = ISButton:new(toggleX, toggleY, toggleW, BUTTON_HGT, "Connect", self,
+        FG_UI_GutterPanel.onButton)
     self.btnToggleConnect.internal = "TOGGLE_CONNECT"
     self.btnToggleConnect:initialise()
     self:styleToggleButton()
     self:addChild(self.btnToggleConnect)
 
-    self:setHeight(self.btnToggleConnect:getBottom() + UI_BORDER_SPACING+1)
+    self:setHeight(self.btnToggleConnect:getBottom() + UI_BORDER_SPACING + 1)
 
     self:checkCanPlumb()
 end
@@ -182,7 +183,7 @@ end
 function FG_UI_GutterPanel:render()
     self:renderJoypadFocus()
 
-    local x, y = UI_BORDER_SPACING+1, UI_BORDER_SPACING + 1
+    local x, y = UI_BORDER_SPACING + 1, UI_BORDER_SPACING + 1
     self:drawText(getText("UI_panel_FunctionalGutters_panel_title"), x, y, 1, 1, 1, 1, UIFont.Medium)
 end
 
@@ -244,7 +245,8 @@ function FG_UI_GutterPanel:alignElements()
     self.collectorPanel:setY(collectorPanelY)
 
     -- Set total heigh of main panel to reflect the height of all child panels
-    local panelHeight = self.gutterPanel.height + self.collectorPanel.height + self.btnToggleConnect.height + (3 * UI_BORDER_SPACING)
+    local panelHeight = self.gutterPanel.height + self.collectorPanel.height + self.btnToggleConnect.height +
+        (3 * UI_BORDER_SPACING)
     if self.height ~= panelHeight then
         self:setHeight(panelHeight)
     end
@@ -263,7 +265,7 @@ function FG_UI_GutterPanel:update()
     -- Range check for gutter drain square
     if self.gutterSquare and self.player then
         local dist = 10
-        if self.player:getX() < self.gutterSquare:getX()-dist or self.player:getX() > self.gutterSquare:getX()+dist or self.player:getY() < self.gutterSquare:getY()-dist or self.player:getY() > self.gutterSquare:getY()+dist then
+        if self.player:getX() < self.gutterSquare:getX() - dist or self.player:getX() > self.gutterSquare:getX() + dist or self.player:getY() < self.gutterSquare:getY() - dist or self.player:getY() > self.gutterSquare:getY() + dist then
             self:close()
             return
         end
@@ -285,7 +287,7 @@ function FG_UI_GutterPanel:close()
             FG_UI_GutterPanel.players[playerNum].x = self:getX()
             FG_UI_GutterPanel.players[playerNum].y = self:getY()
         end
-        if JoypadState.players[playerNum+1] then
+        if JoypadState.players[playerNum + 1] then
             setJoypadFocus(playerNum, nil)
         end
     end
@@ -302,7 +304,7 @@ function FG_UI_GutterPanel:close()
 end
 
 function FG_UI_GutterPanel:openInfoPage()
-    local win = PZAPI.UI.PrintMedia{
+    local win = PZAPI.UI.PrintMedia {
         x = 730, y = 100,
     }
     local val = "KnoxKnews_July1_Classifieds_Gutter"
@@ -345,11 +347,11 @@ function FG_UI_GutterPanel:openInfoPage()
 end
 
 function FG_UI_GutterPanel:onButton(_btn)
-    if _btn.internal=="CLOSE" then
+    if _btn.internal == "CLOSE" then
         self:close()
-    elseif _btn.internal=="INFO" then
+    elseif _btn.internal == "INFO" then
         self:openInfoPage()
-    elseif _btn.internal=="BUILD" then
+    elseif _btn.internal == "BUILD" then
         ISEntityUI.OpenBuildWindow(self.player, nil, "*")
         local buildMenu = ISEntityUI.players[self.player:getPlayerNum()].windows["BuildWindow"]
         if not buildMenu or not buildMenu.instance then return end
@@ -358,7 +360,7 @@ function FG_UI_GutterPanel:onButton(_btn)
 
         -- NOTE: need to set the filter as well since setting the text here doesn't appear to trigger the filter
         local searchFilter = getText("UI_craft_FunctionalGutters_search_filter")
-        recipeFilterPanel.entryBox:setText(searchFilter)
+        recipeFilterPanel.searchEntryBox:setText(searchFilter)
         buildMenu.instance.BuildPanel:setRecipeFilter(searchFilter)
 
         local recipeListPanel = buildMenu.instance.BuildPanel.recipesPanel.recipeListPanel.recipeListPanel
@@ -366,7 +368,7 @@ function FG_UI_GutterPanel:onButton(_btn)
         if items and #items > 0 then
             buildMenu.instance.BuildPanel.logic:setRecipe(items[1].item)
         end
-    elseif _btn.internal=="TOGGLE_CONNECT" and self.collector then
+    elseif _btn.internal == "TOGGLE_CONNECT" and self.collector then
         self.primaryCollector = serviceUtils:getPrimaryCollector(self.collector)
         if not self.primaryCollector then
             return
@@ -419,7 +421,7 @@ end
 
 function FG_UI_GutterPanel:checkCanPlumb()
     if options:getRequireWrench() then
-        local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
+        local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench", ItemTag.PIPE_WRENCH)
         if not wrench then
             self.canPlumb = false
             return self.canPlumb
@@ -437,7 +439,7 @@ function FG_UI_GutterPanel:DoConnectCollector()
 
     if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
-            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
+            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench", ItemTag.PIPE_WRENCH)
             if wrench then
                 ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
                 self.action = FG_TA_ConnectContainer:new(self.player, self.collector, wrench)
@@ -458,7 +460,7 @@ function FG_UI_GutterPanel:DoDisconnectCollector()
 
     if luautils.walkAdj(self.player, self.gutterSquare, true) then
         if options:getRequireWrench() then
-            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench")
+            local wrench = utils:playerGetItem(self.player:getInventory(), "PipeWrench", ItemTag.PIPE_WRENCH)
             if wrench then
                 ISWorldObjectContextMenu.equip(self.player, self.player:getPrimaryHandItem(), wrench, true)
                 self.action = FG_TA_DisconnectContainer:new(self.player, self.collector, wrench)
@@ -583,20 +585,20 @@ function FG_UI_GutterPanel:new(x, y, _player, _gutterDrain)
     local w = 300 + (2 * UI_BORDER_SPACING)
     local h = 600
     local o = ISPanelJoypad.new(self, x, y, w, h)
-    o.variableColor={r=0.9, g=0.55, b=0.1, a=1} -- TODO remove
-    o.borderColor = {r=0.4, g=0.4, b=0.4, a=1}
-    o.backgroundColor = {r=0, g=0, b=0, a=0.8}
-    o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5}
+    o.variableColor = { r = 0.9, g = 0.55, b = 0.1, a = 1 } -- TODO remove
+    o.borderColor = { r = 0.4, g = 0.4, b = 0.4, a = 1 }
+    o.backgroundColor = { r = 0, g = 0, b = 0, a = 0.8 }
+    o.buttonBorderColor = { r = 0.7, g = 0.7, b = 0.7, a = 0.5 }
     o.btnDefault = {
-        borderColor = {r=0.7, g=0.7, b=0.7, a=1},
-	    backgroundColor = {r=0, g=0, b=0, a=0.25},
-	    backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=0.5}
+        borderColor = { r = 0.7, g = 0.7, b = 0.7, a = 1 },
+        backgroundColor = { r = 0, g = 0, b = 0, a = 0.25 },
+        backgroundColorMouseOver = { r = 0.3, g = 0.3, b = 0.3, a = 0.5 }
     }
-    o.textColor = {r=1,g=1,b=1,a=1}
-    o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
-    o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
-    o.goodColor = {r=GOOD_COLOR:getR(), g=GOOD_COLOR:getG(), b=GOOD_COLOR:getB(), a=1}
-    o.transferColor = {r=0.0, g=1.0, b=0.0, a=0.5}
+    o.textColor = { r = 1, g = 1, b = 1, a = 1 }
+    o.tagColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
+    o.invalidColor = { r = 0.6, g = 0.2, b = 0.2, a = 1 }
+    o.goodColor = { r = GOOD_COLOR:getR(), g = GOOD_COLOR:getG(), b = GOOD_COLOR:getB(), a = 1 }
+    o.transferColor = { r = 0.0, g = 1.0, b = 0.0, a = 0.5 }
 
     o.btnInfoTexture = getTexture("media/ui/Entity/blueprint_info.png")
     o.btnBuildTexture = getTexture("media/ui/Entity/Crafting_Keep_24.png")
@@ -616,5 +618,3 @@ function FG_UI_GutterPanel:new(x, y, _player, _gutterDrain)
 
     return o
 end
-
-

@@ -87,7 +87,9 @@ function isoUtils:hasDoorWindowN(square, props)
     if not props then
         props = square:getProperties()
     end
-    return props:Is(localIsoFlagType.DoorWallN) or props:Is("WindowN") -- IsoFlagType has "windowN" not "WindowN" which is a bug
+
+    -- IsoFlagType has "windowN" not "WindowN" which is a bug
+    return props:has(localIsoFlagType.DoorWallN) or props:has("WindowN")
 end
 
 ---@param square IsoGridSquare
@@ -97,7 +99,9 @@ function isoUtils:hasDoorWindowW(square, props)
     if not props then
         props = square:getProperties()
     end
-    return props:Is(localIsoFlagType.DoorWallW) or props:Is("WindowW") -- IsoFlagType has "windowW" not "WindowW" which is a bug
+
+    -- IsoFlagType has "windowW" not "WindowW" which is a bug
+    return props:has(localIsoFlagType.DoorWallW) or props:has("WindowW")
 end
 
 ---@param square IsoGridSquare
@@ -108,7 +112,7 @@ function isoUtils:hasWallW(square, props)
         props = square:getProperties()
     end
 
-    if props:Is(localIsoFlagType.WallW) or props:Is(localIsoFlagType.WallNW) or props:Is(localIsoFlagType.WallWTrans) then
+    if props:has(localIsoFlagType.WallW) or props:has(localIsoFlagType.WallNW) or props:has(localIsoFlagType.WallWTrans) then
         return true
     end
 
@@ -127,7 +131,7 @@ function isoUtils:hasWallN(square, props)
         props = square:getProperties()
     end
 
-    if props:Is(localIsoFlagType.WallN) or props:Is(localIsoFlagType.WallNW) or props:Is(localIsoFlagType.WallNTrans) then
+    if props:has(localIsoFlagType.WallN) or props:has(localIsoFlagType.WallNW) or props:has(localIsoFlagType.WallNTrans) then
         return true
     end
 
@@ -180,7 +184,7 @@ function isoUtils:getAdjacentBuilding(square, directions)
         )
     end
 
-    for i=1, #directions do
+    for i = 1, #directions do
         local adjacentSquare = square:getAdjacentSquare(directions[i])
         if adjacentSquare then
             local adjacentBuilding = adjacentSquare:getBuilding()
@@ -218,8 +222,8 @@ function isoUtils:getBuildingFloorArea(buildingDef, z)
 
     local area = 0
     local buildingDefRooms = buildingDef:getRooms()
-    for i=0, buildingDefRooms:size() - 1 do
-        local roomDef  = buildingDefRooms:get(i)
+    for i = 0, buildingDefRooms:size() - 1 do
+        local roomDef = buildingDefRooms:get(i)
         if roomDef:getZ() == z then
             local roomSize = roomDef:getArea()
             -- TODO verify area is completely inside? or just best estimate atm?
@@ -306,7 +310,7 @@ function isoUtils:crawlGutterSquare(square, pipeMap)
             end
         end
 
-        -- Gutter pipes connect to other pipes in the same z level 
+        -- Gutter pipes connect to other pipes in the same z level
         -- TODO verify above once we allow gutters to connect/support vertical pipes on next z level
         local northSquare = rootCell:getGridSquare(rootX, rootY - 1, rootZ)
         if northSquare then
@@ -335,7 +339,7 @@ function isoUtils:crawlGutterSquare(square, pipeMap)
         pipeMap.all.count = pipeMap.all.count + 1
 
         if rootZ > pipeMap.all.maxZ then
-             pipeMap.all.maxZ = rootZ
+            pipeMap.all.maxZ = rootZ
         end
     end
 
@@ -428,8 +432,8 @@ function isoUtils:crawlGutterPipes(startSquare)
     }
     local crawlSteps = 0
     local visited = {}
-    local queue = {startSquare}
-    local queued = {[startSquare:getID()] = true} -- Track queued squares to avoid duplicates
+    local queue = { startSquare }
+    local queued = { [startSquare:getID()] = true } -- Track queued squares to avoid duplicates
 
     -- NOTE: deep nesting if because no 'continue' in lua 5.2
     while #queue > 0 do
@@ -461,7 +465,7 @@ function isoUtils:crawlGutterPipes(startSquare)
         if crawlSteps > enums.maxGutterCrawlSteps then
             -- Shouldn't hit unless player builds a large system with more gutter objects
             -- adding as failsafe against runaway recursion which also shouldn't occur but just in case
-            utils:modPrint("Crawl steps exceeded maximum: "..tostring(enums.maxGutterCrawlSteps))
+            utils:modPrint("Crawl steps exceeded maximum: " .. tostring(enums.maxGutterCrawlSteps))
             break
         end
     end
@@ -497,7 +501,9 @@ function isoUtils:crawlCustomBuildingRoof(pipeMap)
         local _, _, spriteName, _ = utils:getSpriteCategoryMemberOnTile(gutterSquare, enums.pipeType.gutter)
         if not spriteName then
             -- Shouldn't happen but check just in case
-            utils:modPrint("No gutter sprite found on square: "..tostring(gutterSquare:getX())..","..tostring(gutterSquare:getY())..","..tostring(gutterSquare:getZ()))
+            utils:modPrint("No gutter sprite found on square: " ..
+                tostring(gutterSquare:getX()) ..
+                "," .. tostring(gutterSquare:getY()) .. "," .. tostring(gutterSquare:getZ()))
             break
         end
 
@@ -543,11 +549,11 @@ function isoUtils:findGutterTopLevel(square)
     local y = square:getY()
     local z = square:getZ()
     -- Check 5 max; maybe increase if needed
-    for i=1, 4 do
+    for i = 1, 4 do
         local nextFloor = z + 1
         local nextSquare = cell:getGridSquare(x, y, nextFloor)
         if not nextSquare then
-            utils:modPrint("Next square level not found: "..tostring(nextFloor))
+            utils:modPrint("Next square level not found: " .. tostring(nextFloor))
             break
         elseif not utils:isVerticalPipeSquare(nextSquare) then
             break
@@ -759,10 +765,10 @@ end
 ---@param pipeType PipeType
 ---@return IsoObject|nil
 function isoUtils:findPipeInRadius(square, radius, pipeType)
-    local sx,sy,sz = square:getX(), square:getY(), square:getZ();
-    for x = sx-radius,sx+radius do
-        for y = sy-radius,sy+radius do
-            local sq = getCell():getGridSquare(x,y,sz);
+    local sx, sy, sz = square:getX(), square:getY(), square:getZ();
+    for x = sx - radius, sx + radius do
+        for y = sy - radius, sy + radius do
+            local sq = getCell():getGridSquare(x, y, sz);
             if sq then
                 local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, pipeType)
                 if pipeObject then
@@ -780,10 +786,10 @@ end
 ---@return table<IsoObject>
 function isoUtils:findAllDrainsInRadius(square, radius)
     local pipeObjects = table.newarray()
-    local sx,sy,sz = square:getX(), square:getY(), square:getZ();
-    for x = sx-radius,sx+radius do
-        for y = sy-radius,sy+radius do
-            local sq = getCell():getGridSquare(x,y,sz);
+    local sx, sy, sz = square:getX(), square:getY(), square:getZ();
+    for x = sx - radius, sx + radius do
+        for y = sy - radius, sy + radius do
+            local sq = getCell():getGridSquare(x, y, sz);
             if sq and utils:isDrainPipeSquare(sq) then
                 local _, pipeObject, _, _ = utils:getSpriteCategoryMemberOnTile(sq, enums.pipeType.drain)
                 if pipeObject then
