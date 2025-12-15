@@ -10,6 +10,10 @@ Functional Gutters is a mod for the video game `Project Zomboid [B42]` that intr
 
 ## FAQ
 
+### Does this mod work in multiplayer (build 42.13+)?
+
+* Yes, the mod has been updated with initial multiplayer support. Servers will use the default mod options (1.0 rain factor, pipe wrench required) until configurable sandbox values are added in a future update.
+
 ### Can this mod be safely added mid-save?
 
 * Yes, but it will not change any already existing collectors that happen to be placed on a gutter tile.
@@ -103,22 +107,8 @@ If true, prints debug messages to the console and adds an additional context men
 
 
 ## Changelog 
-### 1.1
-- Support all vanilla animal troughs
-- Support generic fluid container iso objects
-    - Confirmed with the Useful Barrels mod
-- Add connect & disconnect plumbing actions 
-    - Includes "Require Pipe Wrench" mod option which defaults to True
-    - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
-
-### 1.2
-- Add buildable gutter pipes
-    - Supports both pre-existing and player-built structures
-- Use roof size to determine rain factor
-    - Pre-existing structures are assumed to already have gutters so the entire roof's area is used for rain harvesting
-    - Player-built structures require crafted gutter pipes to increase the area available for rain harvesting
-- Add gutter system ui panel
-- Add newspaper classified ad for in-game tutorial
+### 1.4
+- Add multiplayer support (build 42.13+)
 
 ### 1.3
 - Much improved pipe & roof mapping
@@ -131,9 +121,25 @@ If true, prints debug messages to the console and adds an additional context men
     - Might decrease or remove completely in future updates
 - Updates to match changes in vanilla animal trough definitions from 42.10
 
+### 1.2
+- Add buildable gutter pipes
+    - Supports both pre-existing and player-built structures
+- Use roof size to determine rain factor
+    - Pre-existing structures are assumed to already have gutters so the entire roof's area is used for rain harvesting
+    - Player-built structures require crafted gutter pipes to increase the area available for rain harvesting
+- Add gutter system ui panel
+- Add newspaper classified ad for in-game tutorial
+
+### 1.1
+- Support all vanilla animal troughs
+- Support generic fluid container iso objects
+    - Confirmed with the Useful Barrels mod
+- Add connect & disconnect plumbing actions 
+    - Includes "Require Pipe Wrench" mod option which defaults to True
+    - Available through the right-click context menu when a tile contains both a gutter drain and a valid fluid container object
+
 ## Next Steps
 ### TODO Medium Priority 
-- Update README to better reflect 1.2 updates
 - Add roof section tooltip
     - need to visualize when 'max' capacity has been reached and show how 'overflow' is calculated
 - Add additional gutter material types
