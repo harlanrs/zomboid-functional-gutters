@@ -1,5 +1,3 @@
-if isClient() then return end
-
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local isoUtils = require("FG_Utils_Iso")
@@ -34,11 +32,11 @@ function DrainPipeService:onIsValid(buildParams)
     end
 
     -- Requires a floor (so any collectors can be placed on top)
-	if z > 0 then
-		if not square:hasFloor() then
+    if z > 0 then
+        if not square:hasFloor() then
             return false
         end
-	end
+    end
 
     -- Requires a wall/pole (to attach on)
     if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
@@ -91,8 +89,7 @@ function DrainPipeService:onIsValid(buildParams)
         -- Allow for closer placement
     end
 
-	return true
+    return true
 end
-
 
 return DrainPipeService

@@ -1,10 +1,15 @@
-if isClient() then return end
-
-require "ISBaseObject"
-
 local utils = require("FG_Utils")
 
-local BasePipeServiceInterface = ISBaseObject:derive("BasePipeServiceInterface");
+local BasePipeServiceInterface = {}
+BasePipeServiceInterface.Type = "BasePipeServiceInterface"
+
+function BasePipeServiceInterface:derive(type)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    o.Type = type;
+    return o
+end
 
 function BasePipeServiceInterface:isObjectType(object)
     return utils:isAnyPipeType(object)

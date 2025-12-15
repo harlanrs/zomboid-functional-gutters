@@ -1,5 +1,3 @@
-if isClient() then return end
-
 local enums = require("FG_Enums")
 local utils = require("FG_Utils")
 local isoUtils = require("FG_Utils_Iso")
@@ -15,7 +13,7 @@ end
 
 function GutterPipeService:onCreate(createParams)
     local object = createParams.thumpable
-    utils:modPrint("Gutter pipe on create func: "..tostring(object))
+    utils:modPrint("Gutter pipe on create func: " .. tostring(object))
     -- Bug in vanilla atm where tools that are 'drained' when building an iso thumpable object are added to the object's mod data
     -- The issue is that the consumed build inputs added to the object's mod data are also used to determine what items can be returned on scrap
     -- This leads to a weird bug in vanilla where scrapping a metal iso object can return a full blowtorch and/or welding rods
@@ -120,7 +118,8 @@ function GutterPipeService:onIsValid(buildParams)
 
         if not isoUtils:hasWallW(adjacentSquareN) then
             -- Check if there is a floor on the adjacent square north + 1 z level
-            local adjacentSquareNUp = getCell():getGridSquare(adjacentSquareN:getX(), adjacentSquareN:getY(), adjacentSquareN:getZ() + 1)
+            local adjacentSquareNUp = getCell():getGridSquare(adjacentSquareN:getX(), adjacentSquareN:getY(),
+                adjacentSquareN:getZ() + 1)
             if not adjacentSquareNUp then
                 return false
             end
@@ -134,7 +133,8 @@ function GutterPipeService:onIsValid(buildParams)
 
                 if not isoUtils:hasWallN(adjacentSquareW) then
                     -- Check if there is a floor on the adjacent square west + 1 z level
-                    local adjacentSquareWUp = getCell():getGridSquare(adjacentSquareW:getX(), adjacentSquareW:getY(), adjacentSquareW:getZ() + 1)
+                    local adjacentSquareWUp = getCell():getGridSquare(adjacentSquareW:getX(), adjacentSquareW:getY(),
+                        adjacentSquareW:getZ() + 1)
                     if not adjacentSquareWUp or not adjacentSquareWUp:hasFloor() then
                         return false
                     end
@@ -143,7 +143,7 @@ function GutterPipeService:onIsValid(buildParams)
         end
     end
 
-	return true
+    return true
 end
 
 return GutterPipeService
