@@ -8,7 +8,8 @@ FG_UI_GutterInfoPanel = ISPanel:derive("FG_UI_GutterInfoPanel")
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local UI_BORDER_SPACING = 10
 local BUTTON_HGT = FONT_HGT_SMALL + 6
-local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():getR(), getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(),1)
+local OBJECT_HIGHLIGHT_COLOR = ColorInfo.new(getCore():getGoodHighlitedColor():getR(),
+    getCore():getGoodHighlitedColor():getG(), getCore():getGoodHighlitedColor():getB(), 1)
 
 function FG_UI_GutterInfoPanel:initialise()
     ISPanel.initialise(self)
@@ -33,19 +34,19 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
 
     local pipeMap = self.gutterSection.pipeMap
     local drainCount = pipeMap[enums.pipeType.drain].count
-    if self.pipeInfo.drain.cache~=drainCount then
+    if self.pipeInfo.drain.cache ~= drainCount then
         self.pipeInfo.drain.cache = drainCount
         self.pipeInfo.drain.value = tostring(drainCount)
     end
 
     local verticalCount = pipeMap[enums.pipeType.vertical].count
-    if self.pipeInfo.vertical.cache~=verticalCount then
+    if self.pipeInfo.vertical.cache ~= verticalCount then
         self.pipeInfo.vertical.cache = verticalCount
         self.pipeInfo.vertical.value = tostring(verticalCount)
     end
 
     local gutterCount = pipeMap[enums.pipeType.gutter].count
-    if self.pipeInfo.gutter.cache~=gutterCount then
+    if self.pipeInfo.gutter.cache ~= gutterCount then
         self.pipeInfo.gutter.cache = gutterCount
         self.pipeInfo.gutter.value = tostring(gutterCount)
     end
@@ -65,21 +66,21 @@ function FG_UI_GutterInfoPanel:renderPipeInfo()
 
     y = y + FONT_HGT_SMALL + UI_BORDER_SPACING + 1
     c = self.tagColor
-    self:renderText(self.pipeInfo.drain.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.pipeInfo.drain.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
-    self:renderText(self.pipeInfo.drain.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    self:renderText(self.pipeInfo.drain.value, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     y = y + BUTTON_HGT
     c = self.tagColor
-    self:renderText(self.pipeInfo.vertical.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.pipeInfo.vertical.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
-    self:renderText(self.pipeInfo.vertical.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    self:renderText(self.pipeInfo.vertical.value, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     y = y + BUTTON_HGT
     c = self.tagColor
-    self:renderText(self.pipeInfo.gutter.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.pipeInfo.gutter.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
-    self:renderText(self.pipeInfo.gutter.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    self:renderText(self.pipeInfo.gutter.value, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     local pipeSectionWidth = tagWid + valWid + UI_BORDER_SPACING * 3 + 1
     if pipeSectionWidth > self.maxSectionWidth then
@@ -96,27 +97,28 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
     self:renderText(getText("UI_panel_FunctionalGutters_section_Roof_title"), x, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     local roofArea = self.gutterSection.roofArea
-    if self.roofInfo.area.cache~=roofArea then
+    if self.roofInfo.area.cache ~= roofArea then
         self.roofInfo.area.cache = roofArea
         self.roofInfo.area.value = tostring(roofArea)
     end
 
     local systemDrainCount = self.gutterSection.drainCount
-    if self.roofInfo.drainCount.cache~=systemDrainCount then
+    if self.roofInfo.drainCount.cache ~= systemDrainCount then
         self.roofInfo.drainCount.cache = systemDrainCount
         self.roofInfo.drainCount.value = tostring(systemDrainCount)
     end
 
     local optimalDrainCount = self.gutterSection.optimalDrainCount
-    if self.roofInfo.optimalDrainCount.cache~=optimalDrainCount then
+    if self.roofInfo.optimalDrainCount.cache ~= optimalDrainCount then
         self.roofInfo.optimalDrainCount.cache = optimalDrainCount
         self.roofInfo.optimalDrainCount.value = tostring(optimalDrainCount)
     end
 
     local gutterTileCount = self.gutterSection.tileCount
-    if self.roofInfo.gutterTileCount.cache~=gutterTileCount then
+    if self.roofInfo.gutterTileCount.cache ~= gutterTileCount then
         self.roofInfo.gutterTileCount.cache = gutterTileCount
-        self.roofInfo.gutterTileCount.value = (not gutterTileCount or gutterTileCount == 0) and "0" or tostring(round(gutterTileCount, 2))
+        self.roofInfo.gutterTileCount.value = (not gutterTileCount or gutterTileCount == 0) and "0" or
+            tostring(round(gutterTileCount, 2))
     end
 
     local tagWid = math.max(
@@ -134,22 +136,22 @@ function FG_UI_GutterInfoPanel:renderRoofInfo()
 
     y = y + FONT_HGT_SMALL + UI_BORDER_SPACING + 1
     c = self.tagColor
-    self:renderText(self.roofInfo.area.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.roofInfo.area.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
-    self:renderText(self.roofInfo.area.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    self:renderText(self.roofInfo.area.value, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     y = y + BUTTON_HGT
     c = self.tagColor
-    self:renderText(self.roofInfo.drainCount.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.roofInfo.drainCount.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = systemDrainCount > optimalDrainCount and self.invalidColor or self.textColor
-    local drainCountText = self.roofInfo.drainCount.value.."/"..self.roofInfo.optimalDrainCount.value
-    self:renderText(drainCountText, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    local drainCountText = self.roofInfo.drainCount.value .. "/" .. self.roofInfo.optimalDrainCount.value
+    self:renderText(drainCountText, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     y = y + BUTTON_HGT
     c = self.tagColor
-    self:renderText(self.roofInfo.gutterTileCount.tag, tagX, y, c.r,c.g,c.b,c.a, UIFont.Small, self.drawTextRight)
+    self:renderText(self.roofInfo.gutterTileCount.tag, tagX, y, c.r, c.g, c.b, c.a, UIFont.Small, self.drawTextRight)
     c = self.textColor
-    self:renderText(self.roofInfo.gutterTileCount.value, valX, y, c.r,c.g,c.b,c.a, UIFont.Small)
+    self:renderText(self.roofInfo.gutterTileCount.value, valX, y, c.r, c.g, c.b, c.a, UIFont.Small)
 
     local roofSectionWidth = tagWid + valWid + UI_BORDER_SPACING * 3 + 1
     if roofSectionWidth > self.maxSectionWidth then
@@ -198,9 +200,7 @@ function FG_UI_GutterInfoPanel:onRoof()
     end
 end
 
-
 function FG_UI_GutterInfoPanel:createChildren() -- Use to make the elements
-    -- local btnW = (self:getWidth() - (3 * UI_BORDER_SPACING)) / 2
     local btnW = self.maxSectionWidth
     local btnX = UI_BORDER_SPACING + 1
     local btnY = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT
@@ -230,12 +230,12 @@ function FG_UI_GutterInfoPanel:update()
     self:setHeight(sectionHeight + UI_BORDER_SPACING)
 
     local btnY = self:getHeight() - UI_BORDER_SPACING - BUTTON_HGT
-    self.btnRoof:setY(btnY)
     self.btnPipes:setY(btnY)
+    self.btnRoof:setY(btnY)
 
     local btnX = UI_BORDER_SPACING + 1
-    self.btnRoof:setX(btnX)
-    self.btnPipes:setX(self:getRight() - UI_BORDER_SPACING * 2 - self.btnPipes:getWidth())
+    self.btnPipes:setX(btnX)
+    self.btnRoof:setX(self:getRight() - UI_BORDER_SPACING * 2 - self.btnRoof:getWidth())
 end
 
 function FG_UI_GutterInfoPanel:highlightGutterObject(square, highlight)
@@ -280,7 +280,7 @@ function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
 
     if not highlightObject then
         -- Might still be a 'valid roof' but nothing to highlight (ex: multi-level roof) but also could indicate over counting of roof area
-        utils:modPrint("No roof object found for square: "..tostring(square:getX())..","..tostring(square:getY())..","..tostring(square:getZ()))
+        utils:modPrint("No roof object found for square: " .. tostring(square:getX()) .. "," .. tostring(square:getY()) .. "," .. tostring(square:getZ()))
         return
     end
 
@@ -295,7 +295,7 @@ function FG_UI_GutterInfoPanel:highlightGutterObjects(highlight)
     if not self.gutterSection.pipeMap then return end
 
     if not self.gutterSection.pipeMap.all then
-        utils:modPrint("No gutter pipe map found for section: "..tostring(self.gutterSection))
+        utils:modPrint("No gutter pipe map found for section: " .. tostring(self.gutterSection))
         return
     end
 
@@ -332,16 +332,16 @@ end
 function FG_UI_GutterInfoPanel:renderText(_s, _x, _y, _r, _g, _b, _a, _font, _func)
     local alpha = 1.0
     if _func then
-        _func(self, _s, _x+1, _y-1, 0, 0, 0, alpha, _font)
-        _func(self, _s, _x+1, _y+1, 0, 0, 0, alpha, _font)
-        _func(self, _s, _x-1, _y+1, 0, 0, 0, alpha, _font)
-        _func(self, _s, _x-1, _y-1, 0, 0, 0, alpha, _font)
+        _func(self, _s, _x + 1, _y - 1, 0, 0, 0, alpha, _font)
+        _func(self, _s, _x + 1, _y + 1, 0, 0, 0, alpha, _font)
+        _func(self, _s, _x - 1, _y + 1, 0, 0, 0, alpha, _font)
+        _func(self, _s, _x - 1, _y - 1, 0, 0, 0, alpha, _font)
         _func(self, _s, _x, _y, _r, _g, _b, _a, _font)
     else
-        self:drawText(_s, _x+1, _y-1, 0, 0, 0, alpha, _font)
-        self:drawText(_s, _x+1, _y+1, 0, 0, 0, alpha, _font)
-        self:drawText(_s, _x-1, _y+1, 0, 0, 0, alpha, _font)
-        self:drawText(_s, _x-1, _y-1, 0, 0, 0, alpha, _font)
+        self:drawText(_s, _x + 1, _y - 1, 0, 0, 0, alpha, _font)
+        self:drawText(_s, _x + 1, _y + 1, 0, 0, 0, alpha, _font)
+        self:drawText(_s, _x - 1, _y + 1, 0, 0, 0, alpha, _font)
+        self:drawText(_s, _x - 1, _y - 1, 0, 0, 0, alpha, _font)
         self:drawText(_s, _x, _y, _r, _g, _b, _a, _font)
     end
 end
@@ -362,15 +362,15 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
     self.__index = self
-    o.backgroundColor = {r=0, g=0, b=0, a=0.9}
+    o.backgroundColor = { r = 0, g = 0, b = 0, a = 0.9 }
     o.btnDefault = {
-        borderColor = {r=0.7, g=0.7, b=0.7, a=1},
-	    backgroundColor = {r=0, g=0, b=0, a=1.0},
-	    backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0}
+        borderColor = { r = 0.7, g = 0.7, b = 0.7, a = 1 },
+        backgroundColor = { r = 0, g = 0, b = 0, a = 1.0 },
+        backgroundColorMouseOver = { r = 0.3, g = 0.3, b = 0.3, a = 1.0 }
     }
-    o.textColor = {r=1,g=1,b=1,a=1}
-    o.tagColor = {r=0.8,g=0.8,b=0.8,a=1}
-    o.invalidColor = {r=0.6,g=0.2,b=0.2,a=1}
+    o.textColor = { r = 1, g = 1, b = 1, a = 1 }
+    o.tagColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
+    o.invalidColor = { r = 0.6, g = 0.2, b = 0.2, a = 1 }
 
     ---@type IsoObject
     o.gutterDrain = gutter
@@ -392,15 +392,15 @@ function FG_UI_GutterInfoPanel:new(x, y, width, height, gutter, gutterSection)
     o.maxSectionHeight = o.minSectionHeight
 
     o.pipeInfo = {
-        [enums.pipeType.drain] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Drain")..": ", value = "0", cache = 0 },
-        [enums.pipeType.vertical] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Vertical")..": ", value = "0", cache = 0 },
-        [enums.pipeType.gutter] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Gutter")..": ", value = "0", cache = 0 },
+        [enums.pipeType.drain] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Drain") .. ": ", value = "0", cache = 0 },
+        [enums.pipeType.vertical] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Vertical") .. ": ", value = "0", cache = 0 },
+        [enums.pipeType.gutter] = { tag = getText("UI_panel_FunctionalGutters_section_Pipes_item_Gutter") .. ": ", value = "0", cache = 0 },
     }
     o.roofInfo = {
-        area = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_TotalArea")..": ", value = "0", cache = 0 },
-        drainCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainSections")..": ", value = "0", cache = 0 },
-        optimalDrainCount = { tag = "Optimal Drain Sections"..": ", value = "0", cache = 0 },
-        gutterTileCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainArea")..": ", value = "0", cache = 0 },
+        area = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_TotalArea") .. ": ", value = "0", cache = 0 },
+        drainCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainSections") .. ": ", value = "0", cache = 0 },
+        optimalDrainCount = { tag = "Optimal Drain Sections" .. ": ", value = "0", cache = 0 },
+        gutterTileCount = { tag = getText("UI_panel_FunctionalGutters_section_Roof_item_DrainArea") .. ": ", value = "0", cache = 0 },
     }
 
     return o

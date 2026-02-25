@@ -368,9 +368,9 @@ end
 
 ---@param primaryDrainPipe IsoObject
 ---@param drainPipes table<string,IsoObject>
----@param primaryBuilding IsoBuilding|nil
+---@param primaryBuildingDef BuildingDef|nil
 ---@return table<string, IsoObject> relatedDrains
-function serviceUtils:filterGutterDrainsByBuildingType(primaryDrainPipe, drainPipes, primaryBuilding)
+function serviceUtils:filterGutterDrainsByBuildingType(primaryDrainPipe, drainPipes, primaryBuildingDef)
     -- Determine if square has a pre-built building or is a player-built structure
     local primaryDrainSquare = primaryDrainPipe:getSquare()
     local maxLevel = utils:getModDataMaxLevel(primaryDrainSquare)
@@ -381,11 +381,11 @@ function serviceUtils:filterGutterDrainsByBuildingType(primaryDrainPipe, drainPi
         local isAssociated = false
 
         -- Filter by building type
-        local drainBuilding = isoUtils:getAttachedBuilding(drainPipe:getSquare())
-        if primaryBuilding then
+        local drainBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
+        if primaryBuildingDef then
             -- Vanilla building type
             -- Check if the drain pipe is attached to the same building
-            if drainBuilding and drainBuilding:getID() == primaryBuilding:getID() then
+            if drainBuildingDef and drainBuildingDef:getID() == primaryBuildingDef:getID() then
                 -- Check if drains on the same building are getting water from the same level
                 if maxLevel then
                     local drainPipeSquare = drainPipe:getSquare()
@@ -409,7 +409,7 @@ function serviceUtils:filterGutterDrainsByBuildingType(primaryDrainPipe, drainPi
         else
             -- Custom building type
             -- Check if the drain is not attached to any building
-            if not drainBuilding then
+            if not drainBuildingDef then
                 isAssociated = true
             end
         end
@@ -469,11 +469,10 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
     end
 
     -- Determine if square has a pre-built building or is a player-built structure
-    local primaryBuilding = isoUtils:getAttachedBuilding(sourceDrainSquare)
+    local primaryBuildingDef = isoUtils:getAttachedBuilding(sourceDrainSquare)
 
     -- Reduce the list of drain pipes to only those relevant to the building mode
-    local associatedBuildingDrainMap = self:filterGutterDrainsByBuildingType(sourceDrainPipe, neighborDrainMap,
-        primaryBuilding)
+    local associatedBuildingDrainMap = self:filterGutterDrainsByBuildingType(sourceDrainPipe, neighborDrainMap, primaryBuildingDef)
 
     -- Return early if no non-sibling drains leftover after filter round 1
     if utils:getDictSize(associatedBuildingDrainMap) == 0 then
@@ -481,7 +480,7 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
     end
 
     -- If custom building type, apply more complex checks for shared pipes and roof tiles across the associated drain pipes
-    if not primaryBuilding then
+    if not primaryBuildingDef then
         associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
             associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
     end

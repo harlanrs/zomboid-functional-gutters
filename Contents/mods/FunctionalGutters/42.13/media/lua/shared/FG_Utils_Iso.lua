@@ -167,9 +167,37 @@ function isoUtils:hasWallNW(square, props)
 end
 
 ---@param square IsoGridSquare
+---@param props PropertyContainer|nil
+---@return boolean
+function isoUtils:hasWallNW(square, props)
+    if not props then
+        props = square:getProperties()
+    end
+    if self:hasWallN(square, props) or self:hasWallW(square, props) then
+        return true
+    end
+
+    return false
+end
+
+---@param square IsoGridSquare
+---@return boolean
+function isoUtils:hasPole(square)
+    local squareObjects = square:getObjects()
+    for i = 0, squareObjects:size() - 1 do
+        local object = squareObjects:get(i)
+        if utils:isAnyPole(object) then
+            return true
+        end
+    end
+    return false
+end
+
+---@param square IsoGridSquare
 ---@param directions table<IsoDirections>|nil
----@return IsoBuilding|nil
-function isoUtils:getAdjacentBuilding(square, directions)
+---@param metaGrid MetaGrid|nil
+---@return BuildingDef|nil
+function isoUtils:getAdjacentBuilding(square, directions, metaGrid)
     if not directions then
         -- South & East tiles are least likely
         directions = table.newarray(
@@ -184,17 +212,23 @@ function isoUtils:getAdjacentBuilding(square, directions)
         )
     end
 
+    if not metaGrid then
+        metaGrid = getWorld():getMetaGrid()
+    end
+
+    local adjacentBuildingDef = nil
     for i = 1, #directions do
         local adjacentSquare = square:getAdjacentSquare(directions[i])
         if adjacentSquare then
-            local adjacentBuilding = adjacentSquare:getBuilding()
-            if adjacentBuilding then
-                return adjacentBuilding
+            adjacentBuildingDef = metaGrid:getAssociatedBuildingAt(adjacentSquare:getX(), adjacentSquare:getY())
+            if adjacentBuildingDef then
+                utils:modPrint("Found adjacent building at direction: " .. tostring(directions[i]))
+                break
             end
         end
     end
 
-    return nil
+    return adjacentBuildingDef
 end
 
 ---@param building IsoBuilding
@@ -566,16 +600,19 @@ function isoUtils:findGutterTopLevel(square)
 end
 
 ---@param square IsoGridSquare
----@return IsoBuilding|nil
+---@return BuildingDef|nil
 function isoUtils:getAttachedBuilding(square)
     -- Check square directly
-    local squareBuilding = square:getBuilding()
+    local metaGrid = getWorld():getMetaGrid()
+    local squareBuilding = metaGrid:getAssociatedBuildingAt(square:getX(), square:getY())
+    -- local squareBuilding = square:getBuilding()
     if squareBuilding then
         return squareBuilding
     end
 
     -- Check adjacent squares
-    return self:getAdjacentBuilding(square)
+    local adjacentBuilding = self:getAdjacentBuilding(square, nil, metaGrid)
+    return adjacentBuilding
 end
 
 ---@param pipeMap GutterPipeMap
@@ -674,15 +711,14 @@ end
 
 ---@param square IsoGridSquare
 ---@param pipeMap GutterPipeMap|nil
----@param building IsoBuilding
+---@param buildingDef BuildingDef
 ---@return GutterRoofMap roofMap
-function isoUtils:getVanillaBuildingRoofMap(square, pipeMap, building)
+function isoUtils:getVanillaBuildingRoofMap(square, pipeMap, buildingDef)
     if not pipeMap then
         pipeMap = self:crawlGutterPipes(square)
     end
 
     local topGutterFloor = pipeMap.all.maxZ
-    local buildingDef = building:getDef()
     local buildingDefId = buildingDef:getID()
     local maxZ = buildingDef:getMaxLevel()
     local roofZ = topGutterFloor > maxZ and maxZ + 1 or topGutterFloor + 1
@@ -745,17 +781,20 @@ end
 ---@param pipeMap GutterPipeMap
 ---@return GutterRoofMap roofMap, BuildingType buildingType
 function isoUtils:getGutterRoofMap(square, pipeMap)
-    local building = self:getAttachedBuilding(square)
+    local buildingDef = self:getAttachedBuilding(square)
     local roofMap, buildingType
-    if building then
+    if buildingDef then
         -- Vanilla building mode
         buildingType = enums.buildingType.vanilla
-        roofMap = self:getVanillaBuildingRoofMap(square, pipeMap, building)
+        roofMap = self:getVanillaBuildingRoofMap(square, pipeMap, buildingDef)
     else
         -- Custom building mode
         buildingType = enums.buildingType.custom
         roofMap = self:getCustomBuildingRoofMap(square, pipeMap)
     end
+
+    utils:modPrint("Getting roof map for building: " .. tostring(buildingType) .. " on square: " ..
+        tostring(square:getX()) .. ", " .. tostring(square:getY()) .. ", " .. tostring(square:getZ()))
 
     return roofMap, buildingType
 end

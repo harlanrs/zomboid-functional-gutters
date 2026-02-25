@@ -32,29 +32,34 @@ function DrainPipeService:onIsValid(buildParams)
     end
 
     -- Requires a floor (so any collectors can be placed on top)
-    if z > 0 then
-        if not square:hasFloor() then
-            return false
-        end
+    if z > 0 and not square:hasFloor() then
+        return false
     end
 
     -- Requires a wall/pole (to attach on)
-    if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
+    if not isoUtils:hasWallNW(square) and not isoUtils:hasPole(square) then
         -- Check if the square to the north has a wall on the west
         local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
         if not adjacentSquareN then
             return false
         end
 
-        if not isoUtils:hasWallW(adjacentSquareN) then
+        if not isoUtils:hasWallW(adjacentSquareN) and not isoUtils:hasPole(adjacentSquareN) then
             -- Check if the square to the west has a wall on the north
             local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
             if not adjacentSquareW then
                 return false
             end
 
-            if not isoUtils:hasWallN(adjacentSquareW) then
-                return false
+            if not isoUtils:hasWallN(adjacentSquareW) and not isoUtils:hasPole(adjacentSquareW) then
+                -- Need to check adjacent north-west square for pole directly
+                local adjacentSquareNW = square:getAdjacentSquare(localIsoDirections.NW)
+                if not adjacentSquareNW then
+                    return false
+                end
+                if not isoUtils:hasPole(adjacentSquareNW) then
+                    return false
+                end
             end
         end
     end
@@ -62,31 +67,6 @@ function DrainPipeService:onIsValid(buildParams)
     -- Requires no existing drain pipe
     if utils:isDrainPipeSquare(square) then
         return false
-    end
-
-    -- Requires no existing drain pipe within x tiles (with caveat)
-    local closeDrainPipe = isoUtils:findPipeInRadius(square, 3, enums.pipeType.drain)
-    if closeDrainPipe then
-        -- Check if drain pipe in on the same pre-made building as the selected drain square
-        -- Allows for placing drains closer together when they are part of different nearby buildings
-        local buildSquareBuilding = isoUtils:getAttachedBuilding(square)
-        local closeDrainPipeBuilding = isoUtils:getAttachedBuilding(closeDrainPipe:getSquare())
-        if not buildSquareBuilding and not closeDrainPipeBuilding then
-            -- Neither are a building
-            return false
-        end
-
-        if buildSquareBuilding and closeDrainPipeBuilding then
-            -- Both are buildings - check if they are the same building
-            if buildSquareBuilding:getID() == closeDrainPipeBuilding:getID() then
-                return false
-            end
-            -- Different buildings - allow for closer placement
-        end
-
-        -- ELSE
-        -- One is vanilla and the other is custom
-        -- Allow for closer placement
     end
 
     return true

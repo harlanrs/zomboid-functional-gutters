@@ -45,22 +45,29 @@ function VerticalPipeService:onIsValid(buildParams)
     end
 
     -- Requires a wall/pole (to attach on)
-    if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
+    if not isoUtils:hasWallNW(square) and not isoUtils:hasPole(square) then
         -- Check if the square to the north has a wall on the west
         local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
         if not adjacentSquareN then
             return false
         end
 
-        if not isoUtils:hasWallW(adjacentSquareN) then
+        if not isoUtils:hasWallW(adjacentSquareN) and not isoUtils:hasPole(adjacentSquareN) then
             -- Check if the square to the west has a wall on the north
             local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
             if not adjacentSquareW then
                 return false
             end
 
-            if not isoUtils:hasWallN(adjacentSquareW) then
-                return false
+            if not isoUtils:hasWallN(adjacentSquareW) and not isoUtils:hasPole(adjacentSquareW) then
+                -- Need to check adjacent north-west square for pole directly
+                local adjacentSquareNW = square:getAdjacentSquare(localIsoDirections.NW)
+                if not adjacentSquareNW then
+                    return false
+                end
+                if not isoUtils:hasPole(adjacentSquareNW) then
+                    return false
+                end
             end
         end
     end
