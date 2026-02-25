@@ -479,11 +479,10 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
         return siblingDrainMap
     end
 
-    -- If custom building type, apply more complex checks for shared pipes and roof tiles across the associated drain pipes
-    if not primaryBuildingDef then
-        associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
-            associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
-    end
+    -- Apply shared component checks to filter drains that don't actually share pipes or roof tiles
+    -- This handles split roofs on vanilla buildings and overlapping custom structures
+    associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
+        associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
 
     -- Combine the sibling drains with the leftover associated drains
     for drainID, drainPipe in pairs(associatedBuildingDrainMap) do
