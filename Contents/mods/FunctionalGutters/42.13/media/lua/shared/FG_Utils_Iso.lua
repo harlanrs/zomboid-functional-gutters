@@ -667,7 +667,6 @@ function isoUtils:getAttachedBuilding(square)
     -- Check square directly
     local metaGrid = getWorld():getMetaGrid()
     local squareBuilding = metaGrid:getAssociatedBuildingAt(square:getX(), square:getY())
-    -- local squareBuilding = square:getBuilding()
     if squareBuilding then
         return squareBuilding
     end
@@ -854,9 +853,6 @@ function isoUtils:getGutterRoofMap(square, pipeMap)
         buildingType = enums.buildingType.custom
         roofMap = self:getCustomBuildingRoofMap(square, pipeMap)
     end
-
-    utils:modPrint("Getting roof map for building: " .. tostring(buildingType) .. " on square: " ..
-        tostring(square:getX()) .. ", " .. tostring(square:getY()) .. ", " .. tostring(square:getZ()))
 
     return roofMap, buildingType
 end
