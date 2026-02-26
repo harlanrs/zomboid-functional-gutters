@@ -167,20 +167,6 @@ function isoUtils:hasWallNW(square, props)
 end
 
 ---@param square IsoGridSquare
----@param props PropertyContainer|nil
----@return boolean
-function isoUtils:hasWallNW(square, props)
-    if not props then
-        props = square:getProperties()
-    end
-    if self:hasWallN(square, props) or self:hasWallW(square, props) then
-        return true
-    end
-
-    return false
-end
-
----@param square IsoGridSquare
 ---@return boolean
 function isoUtils:hasPole(square)
     local squareObjects = square:getObjects()
