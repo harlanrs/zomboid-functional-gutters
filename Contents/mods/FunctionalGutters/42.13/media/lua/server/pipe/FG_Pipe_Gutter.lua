@@ -5,8 +5,6 @@ local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 
 local GutterPipeService = BasePipeServiceInterface:derive("GutterPipeService")
 
-local localIsoDirections = IsoDirections
-
 function GutterPipeService:isObjectType(object)
     return utils:isGutterPipe(object)
 end
@@ -109,45 +107,8 @@ function GutterPipeService:onIsValid(buildParams)
 
     -- Requires a wall/pole on same level or floor on level above (to attach on)
     -- TODO check if there is a garage door section
-    if not isoUtils:hasWallNW(square) and not isoUtils:hasPole(square) then
-        -- Check if the square to the north has a wall on the west
-        local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
-        if not adjacentSquareN then
-            return false
-        end
-
-        if not isoUtils:hasWallW(adjacentSquareN) and not isoUtils:hasPole(adjacentSquareN) then
-            -- Check if there is a floor on the adjacent square north + 1 z level
-            local adjacentSquareNUp = getCell():getGridSquare(adjacentSquareN:getX(), adjacentSquareN:getY(),
-                adjacentSquareN:getZ() + 1)
-            if not adjacentSquareNUp then
-                return false
-            end
-
-            if not adjacentSquareNUp:hasFloor() then
-                -- Check if the square to the west has a wall on the north
-                local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
-                if not adjacentSquareW then
-                    return false
-                end
-
-                if not isoUtils:hasWallN(adjacentSquareW) and not isoUtils:hasPole(adjacentSquareW) then
-                    -- Check if there is a floor on the adjacent square west + 1 z level
-                    local adjacentSquareWUp = getCell():getGridSquare(adjacentSquareW:getX(), adjacentSquareW:getY(),
-                        adjacentSquareW:getZ() + 1)
-                    if not adjacentSquareWUp or not adjacentSquareWUp:hasFloor() then
-                        -- Need to check adjacent north-west square for pole directly
-                        local adjacentSquareNW = square:getAdjacentSquare(localIsoDirections.NW)
-                        if not adjacentSquareNW then
-                            return false
-                        end
-                        if not isoUtils:hasPole(adjacentSquareNW) then
-                            return false
-                        end
-                    end
-                end
-            end
-        end
+    if not isoUtils:hasValidPipeAttachment(square) and not isoUtils:hasValidFloorAttachment(square) then
+        return false
     end
 
     return true

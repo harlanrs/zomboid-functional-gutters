@@ -193,6 +193,83 @@ function isoUtils:hasPole(square)
     return false
 end
 
+---Checks if a square has a valid wall or pole attachment point for pipes
+---Checks current square, adjacent N, W, NW, E, and S squares for walls/poles
+---@param square IsoGridSquare
+---@return boolean
+function isoUtils:hasValidPipeAttachment(square)
+    -- Check current square for walls NW or pole
+    if self:hasWallNW(square) or self:hasPole(square) then
+        return true
+    end
+
+    -- Check if the square to the north exists and has a wall on the west or pole
+    local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
+    if not adjacentSquareN then
+        return false
+    end
+    if self:hasWallW(adjacentSquareN) or self:hasPole(adjacentSquareN) then
+        return true
+    end
+
+    -- Check if the square to the west exists and has a wall on the north or pole
+    local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
+    if not adjacentSquareW then
+        return false
+    end
+    if self:hasWallN(adjacentSquareW) or self:hasPole(adjacentSquareW) then
+        return true
+    end
+
+    -- Check adjacent north-west square for pole
+    local adjacentSquareNW = square:getAdjacentSquare(localIsoDirections.NW)
+    if adjacentSquareNW and self:hasPole(adjacentSquareNW) then
+        return true
+    end
+
+    -- Check if the square to the east has a pole (covers NE corner)
+    local adjacentSquareE = square:getAdjacentSquare(localIsoDirections.E)
+    if adjacentSquareE and self:hasPole(adjacentSquareE) then
+        return true
+    end
+
+    -- Check if the square to the south has a pole (covers SW corner)
+    local adjacentSquareS = square:getAdjacentSquare(localIsoDirections.S)
+    if adjacentSquareS and self:hasPole(adjacentSquareS) then
+        return true
+    end
+
+    return false
+end
+
+---Checks if a square has a valid floor attachment point above adjacent N or W squares
+---Used for gutter pipes which can attach to the underside of floors/roofs
+---@param square IsoGridSquare
+---@return boolean
+function isoUtils:hasValidFloorAttachment(square)
+    -- Check for floor on the square above adjacent N
+    local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
+    if adjacentSquareN then
+        local adjacentSquareNUp = getCell():getGridSquare(
+            adjacentSquareN:getX(), adjacentSquareN:getY(), adjacentSquareN:getZ() + 1)
+        if adjacentSquareNUp and adjacentSquareNUp:hasFloor() then
+            return true
+        end
+    end
+
+    -- Check for floor on the square above adjacent W
+    local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
+    if adjacentSquareW then
+        local adjacentSquareWUp = getCell():getGridSquare(
+            adjacentSquareW:getX(), adjacentSquareW:getY(), adjacentSquareW:getZ() + 1)
+        if adjacentSquareWUp and adjacentSquareWUp:hasFloor() then
+            return true
+        end
+    end
+
+    return false
+end
+
 ---@param square IsoGridSquare
 ---@param directions table<IsoDirections>|nil
 ---@param metaGrid MetaGrid|nil
