@@ -77,6 +77,23 @@ description=        [td]If true, prints debug messages to the console and adds a
 description=    [/tr]
 description=[/table]
 description=
+description=[h2]Removing Mod from Multiplayer[/h2]
+description=As of 42.13.1, there is an extra step required to properly remove the mod from multiplayer servers. This step is not specific Functional Gutters and will be required for any mods that add custom entities until a fix is added in the base game.
+description=
+description=[h3]Steps to remove the mod[/h3]
+description=[olist]
+description=  [*]Remove any player-crafted gutters from the game world - not required but will prevent invisible asset warnings being logged
+description=  [*]Stop the server
+description=  [*]Backup the server files if not done automatically on server shutdown
+description=  [*]Remove the mod from the server settings
+description=  [*]Locate and delete the following server files: WorldDictionary.bin, WorldDictionaryLog, WorldDictionaryReadable - location may differ but for hosted files on windows will be Users/<user name>/Zomboid/Saves/Multiplayer/<server name>
+description=  [*]Start the server back up - this will automatically regenerate the WorldDictionary files and allow clients to connect without crashing
+description=[/olist]
+description=
+description=[h3]But why do I need to do all of this?[/h3]
+description=The client syncs its own local copy of the server's WorldDictionary when connecting to the server. Any custom entities will still exist in the server's WorldDictionary with the flag removed=True whenever a mod is removed. Unfortunately in the current version of project zomboid multiplayer, this flag appears to be ignored and the client will crash with a reference error since the referenced entity scripts no longer exist for it locally.
+description=
+description=Deleting the server's WorldDictionary files forces the server to recreate them from scratch and they will no longer contain any entities from the removed mod allowing the client to properly connect once again.
 description=
 description=[url=https://github.com/harlanrs/zomboid-functional-gutters] View on github for more information [/url]
 description=
