@@ -285,7 +285,6 @@ function isoUtils:getAdjacentBuilding(square, directions, metaGrid)
         if adjacentSquare then
             adjacentBuildingDef = metaGrid:getAssociatedBuildingAt(adjacentSquare:getX(), adjacentSquare:getY())
             if adjacentBuildingDef then
-                utils:modPrint("Found adjacent building at direction: " .. tostring(directions[i]))
                 break
             end
         end
