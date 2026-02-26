@@ -60,7 +60,7 @@ enums.pipes = {
         type = enums.pipeType.drain,
         position = IsoDirections.NW,
         facing = IsoDirections.S,
-    }, -- nw corner | point south 
+    }, -- nw corner | point south
     industry_02_261 = {
         type = enums.pipeType.drain,
         position = IsoDirections.NW,
@@ -78,7 +78,7 @@ enums.pipes = {
     }, -- sw corner | point east
 
     --------------------------------------
-    -- Vertical pipes 
+    -- Vertical pipes
     -- Water tower
     industry_02_34 = {
         type = enums.pipeType.vertical,
@@ -235,15 +235,23 @@ function enums:getSmallTroughSprites()
     return self.smallTroughSprites
 end
 
+-- NOTE: not used currently
 function enums:getPrimaryTroughSprites()
-    return self.troughSprites
+    return self.primaryTroughSprites
 end
 
 function enums:getNorthTroughSprites()
     return self.northTroughSprites
 end
 
-enums.woodenPoleSprite = "walls_exterior_wooden_01_27"
+enums.woodenPoleSprite = "walls_exterior_wooden_01_27" -- craftable wooden pole
+enums.poles = {                                        -- TODO object def with position and facing
+    [enums.woodenPoleSprite] = true,
+    fixtures_railings_01_33 = true,                    -- wooden pole from rusty rifle; SW corner
+    fixtures_railings_01_35 = true,                    -- wooden pole from rusty rifle; NW corner
+    fixtures_railings_01_45 = true,                    -- wooden pole from rusty rifle; NE corner
+    fixtures_railings_01_46 = true,                    -- wooden pole from rusty rifle; SE corner
+}
 
 enums.options = {
     debug = "Debug",
@@ -282,7 +290,7 @@ enums.modCommands = {
 }
 
 enums.modEvents = {
-    OnGutterTileUpdate ="OnGutterTileUpdate"
+    OnGutterTileUpdate = "OnGutterTileUpdate"
 }
 
 enums.troughBaseRainFactor = 0.55
@@ -290,7 +298,7 @@ enums.maxRoofCrawlSteps = 4
 enums.maxGutterCrawlSteps = 48
 enums.maxBuildingBoundCrawlSteps = 25
 enums.maxRoofArea = 500 -- Max roof area in tiles
-enums.defaultDrainPipeSearchRadius = 16
+enums.defaultDrainPipeSearchRadius = 24
 enums.defaultDrainPipeSearchHeight = 1
 enums.gutterSectionPerimeterLength = 9
 enums.gutterSectionCapacityRatio = 0.25
@@ -313,44 +321,44 @@ enums.textures.icon = {
     collectorOff = "media/ui/FG_Collector_Icon_Off.png",
 }
 
----@alias PipeTypeMap 
----|{ 
----squares: table<string, IsoGridSquare>, 
----count: integer, 
+---@alias PipeTypeMap
+---|{
+---squares: table<string, IsoGridSquare>,
+---count: integer,
 ---maxZ: integer }
 
 -- Map of pipe type to list of squares containing a pipe of that type for a connected gutter system
----@alias GutterPipeMap 
+---@alias GutterPipeMap
 ---|{
 ---[PipeType.drain]: PipeTypeMap,
 ---[PipeType.vertical]: PipeTypeMap,
 ---[PipeType.gutter]: PipeTypeMap,
----all: PipeTypeMap } 
+---all: PipeTypeMap }
 
 -- Map of square ID to IsoGridSquare for a connected roof system
----@alias GutterRoofMap 
----|{ 
----squares: table<string, IsoGridSquare>, 
----count: integer, 
+---@alias GutterRoofMap
+---|{
+---squares: table<string, IsoGridSquare>,
+---count: integer,
 ---maxZ: integer }
 
 -- Map of object ID to IsoObject for all drains from connected or overlapping gutter systems
----@alias AssociatedDrainMap table<string, IsoObject> 
+---@alias AssociatedDrainMap table<string, IsoObject>
 
 ---@alias GutterSection
----|{ 
----["roofArea"]: integer, 
----["tileCount"]: integer, 
----["optimalDrainCount"]: integer, 
----["drainCount"]: integer, 
----["rainFactor"]: number, 
----["pipeMap"]: GutterPipeMap|nil, 
----["roofMap"]: GutterRoofMap|nil, 
----["buildingType"]: BuildingType|nil, 
----["drains"]: AssociatedDrainMap|nil, 
----["maxLevel"]: integer|nil, 
----["averageGutterCapacity"]: integer, 
----["overflowArea"]: integer, 
+---|{
+---["roofArea"]: integer,
+---["tileCount"]: integer,
+---["optimalDrainCount"]: integer,
+---["drainCount"]: integer,
+---["rainFactor"]: number,
+---["pipeMap"]: GutterPipeMap|nil,
+---["roofMap"]: GutterRoofMap|nil,
+---["buildingType"]: BuildingType|nil,
+---["drains"]: AssociatedDrainMap|nil,
+---["maxLevel"]: integer|nil,
+---["averageGutterCapacity"]: integer,
+---["overflowArea"]: integer,
 ---["overflowEfficiency"]: number }
 
 return enums

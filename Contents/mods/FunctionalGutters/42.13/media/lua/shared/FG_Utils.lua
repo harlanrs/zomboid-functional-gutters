@@ -144,6 +144,19 @@ function utils:isGutterPipe(object)
     return self:isSpriteCategoryObject(object, enums.pipeType.gutter)
 end
 
+---@param object IsoObject
+---@return boolean
+function utils:isAnyPole(object)
+    local spriteName = object:getSpriteName()
+    if not spriteName then return false end
+
+    local spriteDef = enums.poles[spriteName]
+    if spriteDef then
+        return true
+    end
+    return false
+end
+
 ---@param object IsoObject|IsoGridSquare
 ---@param key string
 ---@param loadedModData table|nil

@@ -5,9 +5,6 @@ local BasePipeServiceInterface = require("pipe/FG_Pipe_Base")
 
 local VerticalPipeService = BasePipeServiceInterface:derive("VerticalPipeService");
 
-local localIsoDirections = IsoDirections
-
-
 function VerticalPipeService:isObjectType(object)
     return utils:isVerticalPipe(object)
 end
@@ -45,24 +42,8 @@ function VerticalPipeService:onIsValid(buildParams)
     end
 
     -- Requires a wall/pole (to attach on)
-    if not isoUtils:hasWallNW(square) and not utils:getSpecificIsoObjectFromSquare(square, enums.woodenPoleSprite) then
-        -- Check if the square to the north has a wall on the west
-        local adjacentSquareN = square:getAdjacentSquare(localIsoDirections.N)
-        if not adjacentSquareN then
-            return false
-        end
-
-        if not isoUtils:hasWallW(adjacentSquareN) then
-            -- Check if the square to the west has a wall on the north
-            local adjacentSquareW = square:getAdjacentSquare(localIsoDirections.W)
-            if not adjacentSquareW then
-                return false
-            end
-
-            if not isoUtils:hasWallN(adjacentSquareW) then
-                return false
-            end
-        end
+    if not isoUtils:hasValidPipeAttachment(square) then
+        return false
     end
 
     -- Requires no existing drain pipe

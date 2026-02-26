@@ -16,6 +16,9 @@
         "package": "disable"
     },
     "Lua.workspace.checkThirdParty": false,
+    "[lua]": {
+        "editor.formatOnSave": false
+    },
     "cSpell.ignoreWords": [
         "Gigawatte",
         "ISFG",
