@@ -483,7 +483,6 @@ end
 
 local function checkDebugMode()
     debugMode = options:getDebug()
-    utils:modPrint("Debug mode enabled - PZ 42.15.0")
 end
 
 LuaEventManager.AddEvent(enums.modEvents.OnGutterTileUpdate)
