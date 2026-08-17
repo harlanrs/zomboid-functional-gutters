@@ -1,0 +1,247 @@
+module Base
+{
+	xuiSkin default
+	{
+		entity ES_Metal_GutterPipe_Drain
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Metal Gutter Pipe - Drain,
+			Icon		= FG_Build_Pipe_Drain,
+		}
+
+        entity ES_Metal_GutterPipe_Vertical
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Metal Gutter Pipe - Vertical,
+			Icon		= FG_Build_Pipe_Vertical,
+		}
+
+        entity ES_Metal_GutterPipe
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Metal Gutter Pipe,
+			Icon		= FG_Build_Pipe_Gutter,
+		}
+
+        entity ES_Metal_GutterPipe_Corner
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Metal Gutter Pipe - Corner,
+			Icon		= FG_Build_Pipe_Corner,
+		}
+
+        entity ES_Metal_GutterPipe_Corner_Small
+		{
+			LuaWindowClass	= ISEntityWindow,
+			DisplayName	= Metal Gutter Pipe - Corner Small,
+			Icon		= FG_Build_Pipe_Corner_Small,
+		}
+	}
+
+    entity Metal_GutterPipe_Drain
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_Metal_GutterPipe_Drain,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+
+            /* nw corner */
+            face N
+            {
+                layer
+                {
+                    row = industry_02_261,
+                }
+
+            }
+
+            /* nw corner */
+            face W
+            {
+                layer
+                {
+                    row = industry_02_260,
+                }
+            }
+
+            /* ne corner */
+            face E
+            {
+                layer
+                {
+                    row = industry_02_262,
+                }
+            }
+
+            /* sw corner */
+            face S
+            {
+                layer
+                {
+                    row = industry_02_263,
+                }
+            }
+    
+        }
+        
+    }
+
+    entity Metal_GutterPipe_Vertical
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_Metal_GutterPipe_Vertical,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+
+            /* nw corner */
+            face N
+            {
+                layer
+                {
+                    row = industry_02_238,
+                }
+            }
+
+            /* sw corner */
+            face W
+            {
+                layer
+                {
+                    row = industry_02_247,
+                }
+            }
+
+            /* ne corner */
+            face E
+            {
+                layer
+                {
+                    row = industry_02_243,
+                }
+            }
+            
+        }
+        
+    }
+
+    entity Metal_GutterPipe
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_Metal_GutterPipe,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+
+            face N
+            {
+                layer
+                {
+                    row = gutter_01_6,
+                }
+            }
+
+            face W
+            {
+                layer
+                {
+                    row = gutter_01_5,
+                }
+            }
+
+            face E
+            {
+                layer
+                {
+                    row = gutter_01_9,
+                }
+            }
+
+            face S
+            {
+                layer
+                {
+                    row = gutter_01_7,
+                }
+            }
+        }
+        
+    }
+
+    entity Metal_GutterPipe_Corner
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_Metal_GutterPipe_Corner,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+
+            face W
+            {
+                layer
+                {
+                    row = gutter_01_8,
+                }
+            }
+
+            face S
+            {
+                layer
+                {
+                    row = gutter_01_10,
+                }
+            }
+
+        }
+        
+    }
+
+    entity Metal_GutterPipe_Corner_Small
+    {
+        component UiConfig
+        {
+            xuiSkin         = default,
+            entityStyle     = ES_Metal_GutterPipe_Corner_Small,
+            uiEnabled       = false,
+        }
+
+        component SpriteConfig
+        {
+
+            face N
+            {
+                layer
+                {
+                    row = gutter_01_4,
+                }
+            }
+
+            face S
+            {
+                layer
+                {
+                    row = gutter_01_11,
+                }
+            }
+
+        }
+        
+    }
+}
