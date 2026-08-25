@@ -1,0 +1,12 @@
+id=FunctionalGuttersRemoved
+incompatible=\FunctionalGutters
+name=[B42] Functional Gutters (Removed)
+description=Use this mod only after removing Functional Gutters main mod from a multiplayer server to keep your save. See mod workshop description for more information and alternative manual removal steps that don't require this placeholder mod.
+author=Mancer
+url=https://github.com/harlanrs/zomboid-functional-gutters
+poster=poster.png
+icon=icon.png
+pack=gutter_01
+tiledef=gutter_tiledefinitions 3405
+modversion=1.4.6
+versionMin=42.15.0
