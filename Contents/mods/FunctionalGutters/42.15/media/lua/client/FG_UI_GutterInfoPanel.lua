@@ -256,8 +256,8 @@ end
 function FG_UI_GutterInfoPanel:highlightCoveredRoof(square, highlight)
     if not square then return end
     local highlightObject
-    if self.gutterSection.buildingType == enums.buildingType.vanilla then
-        -- If vanilla building, try to find the square's roof object
+    if self.gutterSection.buildingType ~= enums.buildingType.custom then
+        -- If vanilla or mixed building, try to find the square's roof object
         if utils:hasRoofProp(square) then
             local squareObjects = square:getObjects()
             for i = 0, squareObjects:size() - 1 do

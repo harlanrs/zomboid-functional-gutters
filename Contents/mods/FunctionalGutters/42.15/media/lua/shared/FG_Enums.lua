@@ -21,6 +21,7 @@ enums.collectorType = {
 enums.buildingType = {
     vanilla = "vanilla",
     custom = "custom",
+    mixed = "mixed", -- Vanilla building with player-built additions
 }
 
 enums.pipes = {
@@ -299,7 +300,7 @@ enums.maxGutterCrawlSteps = 48
 enums.maxBuildingBoundCrawlSteps = 25
 enums.maxRoofArea = 500 -- Max roof area in tiles
 enums.defaultDrainPipeSearchRadius = 24
-enums.defaultDrainPipeSearchHeight = 1
+enums.defaultDrainPipeSearchHeight = 3
 enums.gutterSectionPerimeterLength = 9
 enums.gutterSectionCapacityRatio = 0.25
 enums.gutterSectionOverflowEfficiency = 0.25
