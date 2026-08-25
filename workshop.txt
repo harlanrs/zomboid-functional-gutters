@@ -108,6 +108,13 @@ description=The client syncs its own local copy of the server's WorldDictionary 
 description=
 description=Deleting the server's WorldDictionary files forces the server to recreate them from scratch and they will no longer contain any entities from the removed mod allowing the client to properly connect once again.
 description=
+description=[h2]Translations[/h2]
+description=[olist]
+description=  [*]Italian - thanks to [url=https://steamcommunity.com/id/nycotex_]Nycotex[/url] <3
+description=  [*]Spanish - needs validation
+description=  [*]Portuguese - needs validation
+description=[/olist]
+description=
 description=[url=https://github.com/harlanrs/zomboid-functional-gutters] View on github for more information [/url]
 description=
 description=Workshop ID: 3439305933
