@@ -8,5 +8,5 @@ poster=poster.png
 icon=icon.png
 pack=gutter_01
 tiledef=gutter_tiledefinitions 3405
-modversion=1.4.6
+modversion=1.5.0
 versionMin=42.15.0
