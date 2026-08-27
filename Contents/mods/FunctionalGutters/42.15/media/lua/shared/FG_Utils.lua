@@ -193,6 +193,7 @@ function utils:getModDataDrainCleared(object, loadedModData)
     return self:getModDataKeyValue(object, enums.modDataKey.drainCleared, loadedModData)
 end
 
+-- NOTE: currently unused - prune in the future
 ---@param square IsoGridSquare
 ---@param loadedModData table|nil
 ---@return integer|nil roofArea
@@ -200,6 +201,7 @@ function utils:getModDataRoofArea(square, loadedModData)
     return self:getModDataKeyValue(square, enums.modDataKey.roofArea, loadedModData)
 end
 
+-- NOTE: currently unused - prune in the future
 ---@param square IsoGridSquare
 ---@param loadedModData table|nil
 ---@return integer|nil roofArea
@@ -207,6 +209,7 @@ function utils:getModDataBuildingType(square, loadedModData)
     return self:getModDataKeyValue(square, enums.modDataKey.buildingType, loadedModData)
 end
 
+-- NOTE: currently unused - prune in the future
 ---@param square IsoGridSquare
 ---@param loadedModData table|nil
 ---@return integer|nil roofArea

@@ -90,7 +90,7 @@ function GutterServerManager.OnIsoObjectBuilt(square, sprite)
 
     if checkDrainPipes then
         -- Seek all nearby drain pipes to update the rain factor
-        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10)
         if drainPipes then
             for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]
@@ -144,7 +144,7 @@ function GutterServerManager.OnIsoObjectPlaced(placedObject)
 
     if checkDrainPipes then
         -- Seek all nearby drain pipes to update the rain factor
-        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10)
         if drainPipes then
             for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]
@@ -216,7 +216,7 @@ function GutterServerManager.OnIsoObjectRemoved(removedObject)
 
     if checkDrainPipes then
         -- Seek all nearby drain pipes to update the rain factor
-        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10, 1)
+        local drainPipes = serviceUtils:getLocalDrainPipes3D(square, 10)
         if drainPipes then
             for i = 1, #drainPipes do
                 local drainPipe = drainPipes[i]

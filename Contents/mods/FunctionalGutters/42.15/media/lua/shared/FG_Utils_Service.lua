@@ -225,7 +225,7 @@ function serviceUtils:getLocalDrainPipes3D(square, radius, zRadius)
     local x = square:getX()
     local y = square:getY()
     local z = square:getZ()
-    for i = 1, zRadius + 1 do
+    for i = 1, zRadius do
         -- Check up zRadius levels
         local upZ = z + i
         local upSquare = square:getCell():getGridSquare(x, y, upZ)
@@ -366,62 +366,6 @@ function serviceUtils:filterGutterDrainsBySharedComponents(primaryDrainPipe, dra
     return relatedDrains
 end
 
----@param primaryDrainPipe IsoObject
----@param drainPipes table<string,IsoObject>
----@param primaryBuildingDef BuildingDef|nil
----@return table<string, IsoObject> relatedDrains
-function serviceUtils:filterGutterDrainsByBuildingType(primaryDrainPipe, drainPipes, primaryBuildingDef)
-    -- Determine if square has a pre-built building or is a player-built structure
-    local primaryDrainSquare = primaryDrainPipe:getSquare()
-    local maxLevel = utils:getModDataMaxLevel(primaryDrainSquare)
-
-    -- Reduce the list of drain pipes to only those relevant to the building mode
-    local associatedDrainMap = {}
-    for drainPipeID, drainPipe in pairs(drainPipes) do
-        local isAssociated = false
-
-        -- Filter by building type
-        local drainBuildingDef = isoUtils:getAttachedBuilding(drainPipe:getSquare())
-        if primaryBuildingDef then
-            -- Vanilla building type
-            -- Check if the drain pipe is attached to the same building
-            if drainBuildingDef and drainBuildingDef:getID() == primaryBuildingDef:getID() then
-                -- Check if drains on the same building are getting water from the same level
-                if maxLevel then
-                    local drainPipeSquare = drainPipe:getSquare()
-                    local pipeMaxLevel = utils:getModDataMaxLevel(drainPipeSquare)
-                    if pipeMaxLevel then
-                        if pipeMaxLevel == maxLevel then
-                            -- Add the drain pipe to the list of associated pipes
-                            isAssociated = true
-                        end
-                    else
-                        -- If the drain pipe doesn't have a max level, go ahead an add it to the list of associated pipes
-                        -- Would rather over estimate than under estimate
-                        isAssociated = true
-                    end
-                else
-                    -- If for some reason the maxLevel is nil, go ahead an add it to the list of associated pipes
-                    -- Would rather over estimate than under estimate
-                    isAssociated = true
-                end
-            end
-        else
-            -- Custom building type
-            -- Check if the drain is not attached to any building
-            if not drainBuildingDef then
-                isAssociated = true
-            end
-        end
-
-        if isAssociated then
-            associatedDrainMap[drainPipeID] = drainPipe
-        end
-    end
-
-    return associatedDrainMap
-end
-
 ---@param sourceDrainSquare IsoGridSquare
 ---@param sourcePipeMap GutterPipeMap
 ---@param sourceRoofMap GutterRoofMap
@@ -468,24 +412,12 @@ function serviceUtils:getAssociatedGutterDrains(sourceDrainSquare, sourcePipeMap
         return siblingDrainMap
     end
 
-    -- Determine if square has a pre-built building or is a player-built structure
-    local primaryBuildingDef = isoUtils:getAttachedBuilding(sourceDrainSquare)
+    -- Check if neighboring gutter systems collect from overlapping roof tiles
+    local associatedDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
+        neighborDrainMap, sourcePipeMap, sourceRoofMap)
 
-    -- Reduce the list of drain pipes to only those relevant to the building mode
-    local associatedBuildingDrainMap = self:filterGutterDrainsByBuildingType(sourceDrainPipe, neighborDrainMap, primaryBuildingDef)
-
-    -- Return early if no non-sibling drains leftover after filter round 1
-    if utils:getDictSize(associatedBuildingDrainMap) == 0 then
-        return siblingDrainMap
-    end
-
-    -- Apply shared component checks to filter drains that don't actually share pipes or roof tiles
-    -- This handles split roofs on vanilla buildings and overlapping custom structures
-    associatedBuildingDrainMap = self:filterGutterDrainsBySharedComponents(sourceDrainPipe,
-        associatedBuildingDrainMap, sourcePipeMap, sourceRoofMap)
-
-    -- Combine the sibling drains with the leftover associated drains
-    for drainID, drainPipe in pairs(associatedBuildingDrainMap) do
+    -- Combine the sibling drains with the associated neighbor drains
+    for drainID, drainPipe in pairs(associatedDrainMap) do
         siblingDrainMap[drainID] = drainPipe
     end
 

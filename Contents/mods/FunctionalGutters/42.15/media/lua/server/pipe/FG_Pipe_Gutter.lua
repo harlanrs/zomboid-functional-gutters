@@ -108,7 +108,14 @@ function GutterPipeService:onIsValid(buildParams)
     -- Requires a wall/pole on same level or floor on level above (to attach on)
     -- TODO check if there is a garage door section
     if not isoUtils:hasValidPipeAttachment(square) and not isoUtils:hasValidFloorAttachment(square) then
-        return false
+        -- Handle special placement rules for small corner gutters
+        if tileInfoSprite == 'gutter_01_4' or tileInfoSprite == 'gutter_01_11' then
+            if not isoUtils:hasValidFloorAttachmentNW(square) then
+                return false
+            end
+        else
+            return false
+        end
     end
 
     return true

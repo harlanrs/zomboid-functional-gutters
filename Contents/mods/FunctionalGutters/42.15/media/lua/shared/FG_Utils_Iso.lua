@@ -256,6 +256,24 @@ function isoUtils:hasValidFloorAttachment(square)
     return false
 end
 
+---Check if a square has a valid floor attachment point above adjacent NW square
+---Used for small corner gutter pipes which might not have a floor square to N or W
+---@param square IsoGridSquare
+---@return boolean
+function isoUtils:hasValidFloorAttachmentNW(square)
+    -- Check for floor on the square above adjacent NW
+    local adjacentSquareNW = square:getAdjacentSquare(localIsoDirections.NW)
+    if adjacentSquareNW then
+        local adjacentSquareNWUp = getCell():getGridSquare(
+            adjacentSquareNW:getX(), adjacentSquareNW:getY(), adjacentSquareNW:getZ() + 1)
+        if adjacentSquareNWUp and adjacentSquareNWUp:hasFloor() then
+            return true
+        end
+    end
+
+    return false
+end
+
 ---@param square IsoGridSquare
 ---@param directions table<IsoDirections>|nil
 ---@param metaGrid MetaGrid|nil
@@ -838,6 +856,25 @@ function isoUtils:getVanillaBuildingRoofMap(square, pipeMap, buildingDef)
     return roofMap
 end
 
+---Union otherRoofMap's squares into baseRoofMap deduped by square ID
+---@param baseRoofMap GutterRoofMap
+---@param otherRoofMap GutterRoofMap
+---@return GutterRoofMap baseRoofMap
+function isoUtils:mergeRoofMaps(baseRoofMap, otherRoofMap)
+    for squareID, roofSquare in pairs(otherRoofMap.squares) do
+        if not baseRoofMap.squares[squareID] then
+            baseRoofMap.squares[squareID] = roofSquare
+            baseRoofMap.count = baseRoofMap.count + 1
+        end
+    end
+
+    if otherRoofMap.maxZ > baseRoofMap.maxZ then
+        baseRoofMap.maxZ = otherRoofMap.maxZ
+    end
+
+    return baseRoofMap
+end
+
 ---@param square IsoGridSquare
 ---@param pipeMap GutterPipeMap
 ---@return GutterRoofMap roofMap, BuildingType buildingType
@@ -848,6 +885,14 @@ function isoUtils:getGutterRoofMap(square, pipeMap)
         -- Vanilla building mode
         buildingType = enums.buildingType.vanilla
         roofMap = self:getVanillaBuildingRoofMap(square, pipeMap, buildingDef)
+
+        -- Player-built additions on top of or against a vanilla building might be outside of its building def
+        -- Run the custom crawl as a second pass and merge roof maps together
+        local customRoofMap = self:getCustomBuildingRoofMap(square, pipeMap)
+        if customRoofMap.count > 0 then
+            buildingType = enums.buildingType.mixed
+            roofMap = self:mergeRoofMaps(roofMap, customRoofMap)
+        end
     else
         -- Custom building mode
         buildingType = enums.buildingType.custom
