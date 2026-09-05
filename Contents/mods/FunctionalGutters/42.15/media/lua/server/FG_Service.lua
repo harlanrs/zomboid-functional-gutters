@@ -65,6 +65,15 @@ function gutterService:getPipeService(pipeObject)
 end
 
 --- @param collectorObject IsoObject|IsoFeedingTrough
+function gutterService:syncCollector(collectorObject)
+    -- Multi-tile collectors (ex: troughs) store connection state on the 'primary' object
+    -- which isn't always the object passed in, so we need to resolve it before syncing to clients
+    local primaryCollector = serviceUtils:getPrimaryCollector(collectorObject) or collectorObject
+    primaryCollector:sync()
+    primaryCollector:transmitModData()
+end
+
+--- @param collectorObject IsoObject|IsoFeedingTrough
 function gutterService:connectCollector(collectorObject)
     local containerService = self:getCollectorService(collectorObject)
     if not containerService then
@@ -89,8 +98,7 @@ function gutterService:connectCollector(collectorObject)
         serviceUtils:handlePostCollectorConnected(square)
     end
 
-    collectorObject:sync()
-    collectorObject:transmitModData()
+    self:syncCollector(collectorObject)
 end
 
 --- @param collectorObject IsoObject|IsoFeedingTrough
@@ -102,8 +110,7 @@ function gutterService:disconnectCollector(collectorObject)
 
     containerService:disconnectCollector(collectorObject)
 
-    collectorObject:sync()
-    collectorObject:transmitModData()
+    self:syncCollector(collectorObject)
 end
 
 return gutterService
