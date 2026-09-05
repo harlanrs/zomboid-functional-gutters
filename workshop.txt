@@ -116,6 +116,5 @@ description=  [*]Portuguese - needs validation
 description=[/olist]
 description=
 description=[url=https://github.com/harlanrs/zomboid-functional-gutters] View on github for more information [/url]
-description=
 tags=Build 42;Balance;Building;Multiplayer;Realistic
 visibility=public
