@@ -52,7 +52,7 @@ end
 function FG_TA_ConnectContainer:complete()
 	if self.containerObject and serverCommands then
 		local args = utils:buildObjectCommandArgs(self.containerObject)
-		serverCommands.connectCollector(args)
+		serverCommands.connectCollector(args, self.character)
 	else
 		utils:modPrint("Failed to connect collector: " .. tostring(self.containerObject))
 	end
