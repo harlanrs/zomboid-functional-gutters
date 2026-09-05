@@ -9,13 +9,13 @@ local gutterService = require("FG_Service")
 local GutterServerManager = {}
 local GutterCommands = {}
 
-function GutterCommands.connectCollector(args)
+function GutterCommands.connectCollector(args, player)
     local collectorObject = utils:parseObjectCommandArgs(args)
     if not collectorObject then
         return
     end
 
-    gutterService:connectCollector(collectorObject)
+    gutterService:connectCollector(collectorObject, player)
 
     triggerEvent(enums.modEvents.OnGutterTileUpdate, collectorObject:getSquare())
 end
@@ -39,7 +39,7 @@ function GutterServerManager.OnClientCommand(module, command, player, args)
             argStr = argStr .. ' ' .. k .. '=' .. tostring(v)
         end
         utils:modPrint('Server received ' .. module .. ' ' .. command .. ' ' .. tostring(player) .. argStr)
-        GutterCommands[command](args)
+        GutterCommands[command](args, player)
     end
 end
 

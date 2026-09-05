@@ -133,7 +133,8 @@ function serviceUtils:getObjectBaseRainFactor(object)
 end
 
 ---@param square IsoGridSquare
-function serviceUtils:handlePostCollectorConnected(square)
+---@param player IsoPlayer|nil
+function serviceUtils:handlePostCollectorConnected(square, player)
     local _, drainPipe, _, _ = utils:getSpriteCategoryMemberOnTile(square, enums.pipeType.drain)
     if not drainPipe then
         return
@@ -143,12 +144,13 @@ function serviceUtils:handlePostCollectorConnected(square)
     if not utils:getModDataDrainCleared(drainPipe, drainModData) then
         -- Roll dice for easter egg & update mod data
         drainModData[enums.modDataKey.drainCleared] = true
-        local easterEggRoll = localRandom:random(1, 10)
+        local easterEggRoll = player and localRandom:random(1, 10) or 0
         if easterEggRoll == 10 then
-            local adjacentFreeSquare = AdjacentFreeTileFinder.Find(square, getPlayer())
+            local adjacentFreeSquare = AdjacentFreeTileFinder.Find(square, player)
             if adjacentFreeSquare then
-                local spider = adjacentFreeSquare:AddWorldInventoryItem("Base.RubberSpider", 0.5, 0.5, 0)
+                local spider = instanceItem("Base.RubberSpider")
                 spider:setName("Itsy Betsy")
+                adjacentFreeSquare:AddWorldInventoryItem(spider, 0.5, 0.5, 0)
             end
         end
 

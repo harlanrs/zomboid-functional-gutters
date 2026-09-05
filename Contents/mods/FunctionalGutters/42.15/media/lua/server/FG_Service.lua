@@ -74,7 +74,8 @@ function gutterService:syncCollector(collectorObject)
 end
 
 --- @param collectorObject IsoObject|IsoFeedingTrough
-function gutterService:connectCollector(collectorObject)
+--- @param player IsoPlayer|nil player who triggered the connection (nil when re-connecting via world events)
+function gutterService:connectCollector(collectorObject, player)
     local containerService = self:getCollectorService(collectorObject)
     if not containerService then
         return
@@ -95,7 +96,7 @@ function gutterService:connectCollector(collectorObject)
 
     local success = containerService:connectCollector(collectorObject, gutterSection.rainFactor)
     if success then
-        serviceUtils:handlePostCollectorConnected(square)
+        serviceUtils:handlePostCollectorConnected(square, player)
     end
 
     self:syncCollector(collectorObject)
